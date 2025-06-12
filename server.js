@@ -272,8 +272,10 @@ app.post('/register', async (req, res) => {
             password: hashedPassword, // Store hashed password
             role,
             createdAt: new Date().toISOString(),
-            verified: true // Assumed true after OTP verification
+            verified: true, // Assumed true after OTP verification
+            kycStatus: '1'  // ✅ Set default KYC status
         };
+
 
         if (role === 'technician') {
             if (!aadhaar || !pan || !bankDetails || !skills) {
@@ -285,7 +287,7 @@ app.post('/register', async (req, res) => {
             newUser.skills = skills.split(',').map(s => s.trim());
             newUser.kycStatus = 'pending'; // Initial status for technician KYC
         } else {
-            newUser.kycStatus = 'N/A'; // For users and admins
+            newUser.kycStatus = '1'; // For users and admins
         }
 
         users.push(newUser); // Add to in-memory array
@@ -337,7 +339,7 @@ app.post('/login', async (req, res) => {
             fullName: user.fullName,
             email: user.email,
             role: user.role,
-            kycStatus: user.kycStatus // Include kycStatus in session
+            kycStatus: '1' // Include kycStatus in session
         };
 
         let redirectUrl;
