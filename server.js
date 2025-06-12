@@ -1,6 +1,6 @@
 const express = require('express');
-const fs = require('fs'); // Still needed for jobs.json, though jobs data will also be ephemeral on Render
-const fsp = require('fs').promises; // Still needed for jobs.json
+const fs = require('fs');
+const fsp = require('fs').promises; // For asynchronous file operations
 const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
@@ -9,6 +9,7 @@ const bcrypt = require('bcryptjs');
 require('dotenv').config(); // Load environment variables from .env file
 
 const app = express();
+const PORT = process.env.PORT || 3000; // Define PORT here, from .env or default to 3000
 
 // === IMPORTANT NOTE FOR RENDER DEPLOYMENT ===
 // Render's free tier uses an ephemeral filesystem.
@@ -18,12 +19,9 @@ const app = express();
 // For persistent data on Render, you MUST use a dedicated database service
 // like MongoDB Atlas, PostgreSQL, or Render's own managed databases.
 //
-// For this demonstration, 'users' data will be stored IN-MEMORY and will reset
-// on every server restart. 'jobs.json' will still attempt to write to disk,
-// but that data will also be lost on restart on Render.
-
-// === In-memory user store (TEMPORARY - will reset on server restart) ===
-let users = []; // This array will hold user data in memory
+// For this demonstration, 'users' and 'jobs' data will be stored in local JSON files.
+// This data will persist when running LOCALLY but will be lost on every server restart
+// when deployed on Render's ephemeral filesystem.
 
 // === Create data directory if it doesn't exist ===
 const dataDir = path.join(__dirname, 'data');
@@ -32,20 +30,34 @@ if (!fs.existsSync(dataDir)) {
     console.log('Created data directory.');
 }
 
-// === File paths for JSON data storage (Jobs data still uses file for local testing, but will be ephemeral on Render) ===
-const JOBS_JSON = path.join(dataDir, 'jobs.json'); // Users data is now in-memory
+// === File paths for JSON data storage ===
+const USERS_JSON = path.join(dataDir, 'users.json');
+const JOBS_JSON = path.join(dataDir, 'jobs.json');
 
-// Ensure JOBS_JSON file exists with empty array if not present.
-async function initializeJobsDataFile() {
+// === Initialize Data Files (ensure they exist with empty arrays if not present) ===
+async function initializeDataFiles() {
+    try {
+        await fsp.access(USERS_JSON);
+    } catch (e) {
+        if (e.code === 'ENOENT') {
+            await fsp.writeFile(USERS_JSON, '[]', 'utf8');
+            console.log('Created empty users.json');
+        } else {
+            console.error('Error checking users.json for existence:', e);
+        }
+    }
     try {
         await fsp.access(JOBS_JSON);
     } catch (e) {
-        await fsp.writeFile(JOBS_JSON, '[]', 'utf8');
-        console.log('Created empty jobs.json');
+        if (e.code === 'ENOENT') {
+            await fsp.writeFile(JOBS_JSON, '[]', 'utf8');
+            console.log('Created empty jobs.json');
+        } else {
+            console.error('Error checking jobs.json for existence:', e);
+        }
     }
 }
-initializeJobsDataFile();
-
+initializeDataFiles(); // Call this once when the server starts
 
 // === Middleware Setup ===
 app.use(express.json());
@@ -73,7 +85,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// === In-memory OTP Store ===
+// === In-memory OTP Store (OTPs are temporary by nature, no file persistence needed) ===
 const otpStore = {}; // Stores OTPs: email -> { otp, expiresAt }
 
 // === OTP Generator Function ===
@@ -81,18 +93,40 @@ function generateOTP() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// === Helper Functions for Data Persistence (reading and writing JSON files for JOBS ONLY) ===
-// 'users' data is now in-memory
+// === Helper Functions for Data Persistence (reading and writing JSON files) ===
+
+async function readUsers() {
+    try {
+        const data = await fsp.readFile(USERS_JSON, 'utf8');
+        return data.trim() ? JSON.parse(data) : [];
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return []; // File not found, return empty array (should be initialized by now)
+        }
+        console.error('CRITICAL ERROR reading users.json:', error.message);
+        throw new Error('Failed to read user data due to file error or invalid JSON.');
+    }
+}
+
+async function writeUsers(users) {
+    try {
+        await fsp.writeFile(USERS_JSON, JSON.stringify(users, null, 2), 'utf8');
+    } catch (error) {
+        console.error('CRITICAL ERROR writing users.json:', error.message);
+        throw new Error('Failed to write user data due to file error.');
+    }
+}
+
 async function readJobs() {
     try {
         const data = await fsp.readFile(JOBS_JSON, 'utf8');
         return data.trim() ? JSON.parse(data) : [];
     } catch (error) {
         if (error.code === 'ENOENT') {
-            return [];
+            return []; // File not found, return empty array (should be initialized by now)
         }
-        console.error('Error reading jobs.json:', error);
-        return [];
+        console.error('CRITICAL ERROR reading jobs.json:', error.message);
+        throw new Error('Failed to read job data due to file error or invalid JSON.');
     }
 }
 
@@ -100,7 +134,8 @@ async function writeJobs(jobs) {
     try {
         await fsp.writeFile(JOBS_JSON, JSON.stringify(jobs, null, 2), 'utf8');
     } catch (error) {
-        console.error('Error writing jobs.json:', error);
+        console.error('CRITICAL ERROR writing jobs.json:', error.message);
+        throw new Error('Failed to write job data due to file error.');
     }
 }
 
@@ -124,12 +159,19 @@ async function sendEmailOTP(email, otp) {
 }
 
 // === Middleware for Authentication Protection ===
+// Modified to differentiate between HTML page requests and API requests
 function isAuthenticated(req, res, next) {
     if (req.session.user && req.session.user.id) {
         next();
     } else {
-        // If not authenticated, send a JSON response to allow client-side redirect
-        res.status(401).json({ success: false, message: 'Unauthorized. Please login.', redirect: '/' });
+        // If client expects HTML (e.g., a direct page request like /technician.html), redirect to login page.
+        // This prevents the browser from trying to parse a JSON error as HTML.
+        if (req.accepts('html')) {
+            res.redirect('/');
+        } else {
+            // For API requests expecting JSON, send a JSON unauthorized response.
+            res.status(401).json({ success: false, message: 'Unauthorized. Please login.', redirect: '/' });
+        }
     }
 }
 
@@ -146,9 +188,12 @@ app.get('/user.html', isAuthenticated, (req, res) => {
 });
 
 app.get('/technician.html', isAuthenticated, (req, res) => {
+    // isAuthenticated middleware already handles the redirect for HTML requests if not authenticated
     if (req.session.user.role === 'technician' || req.session.user.role === 'admin') {
         res.sendFile(path.join(__dirname, 'views', 'technician.html'));
     } else {
+        // If isAuthenticated didn't redirect (e.g., due to role mismatch), send 403.
+        // This line is mostly for clarity; isAuthenticated handles actual unauthenticated access.
         res.status(403).send('Access Denied: You do not have permission to view this page.');
     }
 });
@@ -191,10 +236,27 @@ app.get('/', (req, res) => {
 
 
 // API to get current logged-in user details
-app.get('/api/user/me', isAuthenticated, (req, res) => {
-    const user = { ...req.session.user };
-    res.json({ success: true, user: user });
+app.get('/api/user/me', isAuthenticated, async (req, res) => {
+    try {
+        const users = await readUsers(); // Fetch users to get up-to-date user info
+        const currentUser = users.find(u => u.id === req.session.user.id);
+        if (currentUser) {
+            // Only expose necessary user details
+            const { password, ...safeUser } = currentUser;
+            res.json({ success: true, user: safeUser });
+        } else {
+            // User not found in data file (e.g., file reset), force logout
+            req.session.destroy(err => {
+                if (err) console.error('Session destruction error on user not found:', err);
+                res.status(401).json({ success: false, message: 'User session invalid. Please log in again.', redirect: '/' });
+            });
+        }
+    } catch (err) {
+        console.error('Error in /api/user/me:', err);
+        res.status(500).json({ success: false, message: 'Internal server error while fetching user details.' });
+    }
 });
+
 
 // Send OTP
 app.post('/send-otp', async (req, res) => {
@@ -249,8 +311,7 @@ app.post('/verify-otp', (req, res) => {
 app.post('/register', async (req, res) => {
     try {
         const { fullName, email, phoneNumber, password, role, aadhaar, pan, bankDetails, skills } = req.body;
-        // In-memory 'users' array is used here instead of reading from file
-        // let users = await readUsers(); // Removed for in-memory
+        let users = await readUsers(); // Read users from file
 
         if (!fullName || !email || !phoneNumber || !password || !role) {
             return res.status(400).json({ success: false, message: 'All required fields must be provided.' });
@@ -273,9 +334,8 @@ app.post('/register', async (req, res) => {
             role,
             createdAt: new Date().toISOString(),
             verified: true, // Assumed true after OTP verification
-            kycStatus: '1'  // ✅ Set default KYC status
+            kycStatus: '1'  // Set default KYC status
         };
-
 
         if (role === 'technician') {
             if (!aadhaar || !pan || !bankDetails || !skills) {
@@ -283,17 +343,17 @@ app.post('/register', async (req, res) => {
             }
             newUser.aadhaar = aadhaar;
             newUser.pan = pan;
-            newUser.bankDetails = bankDetails;
+            newUser.bankDetails = bankDetails; // Store as received from client
             newUser.skills = skills.split(',').map(s => s.trim());
             newUser.kycStatus = 'pending'; // Initial status for technician KYC
         } else {
             newUser.kycStatus = '1'; // For users and admins
         }
 
-        users.push(newUser); // Add to in-memory array
-        // await writeUsers(users); // Removed for in-memory
+        users.push(newUser); // Add to array
+        await writeUsers(users); // Write updated users back to file
 
-        console.log("Registered User (in-memory):", newUser); // For debugging locally
+        console.log("Registered User:", newUser); // For debugging locally
 
         res.json({ success: true, message: `Registration successful for ${role}. You can now log in.` });
 
@@ -307,8 +367,7 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
     try {
         const { email, password, role } = req.body;
-        // In-memory 'users' array is used here instead of reading from file
-        // let users = await readUsers(); // Removed for in-memory
+        let users = await readUsers(); // Read users from file for login
 
         if (!email || !password || !role) {
             return res.status(400).json({ success: false, message: 'Email, password, and role are required for login.' });
@@ -339,7 +398,7 @@ app.post('/login', async (req, res) => {
             fullName: user.fullName,
             email: user.email,
             role: user.role,
-            kycStatus: '1' // Include kycStatus in session
+            kycStatus: user.kycStatus // Include kycStatus in session
         };
 
         let redirectUrl;
@@ -354,7 +413,9 @@ app.post('/login', async (req, res) => {
                 redirectUrl = '/admin.html';
                 break;
             default:
-                return res.status(400).json({ success: false, message: 'Unknown user role. Please contact support.' });
+                console.warn(`Login successful for unknown role: ${user.role}. Redirecting to /`);
+                redirectUrl = '/'; 
+                break;
         }
 
         console.log(`User ${user.email} (${user.role}) logged in. Redirecting to ${redirectUrl}`); // For debugging
@@ -381,7 +442,7 @@ app.post('/api/book-service', isAuthenticated, async (req, res) => {
 
         const { applianceType, location, scheduledDateTime, notes } = req.body;
         let jobs = await readJobs(); // Read jobs from file
-        // 'users' data is in-memory
+        let users = await readUsers(); // Read users from file to find technicians
 
         if (!applianceType || !location || !scheduledDateTime) {
             return res.status(400).json({ success: false, message: 'Appliance type, location, and scheduled date/time are required for booking.' });
@@ -543,7 +604,7 @@ app.get('/api/jobs/:jobId', isAuthenticated, async (req, res) => {
 
         if (job) {
             if (req.session.user.role === 'admin' || job.userId === req.session.user.id || job.assignedTechnicianId === req.session.user.id) {
-                // 'users' data is in-memory
+                let users = await readUsers(); // Read users from file
                 const customer = users.find(u => u.id === job.userId);
                 const technician = users.find(u => u.id === job.assignedTechnicianId);
 
@@ -729,15 +790,60 @@ app.get('/api/admin/users', isAuthenticated, async (req, res) => {
         if (req.session.user.role !== 'admin') {
             return res.status(403).json({ success: false, message: 'Access denied. Only admins can view users.' });
         }
-        // In-memory 'users' array is used here
+        let users = await readUsers(); // Read users from file
         const safeUsers = users.map(user => {
-            const { password, ...rest } = user;
+            const { password, ...rest } = user; // Exclude password for security
             return rest;
         });
         res.json({ success: true, users: safeUsers });
     } catch (err) {
         console.error('Admin Fetch Users Error:', err);
         res.status(500).json({ success: false, message: 'Internal server error while fetching users.' });
+    }
+});
+
+// Admin Dashboard Overview API
+app.get('/api/admin/dashboard-overview', isAuthenticated, async (req, res) => {
+    try {
+        if (req.session.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Access denied. Only admins can view dashboard overview.' });
+        }
+
+        const currentUsers = await readUsers(); // Read users from file
+        const currentJobs = await readJobs();   // Fetch latest jobs from file
+
+        const totalJobs = currentJobs.length;
+        const activeTechnicians = currentUsers.filter(u => u.role === 'technician' && u.kycStatus === 'approved').length;
+        
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const revenueThisMonth = currentJobs.reduce((sum, job) => {
+            if (job.paymentStatus === 'Paid' && job.paidAt) {
+                const paidDate = new Date(job.paidAt);
+                if (paidDate.getMonth() === currentMonth && paidDate.getFullYear() === currentYear) {
+                    return sum + (job.quotation && job.quotation.totalEstimate ? job.quotation.totalEstimate : (job.paymentDetails ? job.paymentDetails.amount : 0));
+                }
+            }
+            return sum;
+        }, 0);
+
+        const pendingApprovals = currentUsers.filter(u => u.role === 'technician' && u.kycStatus === 'pending').length;
+
+        res.json({
+            success: true,
+            data: {
+                totalJobs,
+                activeTechnicians,
+                revenueThisMonth: parseFloat(revenueThisMonth.toFixed(2)),
+                pendingApprovals
+            }
+        });
+
+    } catch (err) {
+        console.error('Admin Dashboard Overview Error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error while fetching dashboard overview.' });
     }
 });
 
@@ -748,7 +854,7 @@ app.get('/api/admin/jobs', isAuthenticated, async (req, res) => {
             return res.status(403).json({ success: false, message: 'Access denied. Only admins can view all jobs.' });
         }
         let jobs = await readJobs(); // Read jobs from file
-        // 'users' data is in-memory
+        let users = await readUsers(); // Read users from file to enhance job data
 
         const enhancedJobs = jobs.map(job => {
             const customer = users.find(u => u.id === job.userId);
@@ -780,7 +886,7 @@ app.post('/api/admin/users/:userId/grant-technician', isAuthenticated, async (re
         }
 
         const userId = req.params.userId;
-        // 'users' data is in-memory
+        let users = await readUsers(); // Read users from file
         const userIndex = users.findIndex(u => u.id === userId && u.role === 'technician');
 
         if (userIndex === -1) {
@@ -794,7 +900,7 @@ app.post('/api/admin/users/:userId/grant-technician', isAuthenticated, async (re
         users[userIndex].kycStatus = 'approved';
         users[userIndex].lastUpdated = new Date().toISOString();
 
-        // No need to write to file for in-memory
+        await writeUsers(users); // Write updated users back to file
         res.json({ success: true, message: 'Technician KYC approved successfully.', user: users[userIndex] });
     } catch (err) {
         console.error('Admin Grant Technician Error:', err);
@@ -810,7 +916,7 @@ app.post('/api/admin/users/:userId/reject-technician', isAuthenticated, async (r
         }
 
         const userId = req.params.userId;
-        // 'users' data is in-memory
+        let users = await readUsers(); // Read users from file
         const userIndex = users.findIndex(u => u.id === userId && u.role === 'technician');
 
         if (userIndex === -1) {
@@ -824,7 +930,7 @@ app.post('/api/admin/users/:userId/reject-technician', isAuthenticated, async (r
         users[userIndex].kycStatus = 'rejected';
         users[userIndex].lastUpdated = new Date().toISOString();
 
-        // No need to write to file for in-memory
+        await writeUsers(users); // Write updated users back to file
         res.json({ success: true, message: 'Technician KYC rejected successfully.', user: users[userIndex] });
     } catch (err) {
         console.error('Admin Reject Technician KYC Error:', err);
@@ -841,7 +947,7 @@ app.post('/logout', (req, res) => {
             return res.status(500).json({ success: false, message: 'Could not log out.' });
         }
         res.clearCookie('connect.sid'); // Clear the session cookie
-        res.json({ success: true, message: 'Logged out successfully.' });
+        res.json({ success: true, message: 'Logged out successfully.', redirect: '/' }); // Added redirect for client-side
     });
 });
 
@@ -852,10 +958,10 @@ app.use((req, res, next) => {
 
 
 // === Start the Server ===
-const PORT = process.env.PORT || 3001;
+// Use the PORT defined at the top
 app.listen(PORT, () => {
     console.log(`✅ Server running at http://localhost:${PORT}`);
-    console.log('⚠️ IMPORTANT: User data is IN-MEMORY and will reset on server restart!');
+    console.log('⚠️ IMPORTANT: User and Job data is stored in JSON files but will reset on server restart on Render (ephemeral filesystem)!');
     console.log('For persistent data on Render, use a real database (e.g., MongoDB Atlas, PostgreSQL).');
     console.log('Remember to set EMAIL_USER, EMAIL_PASS, and SESSION_SECRET in your Render environment variables!');
 });
