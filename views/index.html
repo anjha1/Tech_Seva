@@ -464,7 +464,6 @@
             font-style: italic;
             color: #3498db;
             display: none;
-            margin-top: 10px;
         }
 
         /* --- Auth Modal Specific Styles --- */
@@ -976,7 +975,7 @@
                         <p>Receive a digital invoice and a service warranty for every repair, ensuring accountability and long-term trust.</p>
                     </div>
                     <div class="feature-item">
-                        <h3><span class="feature-icon">🇮🇳</span> Works in Tier-2 & Tier-3 India</h3>
+                        <h3><span class="feature-icon">�🇳</span> Works in Tier-2 & Tier-3 India</h3>
                         <p>Our services are specifically designed to cater to the unique needs of customers and technicians in smaller cities and towns across India.</p>
                     </div>
                 </div>
@@ -1365,7 +1364,7 @@
                 event.preventDefault();
                 const email = document.getElementById('login-email').value;
                 const password = document.getElementById('login-password').value;
-                const role = loginRoleInput.value; // Get role from hidden input
+                const role = loginRoleInput.value;
 
                 try {
                     const response = await fetch('/login', {
@@ -1374,18 +1373,30 @@
                         body: JSON.stringify({ email, password, role })
                     });
                     const result = await response.json();
+
                     if (result.success) {
                         showMessage(result.message, 'success');
-                        // Store JWT token if provided by backend
-                        if (result.token) {
-                            localStorage.setItem('jwtToken', result.token);
+                        // अगर लॉगिन सफल होता है, तो प्राप्त redirect URL पर नेविगेट करें
+                        if (result.redirect) {
+                            setTimeout(() => {
+                                window.location.href = result.redirect; // <-- यह लाइन सुनिश्चित करती है रीडायरेक्ट
+                            }, 500); // एक छोटे से विलंब के साथ रीडायरेक्ट करें
+                        } else {
+                            console.warn('Login successful but no redirect URL provided by server.');
+                            // यदि कोई रीडायरेक्ट URL नहीं है, तो कुछ डिफ़ॉल्ट व्यवहार करें
+                            showMessage('Login successful! Welcome.', 'success');
+                            // शायद मुख्य पेज पर रीडायरेक्ट करें या लॉगिन मोडल बंद करें
+                            authOverlay.style.display = 'none';
                         }
-                        // Redirect after a short delay
-                        setTimeout(() => {
-                            window.location.href = result.redirect;
-                        }, 500);
                     } else {
+                        // यदि लॉगिन असफल होता है, तो त्रुटि संदेश दिखाएं
                         showMessage(result.message, 'error');
+                        // यदि सर्वर ने Unauthorized response के साथ redirect दिया है
+                        if (result.redirect) {
+                            setTimeout(() => {
+                                window.location.href = result.redirect;
+                            }, 500);
+                        }
                     }
                 } catch (error) {
                     console.error('Login error:', error);

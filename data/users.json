@@ -109,8 +109,11 @@
     "aadhaar": "345678901234",
     "pan": "KLMNO9012P",
     "bankDetails": "HDFC Bank, A/C: 1122334455, IFSC: HDFC0009012",
-    "skills": ["TV Repair", "Microwave Repair"],
-    "kycStatus": "approved" 
+    "skills": [
+      "TV Repair",
+      "Microwave Repair"
+    ],
+    "kycStatus": "approved"
   },
   {
     "id": "J103",
@@ -121,7 +124,7 @@
     "scheduledDateTime": "2024-06-15T10:00:00.000Z",
     "notes": "Fan making strange noise",
     "status": "Assigned",
-    "assignedTechnicianId": "tech_003", 
+    "assignedTechnicianId": "tech_003",
     "assignedTechnicianName": "Amit Singh",
     "createdAt": "2024-06-11T09:15:00.000Z"
   },
@@ -133,9 +136,20 @@
     "location": "Mumbai",
     "scheduledDateTime": "2024-06-16T14:00:00.000Z",
     "notes": "Regular AC checkup",
-    "status": "Pending", 
+    "status": "Pending",
     "assignedTechnicianId": null,
     "assignedTechnicianName": "Pending Assignment",
     "createdAt": "2024-06-12T11:00:00.000Z"
+  },
+  {
+    "id": "1749726589241",
+    "fullName": "Achhuta Nand Jha",
+    "email": "jhaachhutanand@gmail.com",
+    "phoneNumber": "1172810319",
+    "password": "$2b$10$s2oNiQyjZ5JHXBJhX6bVFOVFVIijkx5in6tR6qMj/86H6VZyF3g6S",
+    "role": "user",
+    "createdAt": "2025-06-12T11:09:49.242Z",
+    "verified": true,
+    "kycStatus": "N/A"
   }
 ]

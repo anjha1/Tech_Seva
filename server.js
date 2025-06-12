@@ -5,6 +5,8 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const nodemailer = require('nodemailer');
+const bcrypt = require('bcryptjs'); // Add bcryptjs for password hashing
+require('dotenv').config(); // Load environment variables from .env file
 
 const app = express();
 
@@ -44,23 +46,26 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Session management middleware setup.
 app.use(session({
-    secret: 'your_super_secret_key_for_session', // ⚠️ IMPORTANT: Change this to a long, random, and unguessable string in production!
+    secret: process.env.SESSION_SECRET || 'a_very_long_and_random_secret_for_session_management_replace_this_in_production', // ⚠️ IMPORTANT: Use environment variable
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: process.env.NODE_ENV === 'production' }
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production (requires HTTPS)
+        maxAge: 24 * 60 * 60 * 1000 // Session lasts for 24 hours
+    }
 }));
 
 // === Email Transporter Setup for Nodemailer ===
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'achhutanandjha1@gmail.com', // ⚠️ IMPORTANT: Replace with your actual Gmail email address.
-        pass: ''    // ⚠️ IMPORTANT: Replace with an app-specific password.
+        user: process.env.EMAIL_USER, // ⚠️ IMPORTANT: Get from environment variable
+        pass: process.env.EMAIL_PASS  // ⚠️ IMPORTANT: Get from environment variable (App password for Gmail)
     }
 });
 
 // === In-memory OTP Store ===
-const otpStore = {};
+const otpStore = {}; // Stores OTPs: email -> { otp, expiresAt }
 
 // === OTP Generator Function ===
 function generateOTP() {
@@ -74,10 +79,10 @@ async function readUsers() {
         return data.trim() ? JSON.parse(data) : [];
     } catch (error) {
         if (error.code === 'ENOENT') {
-            return [];
+            return []; // File does not exist, return empty array
         }
         console.error('Error reading users.json:', error);
-        return [];
+        return []; // Return empty array on other errors
     }
 }
 
@@ -111,9 +116,13 @@ async function writeJobs(jobs) {
 }
 
 async function sendEmailOTP(email, otp) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.error('Email credentials not set in environment variables. OTP email will not be sent.');
+        return false;
+    }
     try {
         await transporter.sendMail({
-            from: transporter.options.auth.user,
+            from: process.env.EMAIL_USER, // Use environment variable
             to: email,
             subject: 'Your TechSeva OTP',
             html: `<p>Your One-Time Password (OTP) for TechSeva is: <strong>${otp}</strong></p><p>This OTP is valid for 5 minutes.</p>`
@@ -130,23 +139,34 @@ function isAuthenticated(req, res, next) {
     if (req.session.user && req.session.user.id) {
         next();
     } else {
-        res.redirect('/');
+        // If not authenticated, send a JSON response to allow client-side redirect
+        res.status(401).json({ success: false, message: 'Unauthorized. Please login.', redirect: '/' });
     }
 }
 
 // === Routes ===
 
-// Serve specific HTML files WITH authentication and role checks first
+// Serve specific HTML files WITH authentication and role checks FIRST
+// Order matters: specific protected routes before general static serving
 app.get('/user.html', isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'user.html'));
+    // Check if user is trying to access their own dashboard or is an admin
+    if (req.session.user.role === 'user' || req.session.user.role === 'admin') {
+        res.sendFile(path.join(__dirname, 'views', 'user.html'));
+    } else {
+        res.status(403).send('Access Denied: You do not have permission to view this page.');
+    }
 });
 
 app.get('/technician.html', isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'technician.html'));
+    if (req.session.user.role === 'technician' || req.session.user.role === 'admin') {
+        res.sendFile(path.join(__dirname, 'views', 'technician.html'));
+    } else {
+        res.status(403).send('Access Denied: You do not have permission to view this page.');
+    }
 });
 
 app.get('/admin.html', isAuthenticated, (req, res) => {
-    if (req.session.user && req.session.user.role === 'admin') {
+    if (req.session.user.role === 'admin') {
         res.sendFile(path.join(__dirname, 'views', 'admin.html'));
     } else {
         res.status(403).send('Access Denied: You must be an administrator to view this page.');
@@ -154,30 +174,46 @@ app.get('/admin.html', isAuthenticated, (req, res) => {
 });
 
 app.get('/payment.html', isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'payment.html'));
+    // Payment page accessible by users and admins who are associated with the job
+    // (A more robust check might be needed here, e.g., if job belongs to current user)
+    if (req.session.user.role === 'user' || req.session.user.role === 'admin') {
+        res.sendFile(path.join(__dirname, 'views', 'payment.html'));
+    } else {
+        res.status(403).send('Access Denied: You do not have permission to view this page.');
+    }
 });
 
 app.get('/diagnosis.html', isAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'diagnosis.html'));
+    // Diagnosis page could be for technicians or users viewing their diagnosis
+    if (req.session.user.role === 'technician' || req.session.user.role === 'user' || req.session.user.role === 'admin') {
+        res.sendFile(path.join(__dirname, 'views', 'diagnosis.html'));
+    } else {
+        res.status(403).send('Access Denied: You do not have permission to view this page.');
+    }
 });
 
-// Serve static files (like CSS, JavaScript, images) and other HTML files without specific protection
-// This must come AFTER specific protected HTML routes.
+// Serve static files (like CSS, JavaScript, images) from 'public'
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'views'))); // Now serves 'index.html' and other public assets
 
+// Serve all HTML files directly from 'views' if no specific route matches above
+// This MUST come AFTER specific protected HTML routes to apply isAuthenticated
+app.use(express.static(path.join(__dirname, 'views')));
 
 // Serve the main index.html file as the homepage (this will now be caught by the static serve above)
+// If you want index.html to be served ONLY from views:
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
 
+// API to get current logged-in user details
 app.get('/api/user/me', isAuthenticated, (req, res) => {
+    // Only return safe user data from session
     const user = { ...req.session.user };
     res.json({ success: true, user: user });
 });
 
+// Send OTP
 app.post('/send-otp', async (req, res) => {
     try {
         const { email } = req.body;
@@ -185,8 +221,9 @@ app.post('/send-otp', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Email is required to send OTP.' });
         }
         const otp = generateOTP();
-        otpStore[email] = { otp, expiresAt: Date.now() + 300000 };
-        console.log(`Generated OTP for ${email}: ${otp}`);
+        otpStore[email] = { otp, expiresAt: Date.now() + 300000 }; // OTP valid for 5 minutes (300,000 ms)
+        console.log(`Generated OTP for ${email}: ${otp}`); // For debugging
+
         const sent = await sendEmailOTP(email, otp);
         if (sent) {
             return res.json({ success: true, message: `OTP sent to ${email}. Please check your email.` });
@@ -199,6 +236,7 @@ app.post('/send-otp', async (req, res) => {
     }
 });
 
+// Verify OTP
 app.post('/verify-otp', (req, res) => {
     try {
         const { email, otp } = req.body;
@@ -210,13 +248,13 @@ app.post('/verify-otp', (req, res) => {
             return res.status(400).json({ success: false, message: 'No OTP found for this email or it has expired.' });
         }
         if (Date.now() > storedOtpData.expiresAt) {
-            delete otpStore[email];
+            delete otpStore[email]; // Clear expired OTP
             return res.status(400).json({ success: false, message: 'OTP has expired. Please request a new one.' });
         }
         if (storedOtpData.otp !== otp) {
             return res.status(400).json({ success: false, message: 'Invalid OTP. Please try again.' });
         }
-        delete otpStore[email];
+        delete otpStore[email]; // OTP successfully verified, remove it
         return res.json({ success: true, message: 'OTP verified successfully.' });
     } catch (err) {
         console.error('Verify OTP Error:', err);
@@ -224,6 +262,7 @@ app.post('/verify-otp', (req, res) => {
     }
 });
 
+// User Registration
 app.post('/register', async (req, res) => {
     try {
         const { fullName, email, phoneNumber, password, role, aadhaar, pan, bankDetails, skills } = req.body;
@@ -239,18 +278,22 @@ app.post('/register', async (req, res) => {
             return res.status(409).json({ success: false, message: 'User with this phone number already exists. Please login or use a different phone number.' });
         }
 
+        // HASH THE PASSWORD BEFORE STORING
+        const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+
         const newUser = {
-            id: Date.now().toString(),
+            id: Date.now().toString(), // Simple unique ID
             fullName,
             email,
             phoneNumber,
-            password, // ⚠️ IMPORTANT: In production, ALWAYS HASH PASSWORDS!
+            password: hashedPassword, // Store hashed password
             role,
             createdAt: new Date().toISOString(),
-            verified: true
+            verified: true // Assumed true after OTP verification
         };
 
         if (role === 'technician') {
+            // Check for required technician fields
             if (!aadhaar || !pan || !bankDetails || !skills) {
                 return res.status(400).json({ success: false, message: 'Technician registration requires Aadhaar, PAN, Bank Details, and Skills.' });
             }
@@ -258,9 +301,9 @@ app.post('/register', async (req, res) => {
             newUser.pan = pan;
             newUser.bankDetails = bankDetails;
             newUser.skills = skills.split(',').map(s => s.trim());
-            newUser.kycStatus = 'pending'; // New field for technician KYC
+            newUser.kycStatus = 'pending'; // Initial status for technician KYC
         } else {
-            newUser.kycStatus = 'N/A'; // For users and admins, KYC is not applicable this way
+            newUser.kycStatus = 'N/A'; // For users and admins
         }
 
         users.push(newUser);
@@ -274,6 +317,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
+// User Login
 app.post('/login', async (req, res) => {
     try {
         const { email, password, role } = req.body;
@@ -283,22 +327,40 @@ app.post('/login', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Email, password, and role are required for login.' });
         }
 
-        const user = users.find(u => u.email === email && u.password === password && u.role === role);
+        const user = users.find(u => u.email === email && u.role === role);
 
         if (!user) {
             return res.status(401).json({ success: false, message: 'Invalid email, password, or role mismatch.' });
         }
 
-        if (user.role === 'technician' && user.kycStatus !== 'approved' && user.kycStatus !== 'N/A') { // Allow 'N/A' for technicians not yet having kycStatus (backward compatibility)
-             return res.status(403).json({ success: false, message: `Your technician application is ${user.kycStatus}. Please wait for approval.` });
+        // COMPARE HASHED PASSWORD
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ success: false, message: 'Invalid email or password.' });
         }
 
+        // Technician KYC status check (allow login if 'approved' or 'N/A' for non-technicians, or for newly registered technicians with 'pending' status)
+        // Adjusting this logic: Technicians with 'pending' KYC should NOT be able to access the technician dashboard yet.
+        if (user.role === 'technician' && user.kycStatus !== 'approved') {
+            // Also allow 'pending' for first-time login after registration, but block if explicitly rejected
+            if (user.kycStatus === 'pending') {
+                // Allow login but redirect to a specific 'status' page or show a message.
+                // For now, let's just show a message.
+                // If you want them to be redirected to a "KYC Pending" page, define it.
+                return res.status(403).json({ success: false, message: `Your technician application is ${user.kycStatus}. Please wait for approval to access technician features.` });
+            } else if (user.kycStatus === 'rejected') {
+                return res.status(403).json({ success: false, message: `Your technician application has been rejected. Please contact support.` });
+            }
+            // For other unexpected kycStatus, you might also want to block.
+        }
+
+        // Set session user
         req.session.user = {
             id: user.id,
             fullName: user.fullName,
             email: user.email,
             role: user.role,
-            kycStatus: user.kycStatus
+            kycStatus: user.kycStatus // Include kycStatus in session
         };
 
         let redirectUrl;
@@ -313,14 +375,15 @@ app.post('/login', async (req, res) => {
                 redirectUrl = '/admin.html';
                 break;
             default:
-                return res.status(400).json({ success: false, message: 'Unknown user role specified.' });
+                // This case should ideally not be reached if roles are controlled at signup
+                return res.status(400).json({ success: false, message: 'Unknown user role. Please contact support.' });
         }
 
         return res.json({
             success: true,
             message: 'Login successful',
             redirect: redirectUrl,
-            user: req.session.user
+            user: req.session.user // Send user data for client-side use
         });
 
     } catch (err) {
@@ -329,8 +392,13 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Book Service API for Users
 app.post('/api/book-service', isAuthenticated, async (req, res) => {
     try {
+        if (req.session.user.role !== 'user') {
+            return res.status(403).json({ success: false, message: 'Access denied. Only users can book services.' });
+        }
+
         const { applianceType, location, scheduledDateTime, notes } = req.body;
         let jobs = await readJobs();
         let users = await readUsers();
@@ -339,15 +407,19 @@ app.post('/api/book-service', isAuthenticated, async (req, res) => {
             return res.status(400).json({ success: false, message: 'Appliance type, location, and scheduled date/time are required for booking.' });
         }
 
-        const technicians = users.filter(user => user.role === 'technician' && user.kycStatus === 'approved');
-        const assignedTechnician = technicians.length > 0 ? technicians[Math.floor(Math.random() * technicians.length)] : null;
+        // Only assign to approved technicians
+        const availableTechnicians = users.filter(user => user.role === 'technician' && user.kycStatus === 'approved');
+        // Simple round-robin or random assignment; improve for real-world (e.g., location, skills match)
+        const assignedTechnician = availableTechnicians.length > 0 ? availableTechnicians[Math.floor(Math.random() * availableTechnicians.length)] : null;
 
-        const customerName = req.session.user ? req.session.user.fullName : 'Unknown User';
+        const customerName = req.session.user.fullName; // Get from session
+        const customerEmail = req.session.user.email; // Get from session
 
         const newJob = {
-            id: `J${Date.now().toString().slice(-6)}`,
+            id: `J${Date.now().toString().slice(-6)}`, // Simple unique job ID
             userId: req.session.user.id,
             customerName: customerName,
+            customerEmail: customerEmail, // Store customer email
             applianceType,
             location,
             scheduledDateTime,
@@ -368,17 +440,25 @@ app.post('/api/book-service', isAuthenticated, async (req, res) => {
     }
 });
 
+// Technician Job List API
 app.get('/api/technician/jobs', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'technician') {
             return res.status(403).json({ success: false, message: 'Access denied. Only technicians can view jobs.' });
         }
+        // Ensure technician's KYC is approved to view jobs
+        if (req.session.user.kycStatus !== 'approved') {
+            return res.status(403).json({ success: false, message: 'Your KYC is not yet approved. You cannot view jobs.' });
+        }
 
         const technicianId = req.session.user.id;
         let jobs = await readJobs();
+        
+        // Filter jobs that are either assigned to this technician (and not completed/cancelled)
+        // OR jobs that are 'Pending' and not yet assigned to anyone, which the technician might accept
         const technicianJobs = jobs.filter(job =>
             (job.assignedTechnicianId === technicianId && job.status !== 'Completed' && job.status !== 'Cancelled') ||
-            (job.status === 'Pending' && !job.assignedTechnicianId)
+            (job.status === 'Pending' && !job.assignedTechnicianId) // Unassigned jobs
         );
 
         res.json({ success: true, jobs: technicianJobs });
@@ -388,21 +468,28 @@ app.get('/api/technician/jobs', isAuthenticated, async (req, res) => {
     }
 });
 
+// Technician Accept Job API
 app.post('/api/technician/jobs/accept', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'technician') {
             return res.status(403).json({ success: false, message: 'Access denied. Only technicians can accept jobs.' });
         }
+        if (req.session.user.kycStatus !== 'approved') {
+            return res.status(403).json({ success: false, message: 'Your KYC is not yet approved. You cannot accept jobs.' });
+        }
 
         const { jobId } = req.body;
         let jobs = await readJobs();
-        const jobIndex = jobs.findIndex(j => j.id === jobId && j.status === 'Pending');
+        const jobIndex = jobs.findIndex(j => j.id === jobId && j.status === 'Pending'); // Only allow accepting pending jobs
 
         if (jobIndex > -1) {
-            if (!jobs[jobIndex].assignedTechnicianId) {
-                jobs[jobIndex].assignedTechnicianId = req.session.user.id;
-                jobs[jobIndex].assignedTechnicianName = req.session.user.fullName;
+            // Ensure job is not already assigned to someone else
+            if (jobs[jobIndex].assignedTechnicianId && jobs[jobIndex].assignedTechnicianId !== req.session.user.id) {
+                return res.status(409).json({ success: false, message: 'This job has already been assigned to another technician.' });
             }
+            
+            jobs[jobIndex].assignedTechnicianId = req.session.user.id;
+            jobs[jobIndex].assignedTechnicianName = req.session.user.fullName;
             jobs[jobIndex].status = 'Accepted';
             jobs[jobIndex].lastUpdated = new Date().toISOString();
             await writeJobs(jobs);
@@ -416,14 +503,20 @@ app.post('/api/technician/jobs/accept', isAuthenticated, async (req, res) => {
     }
 });
 
+// Technician Start Job API
 app.post('/api/technician/jobs/start', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'technician') {
             return res.status(403).json({ success: false, message: 'Access denied. Only technicians can start jobs.' });
         }
+        if (req.session.user.kycStatus !== 'approved') {
+            return res.status(403).json({ success: false, message: 'Your KYC is not yet approved. You cannot start jobs.' });
+        }
+
         const { jobId } = req.body;
         let jobs = await readJobs();
-        const jobIndex = jobs.findIndex(j => j.id === jobId && j.assignedTechnicianId === req.session.user.id && (j.status === 'Accepted' || j.status === 'Assigned'));
+        // Technician can only start jobs assigned to them and in 'Accepted' status
+        const jobIndex = jobs.findIndex(j => j.id === jobId && j.assignedTechnicianId === req.session.user.id && j.status === 'Accepted');
 
         if (jobIndex > -1) {
             jobs[jobIndex].status = 'In Progress';
@@ -431,7 +524,7 @@ app.post('/api/technician/jobs/start', isAuthenticated, async (req, res) => {
             await writeJobs(jobs);
             res.json({ success: true, message: 'Job status updated to In Progress!', job: jobs[jobIndex] });
         } else {
-            res.status(404).json({ success: false, message: 'Job not found or not in correct status for starting.' });
+            res.status(404).json({ success: false, message: 'Job not found, not assigned to you, or not in Accepted status.' });
         }
     } catch (err) {
         console.error('Start Job Error:', err);
@@ -439,13 +532,19 @@ app.post('/api/technician/jobs/start', isAuthenticated, async (req, res) => {
     }
 });
 
+// Technician Complete Job API
 app.post('/api/technician/jobs/complete', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'technician') {
             return res.status(403).json({ success: false, message: 'Access denied. Only technicians can complete jobs.' });
         }
+        if (req.session.user.kycStatus !== 'approved') {
+            return res.status(403).json({ success: false, message: 'Your KYC is not yet approved. You cannot complete jobs.' });
+        }
+
         const { jobId } = req.body;
         let jobs = await readJobs();
+        // Technician can only complete jobs assigned to them and in 'In Progress' or 'Diagnosed' status
         const jobIndex = jobs.findIndex(j => j.id === jobId && j.assignedTechnicianId === req.session.user.id && (j.status === 'In Progress' || j.status === 'Diagnosed'));
 
         if (jobIndex > -1) {
@@ -455,7 +554,7 @@ app.post('/api/technician/jobs/complete', isAuthenticated, async (req, res) => {
             await writeJobs(jobs);
             res.json({ success: true, message: 'Job marked as Completed!', job: jobs[jobIndex] });
         } else {
-            res.status(404).json({ success: false, message: 'Job not found or not in correct status for completion.' });
+            res.status(404).json({ success: false, message: 'Job not found, not assigned to you, or not in correct status for completion.' });
         }
     } catch (err) {
         console.error('Complete Job Error:', err);
@@ -463,7 +562,7 @@ app.post('/api/technician/jobs/complete', isAuthenticated, async (req, res) => {
     }
 });
 
-
+// Get Single Job Details API (for all roles if authorized)
 app.get('/api/jobs/:jobId', isAuthenticated, async (req, res) => {
     try {
         const jobId = req.params.jobId;
@@ -471,6 +570,7 @@ app.get('/api/jobs/:jobId', isAuthenticated, async (req, res) => {
         const job = jobs.find(j => j.id === jobId);
 
         if (job) {
+            // Authorization: Admin, Job's User, or Assigned Technician can view
             if (req.session.user.role === 'admin' || job.userId === req.session.user.id || job.assignedTechnicianId === req.session.user.id) {
                 const users = await readUsers();
                 const customer = users.find(u => u.id === job.userId);
@@ -479,7 +579,9 @@ app.get('/api/jobs/:jobId', isAuthenticated, async (req, res) => {
                 const jobDetails = {
                     ...job,
                     customerName: customer ? customer.fullName : 'N/A',
-                    technicianName: technician ? technician.fullName : 'N/A'
+                    customerPhoneNumber: customer ? customer.phoneNumber : 'N/A', // Add customer phone
+                    technicianName: technician ? technician.fullName : 'N/A',
+                    technicianPhoneNumber: technician ? technician.phoneNumber : 'N/A' // Add technician phone
                 };
                 res.json({ success: true, job: jobDetails });
             } else {
@@ -494,16 +596,20 @@ app.get('/api/jobs/:jobId', isAuthenticated, async (req, res) => {
     }
 });
 
-
+// Technician Diagnosis and Quotation API
 app.post('/api/technician/diagnosis', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'technician') {
             return res.status(403).json({ success: false, message: 'Access denied. Only technicians can submit diagnosis.' });
         }
+        if (req.session.user.kycStatus !== 'approved') {
+            return res.status(403).json({ success: false, message: 'Your KYC is not yet approved. You cannot submit diagnosis.' });
+        }
 
         const { jobId, faultyParts, technicianRemarks, partCost, laborCost, travelCharges, totalEstimate } = req.body;
         let jobs = await readJobs();
-        const jobIndex = jobs.findIndex(j => j.id === jobId && j.assignedTechnicianId === req.session.user.id);
+        // Technician can only diagnose jobs assigned to them and in 'In Progress' or 'Accepted' status
+        const jobIndex = jobs.findIndex(j => j.id === jobId && j.assignedTechnicianId === req.session.user.id && (j.status === 'In Progress' || j.status === 'Accepted'));
 
         if (jobIndex > -1) {
             jobs[jobIndex].faultyParts = faultyParts;
@@ -515,13 +621,13 @@ app.post('/api/technician/diagnosis', isAuthenticated, async (req, res) => {
                 totalEstimate: parseFloat(totalEstimate),
                 createdAt: new Date().toISOString()
             };
-            jobs[jobIndex].status = 'Diagnosed';
+            jobs[jobIndex].status = 'Diagnosed'; // Update status to Diagnosed
             jobs[jobIndex].lastUpdated = new Date().toISOString();
 
             await writeJobs(jobs);
             res.json({ success: true, message: 'Diagnosis & Quotation saved successfully.', job: jobs[jobIndex] });
         } else {
-            res.status(404).json({ success: false, message: 'Job not found or not assigned to you.' });
+            res.status(404).json({ success: false, message: 'Job not found, not assigned to you, or not in correct status for diagnosis.' });
         }
     } catch (err) {
         console.error('Technician Diagnosis Error:', err);
@@ -529,6 +635,7 @@ app.post('/api/technician/diagnosis', isAuthenticated, async (req, res) => {
     }
 });
 
+// User Job List API
 app.get('/api/user/jobs', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'user') {
@@ -545,6 +652,7 @@ app.get('/api/user/jobs', isAuthenticated, async (req, res) => {
     }
 });
 
+// User Cancel Job API
 app.post('/api/user/jobs/cancel', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'user') {
@@ -555,13 +663,14 @@ app.post('/api/user/jobs/cancel', isAuthenticated, async (req, res) => {
         const jobIndex = jobs.findIndex(j => j.id === jobId && j.userId === req.session.user.id);
 
         if (jobIndex > -1) {
+            // Allow cancellation only if job is Pending or Accepted, not if already In Progress/Diagnosed/Completed
             if (jobs[jobIndex].status === 'Pending' || jobs[jobIndex].status === 'Accepted') {
                 jobs[jobIndex].status = 'Cancelled';
                 jobs[jobIndex].lastUpdated = new Date().toISOString();
                 await writeJobs(jobs);
                 res.json({ success: true, message: 'Job cancelled successfully!' });
             } else {
-                res.status(400).json({ success: false, message: 'Job cannot be cancelled at its current status.' });
+                res.status(400).json({ success: false, message: `Job cannot be cancelled at its current status (${jobs[jobIndex].status}).` });
             }
         } else {
             res.status(404).json({ success: false, message: 'Job not found or not associated with your account.' });
@@ -573,17 +682,33 @@ app.post('/api/user/jobs/cancel', isAuthenticated, async (req, res) => {
     }
 });
 
+// Process Payment API (could be called by user after seeing quotation, or admin)
 app.post('/api/process-payment', isAuthenticated, async (req, res) => {
     try {
+        // This payment route is flexible, assuming it can be triggered by user or admin
         const { jobId, totalAmount, paymentMethod, paymentDetails } = req.body;
         let jobs = await readJobs();
         const jobIndex = jobs.findIndex(j => j.id === jobId);
 
         if (jobIndex > -1) {
+            // Basic authorization: user must own job, or current user is admin
+            if (jobs[jobIndex].userId !== req.session.user.id && req.session.user.role !== 'admin') {
+                return res.status(403).json({ success: false, message: 'Access denied to process payment for this job.' });
+            }
+
+            if (jobs[jobIndex].status !== 'Diagnosed' && jobs[jobIndex].status !== 'Completed') {
+                return res.status(400).json({ success: false, message: 'Payment can only be processed for diagnosed or already completed jobs.' });
+            }
+            if (jobs[jobIndex].paymentStatus === 'Paid') {
+                return res.status(400).json({ success: false, message: 'This job has already been paid for.' });
+            }
+
             jobs[jobIndex].paymentStatus = 'Paid';
-            jobs[jobIndex].paymentDetails = { method: paymentMethod, ...paymentDetails };
-            jobs[jobIndex].status = 'Completed';
+            jobs[jobIndex].paymentDetails = { method: paymentMethod, ...paymentDetails, amount: totalAmount }; // Store amount paid
+            jobs[jobIndex].status = 'Completed'; // Mark job as completed upon payment
             jobs[jobIndex].lastUpdated = new Date().toISOString();
+            jobs[jobIndex].paidAt = new Date().toISOString(); // Timestamp payment
+
             await writeJobs(jobs);
             res.json({ success: true, message: 'Payment processed successfully. Job marked as completed.' });
         } else {
@@ -595,6 +720,7 @@ app.post('/api/process-payment', isAuthenticated, async (req, res) => {
     }
 });
 
+// User Submit Review API
 app.post('/api/user/submit-review', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'user') {
@@ -609,6 +735,11 @@ app.post('/api/user/submit-review', isAuthenticated, async (req, res) => {
             if (jobs[jobIndex].status !== 'Completed') {
                 return res.status(400).json({ success: false, message: 'Only completed jobs can be reviewed.' });
             }
+            // Ensure a job can only be reviewed once
+            if (jobs[jobIndex].rating || jobs[jobIndex].reviewText) {
+                return res.status(400).json({ success: false, message: 'This job has already been reviewed.' });
+            }
+
             jobs[jobIndex].rating = rating;
             jobs[jobIndex].reviewText = reviewText;
             jobs[jobIndex].lastUpdated = new Date().toISOString();
@@ -626,14 +757,16 @@ app.post('/api/user/submit-review', isAuthenticated, async (req, res) => {
 
 // === ADMIN SPECIFIC APIs ===
 
+// Admin Get All Users API
 app.get('/api/admin/users', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'admin') {
             return res.status(403).json({ success: false, message: 'Access denied. Only admins can view users.' });
         }
         let users = await readUsers();
+        // Remove password hash before sending to client for security
         const safeUsers = users.map(user => {
-            const { password, ...rest } = user;
+            const { password, ...rest } = user; // Destructure to exclude password
             return rest;
         });
         res.json({ success: true, users: safeUsers });
@@ -643,6 +776,7 @@ app.get('/api/admin/users', isAuthenticated, async (req, res) => {
     }
 });
 
+// Admin Get All Jobs API
 app.get('/api/admin/jobs', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'admin') {
@@ -657,7 +791,11 @@ app.get('/api/admin/jobs', isAuthenticated, async (req, res) => {
             return {
                 ...job,
                 customerName: customer ? customer.fullName : 'N/A',
-                technicianName: technician ? technician.fullName : 'Pending Assignment'
+                customerEmail: customer ? customer.email : 'N/A',
+                customerPhoneNumber: customer ? customer.phoneNumber : 'N/A',
+                technicianName: technician ? technician.fullName : 'Pending Assignment',
+                technicianEmail: technician ? technician.email : 'N/A',
+                technicianPhoneNumber: technician ? technician.phoneNumber : 'N/A'
             };
         });
 
@@ -668,7 +806,7 @@ app.get('/api/admin/jobs', isAuthenticated, async (req, res) => {
     }
 });
 
-
+// Admin Grant Technician KYC Approval
 app.post('/api/admin/users/:userId/grant-technician', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'admin') {
@@ -677,6 +815,7 @@ app.post('/api/admin/users/:userId/grant-technician', isAuthenticated, async (re
 
         const userId = req.params.userId;
         let users = await readUsers();
+        // Find technician by ID and ensure they are indeed a technician
         const userIndex = users.findIndex(u => u.id === userId && u.role === 'technician');
 
         if (userIndex === -1) {
@@ -698,6 +837,7 @@ app.post('/api/admin/users/:userId/grant-technician', isAuthenticated, async (re
     }
 });
 
+// Admin Reject Technician KYC
 app.post('/api/admin/users/:userId/reject-technician', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'admin') {
@@ -727,7 +867,6 @@ app.post('/api/admin/users/:userId/reject-technician', isAuthenticated, async (r
     }
 });
 
-
 // Logout route
 app.post('/logout', (req, res) => {
     req.session.destroy(err => {
@@ -735,13 +874,20 @@ app.post('/logout', (req, res) => {
             console.error('Session destruction error:', err);
             return res.status(500).json({ success: false, message: 'Could not log out.' });
         }
-        res.clearCookie('connect.sid');
+        res.clearCookie('connect.sid'); // Clear the session cookie
         res.json({ success: true, message: 'Logged out successfully.' });
     });
 });
+
+// Handle 404 - Keep this at the very end
+app.use((req, res, next) => {
+    res.status(404).sendFile(path.join(__dirname, 'views', '404.html')); // Or send a simple message
+});
+
 
 // === Start the Server ===
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`✅ Server running at http://localhost:${PORT}`);
+    console.log('Remember to set EMAIL_USER, EMAIL_PASS, and SESSION_SECRET in your Render environment variables!');
 });
