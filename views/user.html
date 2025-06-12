@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva User Dashboard</title>
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            flex-direction: column; /* Stack on mobile */
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px; /* Space between logo/name and nav */
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+
+        .navbar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-wrap: wrap; /* Allow nav items to wrap */
+            justify-content: center; /* Center nav items when wrapped */
+            width: 100%; /* Take full width on mobile */
+        }
+
+        .nav-item {
+            margin: 5px 10px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: #34495e;
+        }
+
+        /* Main Content Container */
+        .container {
+            flex: 1;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Card Styling */
+        section.card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.2em;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #555;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        /* Welcome Section */
+        .welcome-content {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .welcome-content h3 {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .language-select {
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="datetime-local"],
+        textarea,
+        select {
+            width: calc(100% - 20px); /* Account for padding */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box; /* Include padding in width */
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="datetime-local"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .gps-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        /* Button Styling */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, opacity 0.3s ease;
+            display: inline-block; /* For better spacing in actions */
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: #333;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* List/Card styles for Current Bookings */
+        .booking-item {
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.03);
+        }
+
+        .booking-item.pending { border-left: 5px solid #ffc107; } /* Warning yellow */
+        .booking-item.accepted { border-left: 5px solid #007bff; } /* Info blue */
+        .booking-item.in-progress { border-left: 5px solid #3498db; } /* Primary blue */
+        .booking-item.diagnosed { border-left: 5px solid #6f42c1; } /* Purple for Diagnosed */
+        .booking-item.completed { border-left: 5px solid #28a745; } /* Success green */
+        .booking-item.cancelled { border-left: 5px solid #dc3545; opacity: 0.7; } /* Danger red */
+
+        .booking-item p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        .booking-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .booking-actions .btn {
+            flex: 1; /* Distribute space evenly */
+            min-width: 120px; /* Minimum width for buttons */
+        }
+
+        /* Table styles for Past Services */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #ecf0f1;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+
+        .rating-stars span {
+            color: #f1c40f; /* Yellow stars */
+            font-size: 1.1em;
+        }
+
+        /* Feedback System */
+        .feedback-section .form-group label {
+            text-align: center;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .star-rating .star {
+            font-size: 2em;
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .star-rating .star.filled {
+            color: #f1c40f;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+            font-size: 0.9em;
+        }
+
+        .footer-links a {
+            color: #3498db;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Message Box for Alerts */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10000; /* High z-index to be on top */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: fadeOut 0.5s forwards 4.5s; /* Fade out after 4.5s (total 5s display) */
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        /* Fade Out Animation */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            header {
+                padding: 10px;
+            }
+            .header-top {
+                flex-direction: column;
+                align-items: flex-start;
+                margin-bottom: 0;
+            }
+            .logo-text {
+                margin-bottom: 10px;
+            }
+            .navbar-nav {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .nav-item {
+                margin: 5px 0;
+            }
+            .nav-link {
+                text-align: center;
+            }
+            .container {
+                margin: 15px auto;
+                padding: 0 10px;
+            }
+            .card {
+                padding: 18px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+            input[type="text"],
+            input[type="datetime-local"],
+            textarea,
+            select {
+                width: 100%;
+            }
+            .booking-actions .btn {
+                width: 100%;
+                flex-grow: unset;
+            }
+            .data-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch; /* for smoother scrolling on iOS */
+            }
+            .data-table thead, .data-table tbody, .data-table th, .data-table td, .data-table tr {
+                display: block;
+            }
+            .data-table th, .data-table td {
+                width: auto !important; /* Override specific widths */
+                padding: 8px 10px;
+                text-align: left;
+            }
+            .data-table tr {
+                margin-bottom: 10px;
+                border: 1px solid #ddd;
+            }
+            .data-table td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                display: inline-block;
+                width: 100px; /* Label width */
+                margin-right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div class="header-left">
+                <span class="logo-text">🔧 TechSeva</span>
+            </div>
+            <ul class="navbar-nav">
+                <li class="nav-item"><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+                <li class="nav-item"><a href="#book-service" class="nav-link">Book Service</a></li>
+                <li class="nav-item"><a href="#my-bookings" class="nav-link">My Bookings</a></li>
+                <li class="nav-item"><a href="#" id="logout-btn" class="nav-link">Logout</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <div class="container">
+        <section id="dashboard" class="welcome-section card">
+            <div class="welcome-content">
+                <h3 id="welcome-greeting">Welcome, User!</h3>
+                <div class="form-group" style="display: inline-block;">
+                    <label for="language-select">Select Language:</label>
+                    <select id="language-select" class="language-select">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी</option>
+                        <option value="bh">भोजपुरी</option>
+                        <!-- Add more languages as needed -->
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section id="book-service" class="booking-section card">
+            <h2>Book a Service</h2>
+            <form id="booking-form">
+                <div class="form-group">
+                    <label for="appliance-type">Select Appliance Type:</label>
+                    <select id="appliance-type" name="applianceType" required>
+                        <option value="">-- Select --</option>
+                        <option value="AC">AC Repair/Service</option>
+                        <option value="Refrigerator">Refrigerator Repair</option>
+                        <option value="Washing Machine">Washing Machine Repair</option>
+                        <option value="TV">TV Repair</option>
+                        <option value="Fan">Fan Repair</option>
+                        <option value="Geyser">Geyser Repair</option>
+                        <option value="Microwave">Microwave Repair</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="location-input">Your Location:</label>
+                    <input type="text" id="location-input" name="location" placeholder="Enter your address" required>
+                    <div class="gps-toggle-container">
+                        <input type="checkbox" id="use-gps">
+                        <label for="use-gps">Use current GPS location</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="scheduled-datetime">Preferred Date & Time:</label>
+                    <input type="datetime-local" id="scheduled-datetime" name="scheduledDateTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="notes">Additional Notes:</label>
+                    <textarea id="notes" name="notes" placeholder="e.g., Appliance is very old, make sure technician has XYZ tools..."></textarea>
+                </div>
+
+                <button type="submit" id="book-service-btn" class="btn btn-primary">Book Service</button>
+            </form>
+        </section>
+
+        <section id="my-bookings" class="current-bookings-section card">
+            <h2>My Current Bookings</h2>
+            <div id="current-bookings-list">
+                <!-- Bookings will be loaded here by JavaScript -->
+                <p style="text-align: center; color: #777;">Loading current bookings...</p>
+            </div>
+        </section>
+
+        <section id="past-services" class="past-services-section card">
+            <h2>Past Services / History</h2>
+            <div style="overflow-x:auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Appliance</th>
+                            <th>Technician</th>
+                            <th>Date & Time</th>
+                            <th>Amount Paid</th>
+                            <th>Rating</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="past-services-table-body">
+                        <!-- Past services will be loaded here by JavaScript -->
+                        <tr><td colspan="7" style="text-align: center; color: #777;">Loading past services...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="feedback-system" class="feedback-section card">
+            <h2>Leave a Review</h2>
+            <p style="text-align: center; font-size: 1.1em; margin-bottom: 25px; color: #555;">Leave a review for your recent service to help us improve!</p>
+            <form id="review-form">
+                <div class="form-group">
+                    <label for="review-job-id">Job ID for Review:</label>
+                    <input type="text" id="review-job-id" placeholder="Enter Job ID (e.g., J004)">
+                </div>
+
+                <div class="form-group">
+                    <label>Your Rating:</label>
+                    <div class="star-rating" id="star-rating-container">
+                        <span class="star" data-rating="1">★</span>
+                        <span class="star" data-rating="2">★</span>
+                        <span class="star" data-rating="3">★</span>
+                        <span class="star" data-rating="4">★</span>
+                        <span class="star" data-rating="5">★</span>
+                    </div>
+                    <input type="hidden" id="selected-rating" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="review-text">Your Review:</label>
+                    <textarea id="review-text" placeholder="Share your experience..."></textarea>
+                </div>
+
+                <button type="submit" id="submit-review-btn" class="btn btn-primary">Submit Review</button>
+            </form>
+        </section>
+    </div>
+
+    <footer>
+        <p>
+            <a href="#" class="footer-links">Contact Us</a> |
+            <a href="#" class="footer-links">About TechSeva</a> |
+            <a href="#" class="footer-links">Privacy Policy</a> |
+            <a href="#" class="footer-links">Terms of Use</a>
+        </p>
+        <p>&copy; 2024 TechSeva. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Elements ---
+            const welcomeGreeting = document.getElementById('welcome-greeting');
+            const languageSelect = document.getElementById('language-select');
+            const bookingForm = document.getElementById('booking-form');
+            const useGpsCheckbox = document.getElementById('use-gps');
+            const locationInput = document.getElementById('location-input');
+            const currentBookingsList = document.getElementById('current-bookings-list');
+            const pastServicesTableBody = document.getElementById('past-services-table-body');
+            const reviewForm = document.getElementById('review-form');
+            const starRatingContainer = document.getElementById('star-rating-container');
+            const selectedRatingInput = document.getElementById('selected-rating');
+            const logoutButton = document.getElementById('logout-btn');
+
+            let selectedRating = 0; // State for star rating
+
+            // --- Message Box Utility Function ---
+            function showMessage(message, type = 'success') {
+                const messageBox = document.createElement('div');
+                messageBox.className = `message-box ${type}`;
+                messageBox.textContent = message;
+                document.body.appendChild(messageBox);
+
+                // Remove after 5 seconds
+                setTimeout(() => {
+                    messageBox.remove();
+                }, 5000);
+            }
+
+            // --- Fetch Current User Details and Update Welcome Greeting ---
+            async function fetchCurrentUser() {
+                try {
+                    const response = await fetch('/api/user/me');
+                    const result = await response.json();
+                    if (result.success && result.user) {
+                        welcomeGreeting.textContent = `Welcome, ${result.user.fullName}!`;
+                    } else {
+                        console.error('Failed to fetch user details:', result.message);
+                        welcomeGreeting.textContent = 'Welcome, User!'; // Fallback
+                        showMessage('Could not load user details.', 'error');
+                        // Optionally redirect to login if session is truly invalid
+                        // window.location.href = '/';
+                    }
+                } catch (error) {
+                    console.error('Error fetching user details:', error);
+                    welcomeGreeting.textContent = 'Welcome, User!'; // Fallback
+                    showMessage('Network error while loading user details.', 'error');
+                    // window.location.href = '/';
+                }
+            }
+
+            // --- Fetch & Render User Jobs (Current & Past) ---
+            async function fetchAndRenderUserJobs() {
+                try {
+                    currentBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Loading current bookings...</p>';
+                    pastServicesTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">Loading past services...</td></tr>';
+
+                    const response = await fetch('/api/user/jobs');
+                    const result = await response.json();
+
+                    if (result.success && result.jobs) {
+                        const currentBookings = result.jobs.filter(job =>
+                            job.status !== 'Completed' && job.status !== 'Cancelled'
+                        );
+                        const pastServices = result.jobs.filter(job =>
+                            job.status === 'Completed' || job.status === 'Cancelled'
+                        );
+
+                        // Render Current Bookings
+                        if (currentBookings.length === 0) {
+                            currentBookingsList.innerHTML = '<p style="text-align: center; color: #777;">No current bookings.</p>';
+                        } else {
+                            currentBookingsList.innerHTML = ''; // Clear loading message
+                            currentBookings.forEach(booking => {
+                                const bookingItem = document.createElement('div');
+                                bookingItem.className = `booking-item ${booking.status.toLowerCase().replace(/\s/g, '-')}`;
+                                bookingItem.innerHTML = `
+                                    <h3>Job ID: ${booking.id} (${booking.applianceType})</h3>
+                                    <p><strong>Technician:</strong> ${booking.assignedTechnicianName || 'Pending Assignment'} ${booking.assignedTechnicianName !== 'Pending Assignment' && booking.assignedTechnicianId ? `(ID: ${booking.assignedTechnicianId.slice(-4)})` : ''}</p>
+                                    <p><strong>Location:</strong> ${booking.location}</p>
+                                    <p><strong>Date & Time:</strong> ${new Date(booking.scheduledDateTime).toLocaleString()}</p>
+                                    <p><strong>Status:</strong> ${booking.status}</p>
+                                    <div class="booking-actions">
+                                        ${booking.status === 'Diagnosed' ? `<button class="btn btn-warning view-quote-btn" data-job-id="${booking.id}">View Quote</button>` : ''}
+                                        ${booking.status !== 'Completed' && booking.status !== 'Cancelled' ? `<button class="btn btn-danger cancel-booking-btn" data-job-id="${booking.id}">Cancel Booking</button>` : ''}
+                                    </div>
+                                `;
+                                currentBookingsList.appendChild(bookingItem);
+                            });
+                        }
+
+                        // Render Past Services
+                        if (pastServices.length === 0) {
+                            pastServicesTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">No past services.</td></tr>';
+                        } else {
+                            pastServicesTableBody.innerHTML = ''; // Clear loading message
+                            pastServices.forEach(service => {
+                                const row = pastServicesTableBody.insertRow();
+                                const ratingDisplay = service.rating ? `<span>${'★'.repeat(service.rating)}${'☆'.repeat(5 - service.rating)}</span>` : 'N/A';
+                                const amountDisplay = service.quotation && service.quotation.totalEstimate ? `₹${service.quotation.totalEstimate}` : 'N/A';
+                                row.innerHTML = `
+                                    <td data-label="Job ID">${service.id}</td>
+                                    <td data-label="Appliance">${service.applianceType}</td>
+                                    <td data-label="Technician">${service.assignedTechnicianName || 'N/A'}</td>
+                                    <td data-label="Date & Time">${new Date(service.scheduledDateTime).toLocaleString()}</td>
+                                    <td data-label="Amount Paid">${amountDisplay}</td>
+                                    <td data-label="Rating" class="rating-stars">${ratingDisplay}</td>
+                                    <td data-label="Action">
+                                        ${service.status === 'Completed' ? `<button class="btn btn-secondary download-invoice-btn" data-job-id="${service.id}">Download Invoice</button>` : `Status: ${service.status}`}
+                                        ${service.status === 'Completed' && !service.rating ? `<button class="btn btn-success leave-review-shortcut-btn" data-job-id="${service.id}">Leave Review</button>` : ''}
+                                    </td>
+                                `;
+                            });
+                        }
+
+                        // Re-attach event listeners after rendering
+                        attachBookingActionListeners();
+                        attachPastServiceActionListeners();
+
+                    } else {
+                        console.error('Failed to fetch user jobs:', result.message);
+                        currentBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Failed to load bookings. Please try again.</p>';
+                        pastServicesTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">Failed to load past services.</td></tr>';
+                        showMessage('Failed to load your bookings.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error fetching user jobs:', error);
+                    currentBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Network error. Could not load bookings.</p>';
+                    pastServicesTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">Network error. Could not load past services.</td></tr>';
+                    showMessage('Network error while loading bookings.', 'error');
+                }
+            }
+
+            // --- Attach Event Listeners for Current Bookings Actions ---
+            function attachBookingActionListeners() {
+                currentBookingsList.querySelectorAll('.view-quote-btn').forEach(button => {
+                    button.onclick = null; // Remove old listeners
+                    button.addEventListener('click', (e) => {
+                        const jobId = e.target.dataset.jobId;
+                        // Redirect to payment.html with jobId as a query parameter
+                        window.location.href = `/views/payment.html?jobId=${jobId}`; // Updated path
+                    });
+                });
+
+                currentBookingsList.querySelectorAll('.cancel-booking-btn').forEach(button => {
+                    button.onclick = null; // Remove old listeners
+                    button.addEventListener('click', async (e) => {
+                        const jobId = e.target.dataset.jobId;
+                        if (confirm(`Are you sure you want to cancel Job ID: ${jobId}?`)) {
+                            try {
+                                const response = await fetch('/api/user/jobs/cancel', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ jobId })
+                                });
+                                const result = await response.json();
+                                if (result.success) {
+                                    showMessage(result.message, 'success');
+                                    fetchAndRenderUserJobs(); // Re-render to show updated status
+                                } else {
+                                    showMessage(result.message, 'error');
+                                }
+                            } catch (error) {
+                                console.error('Cancel booking error:', error);
+                                showMessage('Network error during cancellation.', 'error');
+                            }
+                        }
+                    });
+                });
+            }
+
+            // --- Attach Event Listeners for Past Service Actions ---
+            function attachPastServiceActionListeners() {
+                document.querySelectorAll('.download-invoice-btn').forEach(button => {
+                    button.onclick = null; // Remove old listeners
+                    button.addEventListener('click', (e) => {
+                        const jobId = e.target.dataset.jobId;
+                        showMessage(`Downloading invoice for Job ID: ${jobId} (simulated).`);
+                        // In a real app, trigger PDF generation/download from backend:
+                        // window.location.href = `/api/download-invoice?jobId=${jobId}`;
+                    });
+                });
+
+                document.querySelectorAll('.leave-review-shortcut-btn').forEach(button => {
+                    button.onclick = null; // Remove old listeners
+                    button.addEventListener('click', (e) => {
+                        const jobId = e.target.dataset.jobId;
+                        document.getElementById('review-job-id').value = jobId;
+                        // Scroll to feedback section
+                        document.getElementById('feedback-system').scrollIntoView({ behavior: 'smooth' });
+                    });
+                });
+            }
+
+
+            // --- Language Select Logic (dummy) ---
+            if (languageSelect) {
+                languageSelect.addEventListener('change', (e) => {
+                    showMessage(`Language changed to: ${e.target.value}`);
+                    // In a real app, this would change content language
+                });
+            }
+
+            // --- Location Input / GPS Toggle Logic ---
+            if (useGpsCheckbox) {
+                useGpsCheckbox.addEventListener('change', () => {
+                    if (useGpsCheckbox.checked) {
+                        locationInput.placeholder = "Fetching GPS location...";
+                        locationInput.disabled = true;
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition((position) => {
+                                // Simulate reverse geocoding or just use coordinates
+                                locationInput.value = `Lat: ${position.coords.latitude}, Lon: ${position.coords.longitude}`;
+                                locationInput.placeholder = "GPS location fetched";
+                            }, (error) => {
+                                console.error("Error getting location:", error);
+                                locationInput.value = "";
+                                locationInput.placeholder = "Could not fetch GPS location. Enter manually.";
+                                showMessage('Could not fetch GPS location. Please enter manually.', 'error');
+                                locationInput.disabled = false;
+                                useGpsCheckbox.checked = false;
+                            });
+                        } else {
+                            showMessage("Geolocation is not supported by your browser.", 'error');
+                            locationInput.disabled = false;
+                            useGpsCheckbox.checked = false;
+                        }
+                    } else {
+                        locationInput.value = "";
+                        locationInput.placeholder = "Enter your address";
+                        locationInput.disabled = false;
+                    }
+                });
+            }
+
+            // --- Service Booking Form Submission ---
+            if (bookingForm) {
+                bookingForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const applianceType = document.getElementById('appliance-type').value;
+                    const location = document.getElementById('location-input').value;
+                    const scheduledDateTime = document.getElementById('scheduled-datetime').value;
+                    const notes = document.getElementById('notes').value;
+
+                    if (!applianceType || !location || !scheduledDateTime) {
+                        showMessage('Please fill all required booking fields.', 'error');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/book-service', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ applianceType, location, scheduledDateTime, notes })
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            bookingForm.reset();
+                            fetchAndRenderUserJobs(); // Re-fetch and render jobs to include the new one
+                        } else {
+                            showMessage(result.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Service booking error:', error);
+                        showMessage('Network error during service booking.', 'error');
+                    }
+                });
+            }
+
+            // --- Feedback System Star Rating ---
+            if (starRatingContainer) {
+                starRatingContainer.addEventListener('mouseover', (e) => {
+                    if (e.target.classList.contains('star')) {
+                        const hoverRating = parseInt(e.target.dataset.rating);
+                        starRatingContainer.querySelectorAll('.star').forEach(star => {
+                            const starRating = parseInt(star.dataset.rating);
+                            if (starRating <= hoverRating) {
+                                star.classList.add('filled');
+                            } else {
+                                star.classList.remove('filled');
+                            }
+                        });
+                    }
+                });
+
+                starRatingContainer.addEventListener('mouseout', () => {
+                    starRatingContainer.querySelectorAll('.star').forEach(star => {
+                        const starRating = parseInt(star.dataset.rating);
+                        if (starRating <= selectedRating) {
+                            star.classList.add('filled');
+                        } else {
+                            star.classList.remove('filled');
+                        }
+                    });
+                });
+
+                starRatingContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('star')) {
+                        selectedRating = parseInt(e.target.dataset.rating);
+                        selectedRatingInput.value = selectedRating; // Update hidden input
+                        // Visually update stars based on click
+                        starRatingContainer.querySelectorAll('.star').forEach(star => {
+                            const starRating = parseInt(star.dataset.rating);
+                            if (starRating <= selectedRating) {
+                                star.classList.add('filled');
+                            } else {
+                                star.classList.remove('filled');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // --- Submit Review Form ---
+            if (reviewForm) {
+                reviewForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const jobId = document.getElementById('review-job-id').value.trim();
+                    const rating = parseInt(selectedRatingInput.value);
+                    const reviewText = document.getElementById('review-text').value.trim();
+
+                    if (!jobId || rating === 0 || !reviewText) {
+                        showMessage('Please fill all review fields and select a rating.', 'error');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/user/submit-review', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jobId, rating, reviewText })
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            reviewForm.reset();
+                            selectedRating = 0; // Reset stars visually
+                            starRatingContainer.querySelectorAll('.star').forEach(star => star.classList.remove('filled'));
+                            fetchAndRenderUserJobs(); // Re-fetch to update review status
+                        } else {
+                            showMessage(result.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Submit review error:', error);
+                        showMessage('Network error during review submission.', 'error');
+                    }
+                });
+            }
+
+            // --- Logout Button ---
+            if (logoutButton) {
+                logoutButton.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    try {
+                        const response = await fetch('/logout', {
+                            method: 'POST'
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage('Logged out successfully!', 'success');
+                            setTimeout(() => {
+                                window.location.href = '/'; // Redirect to homepage
+                            }, 500);
+                        } else {
+                            showMessage(result.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        showMessage('Network error during logout.', 'error');
+                    }
+                });
+            }
+
+            // --- Initial Data Load on Page Load ---
+            fetchCurrentUser();
+            fetchAndRenderUserJobs(); // Load bookings and past services
+        });
+    </script>
+</body>
+</html>

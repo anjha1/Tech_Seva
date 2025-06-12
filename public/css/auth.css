@@ -1,0 +1,241 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+.auth-container {
+    max-width: 450px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.auth-header .logo {
+    width: 80px;
+    height: auto;
+    margin-bottom: 1rem;
+}
+
+.auth-header h1 {
+    color: #2c3e50;
+    font-size: 1.8rem;
+}
+
+.auth-tabs {
+    display: flex;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 0.8rem;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #7f8c8d;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+    color: #3498db;
+    border-bottom: 3px solid #3498db;
+}
+
+.role-selection {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.role-selection label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.role-options {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.role-btn {
+    padding: 0.8rem 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #f9f9f9;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.role-btn.active {
+    background: #3498db;
+    color: white;
+    border-color: #3498db;
+}
+
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.password-input {
+    position: relative;
+}
+
+.password-input input {
+    padding-right: 2.5rem;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #7f8c8d;
+}
+
+.auth-btn {
+    width: 100%;
+    padding: 0.8rem;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.auth-btn:hover {
+    background: #2980b9;
+}
+
+.auth-footer {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.forgot-password {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.otp-input {
+    display: flex;
+    justify-content: space-between;
+    margin: 1.5rem 0;
+}
+
+.otp-digit {
+    width: 15%;
+    height: 50px;
+    text-align: center;
+    font-size: 1.2rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.resend-otp {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.resend-otp a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 480px) {
+    .auth-container {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .role-options {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .role-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

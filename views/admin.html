@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva Admin Dashboard</title>
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Layout Container */
+        .container {
+            display: flex;
+            flex: 1; /* Allows main content to grow */
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden; /* Contains floated elements if any */
+        }
+
+        /* Header/Navbar */
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-svg {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .platform-name {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 250px;
+            background-color: #34495e;
+            color: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0; /* Prevents sidebar from shrinking */
+        }
+
+        .sidebar-menu ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-menu li a {
+            display: block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar-menu li a:hover,
+        .sidebar-menu li a.active {
+            background-color: #2c3e50;
+            border-left: 5px solid #3498db;
+            padding-left: 15px;
+        }
+
+        /* Main Content */
+        main {
+            flex-grow: 1; /* Allows main content to take remaining space */
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Overview Cards */
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: #eaf2f8;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            font-size: 1.2em;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Tables */
+        .data-table-container {
+            overflow-x: auto; /* Allows horizontal scrolling for tables on smaller screens */
+            width: 100%;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            min-width: 600px; /* Ensure table has a minimum width for scrolling */
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #ecf0f1;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .data-table button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-right: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .data-table .approve-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        .data-table .approve-btn:hover {
+            background-color: #218838;
+        }
+
+        .data-table .reject-btn {
+            background-color: #dc3545; /* Changed from warning to danger for rejection */
+            color: white;
+        }
+        .data-table .reject-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* Charts */
+        .chart-container {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .chart {
+            background-color: #f0f8ff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            flex: 1; /* Allows charts to take equal space */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+
+        .chart h3 {
+            color: #3498db;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .bar-chart-bars {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 150px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        .bar {
+            width: 30px;
+            background-color: #3498db;
+            margin: 0 5px;
+            border-radius: 3px 3px 0 0;
+            transition: height 0.5s ease;
+            position: relative;
+        }
+
+        .bar span {
+            position: absolute;
+            top: -20px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8em;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .bar-label {
+            font-size: 0.8em;
+            margin-top: 5px;
+            color: #777;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto; /* Pushes footer to the bottom */
+            font-size: 0.9em;
+        }
+
+        /* Message Box for Alerts */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10000; /* High z-index to be on top */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: fadeOut 0.5s forwards 4.5s; /* Fade out after 4.5s (total 5s display) */
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        /* Keyframe for fadeOut animation */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                margin: 10px;
+                box-shadow: none;
+            }
+
+            aside {
+                width: 100%;
+                padding: 10px 0;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                position: relative; /* Allow toggle button to work */
+            }
+
+            .sidebar-menu {
+                display: none; /* Hidden by default on mobile */
+            }
+
+            .sidebar-menu.active {
+                display: block;
+            }
+
+            .menu-toggle {
+                display: block; /* Show toggle button on mobile */
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                width: 100%;
+                text-align: left;
+                cursor: pointer;
+                font-size: 1em;
+                margin-bottom: 10px;
+            }
+
+            main {
+                padding: 15px;
+            }
+
+            .overview-cards {
+                grid-template-columns: 1fr; /* Stack cards vertically */
+            }
+
+            .data-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch; /* for smoother scrolling on iOS */
+            }
+
+            .data-table {
+                min-width: 600px; /* Maintain minimum width for scrollability */
+            }
+
+            .chart {
+                flex-basis: 100%; /* Charts take full width */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <svg class="logo-svg" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93H3.07C3.52 16.14 6.4 19.02 10 19.93V19.93zM10 4.07V4c-3.6.91-6.48 3.79-6.93 7h1.07c0-4.08 3.05-7.39 7-7.93zm2 15.93v-2.07c4.2-.45 7.47-3.73 7.93-7.93H20.93C20.48 16.14 17.6 19.02 14 19.93zm0-15.93V4.07c3.95.49 7 3.85 7 7.93h1.07c-.45-4.14-3.33-7.02-6.93-7z"/>
+            </svg>
+            <span class="platform-name">TechSeva Admin</span>
+        </div>
+        <button id="logout-btn" class="logout-btn">Logout</button>
+    </header>
+
+    <div class="container">
+        <aside>
+            <button class="menu-toggle" id="menu-toggle-btn">Menu</button>
+            <nav class="sidebar-menu" id="sidebar-menu">
+                <ul>
+                    <li><a href="#overview-section" class="active">Dashboard</a></li>
+                    <li><a href="#kyc-approval-section">Technicians</a></li>
+                    <li><a href="#live-jobs-section">Job Requests</a></li>
+                    <li><a href="#customers-section">Customers</a></li>
+                    <li><a href="#charts-section">Analytics</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main>
+            <h1>Admin Dashboard</h1>
+
+            <section id="overview-section">
+                <h2>Overview</h2>
+                <div class="overview-cards">
+                    <div class="card">
+                        <h3>Total Jobs</h3>
+                        <p id="total-jobs">Loading...</p>
+                    </div>
+                    <div class="card">
+                        <h3>Active Technicians</h3>
+                        <p id="active-technicians">Loading...</p>
+                    </div>
+                    <div class="card">
+                        <h3>Revenue This Month</h3>
+                        <p id="revenue-month">Loading...</p>
+                    </div>
+                    <div class="card">
+                        <h3>Pending Approvals</h3>
+                        <p id="pending-approvals">Loading...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="kyc-approval-section">
+                <h2>Technician KYC Approvals</h2>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>PAN</th>
+                                <th>Aadhaar</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kyc-table-body">
+                            <tr><td colspan="6" style="text-align: center; color: #777;">Loading pending approvals...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="live-jobs-section">
+                <h2>Live Job Tracker</h2>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Job ID</th>
+                                <th>Customer Name</th>
+                                <th>Appliance</th>
+                                <th>Technician</th>
+                                <th>Status</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody id="live-jobs-table-body">
+                            <tr><td colspan="6" style="text-align: center; color: #777;">Loading live jobs...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="customers-section">
+                <h2>Customer List</h2>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Registered On</th>
+                                <th>Total Jobs</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customers-table-body">
+                            <tr><td colspan="5" style="text-align: center; color: #777;">Loading customer data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+
+            <section id="charts-section">
+                <h2>Analytics Overview</h2>
+                <div class="chart-container">
+                    <div class="chart">
+                        <h3>Jobs Completed (Monthly)</h3>
+                        <div class="bar-chart-bars" id="jobs-completed-chart">
+                            <p style="text-align: center; color: #777;">Loading chart data...</p>
+                        </div>
+                        <div id="jobs-completed-labels" style="display:flex; justify-content: space-around; font-size:0.8em; color:#777; margin-top: 5px;">
+                            <!-- Month labels will be generated by JS -->
+                        </div>
+                    </div>
+                    <div class="chart">
+                        <h3>Technician Performance (Jobs Completed)</h3>
+                        <div class="bar-chart-bars" id="tech-performance-chart">
+                            <p style="text-align: center; color: #777;">Loading chart data...</p>
+                        </div>
+                        <div id="tech-performance-labels" style="display:flex; justify-content: space-around; font-size:0.8em; color:#777; margin-top: 5px;">
+                            <!-- Technician names will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 TechSeva. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // --- Utility Functions ---
+        const showMessage = (message, type = 'success') => {
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            document.body.appendChild(messageBox);
+            setTimeout(() => messageBox.remove(), 5000);
+        };
+
+        // --- Fetch & Render Functions ---
+
+        async function fetchAdminData() {
+            try {
+                const [usersResponse, jobsResponse] = await Promise.all([
+                    fetch('/api/admin/users'),
+                    fetch('/api/admin/jobs')
+                ]);
+
+                const usersResult = await usersResponse.json();
+                const jobsResult = await jobsResponse.json();
+
+                if (usersResult.success && jobsResult.success) {
+                    const allUsers = usersResult.users;
+                    const allJobs = jobsResult.jobs;
+
+                    // Update Overview Cards
+                    const totalJobs = allJobs.length;
+                    const activeTechnicians = allUsers.filter(user => user.role === 'technician' && user.kycStatus === 'approved').length;
+                    const pendingApprovals = allUsers.filter(user => user.role === 'technician' && user.kycStatus === 'pending').length;
+                    
+                    // Calculate estimated revenue from completed jobs with quotations for the current month
+                    const currentMonth = new Date().getMonth();
+                    const currentYear = new Date().getFullYear();
+                    const revenueThisMonth = allJobs
+                        .filter(job => 
+                            job.status === 'Completed' && 
+                            job.quotation && 
+                            job.completedAt && 
+                            new Date(job.completedAt).getMonth() === currentMonth &&
+                            new Date(job.completedAt).getFullYear() === currentYear
+                        )
+                        .reduce((sum, job) => sum + (job.quotation.totalEstimate || 0), 0);
+
+                    document.getElementById('total-jobs').textContent = totalJobs;
+                    document.getElementById('active-technicians').textContent = activeTechnicians;
+                    document.getElementById('revenue-month').textContent = `$${revenueThisMonth.toFixed(2)}`;
+                    document.getElementById('pending-approvals').textContent = pendingApprovals;
+
+                    // Populate Tables
+                    populateKycTable(allUsers);
+                    populateLiveJobsTable(allJobs);
+                    populateCustomersTable(allUsers, allJobs);
+
+                    // Render Charts
+                    renderCharts(allJobs, allUsers);
+
+                } else {
+                    // Specific error handling for access denied
+                    if (usersResponse.status === 403 || jobsResponse.status === 403) {
+                         showMessage('Access Denied: You are not authorized to view the admin dashboard.', 'error');
+                         setTimeout(() => { window.location.href = '/'; }, 1500); // Redirect to login
+                    } else {
+                        showMessage('Failed to load admin dashboard data.', 'error');
+                        console.error('Failed to load admin data:', usersResult.message || jobsResult.message);
+                    }
+                }
+            } catch (error) {
+                showMessage('Network error while fetching admin data. Please ensure the server is running.', 'error');
+                console.error('Error fetching admin data:', error);
+                // Optionally redirect to login on severe network error during initial load
+                // setTimeout(() => { window.location.href = '/'; }, 3000);
+            }
+        }
+
+        function populateKycTable(users) {
+            const tableBody = document.getElementById('kyc-table-body');
+            tableBody.innerHTML = '';
+
+            const pendingTechnicians = users.filter(user => user.role === 'technician' && user.kycStatus === 'pending');
+
+            if (pendingTechnicians.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #777;">No pending KYC approvals.</td></tr>';
+            } else {
+                pendingTechnicians.forEach(tech => {
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td data-label="Name">${tech.fullName}</td>
+                        <td data-label="Email">${tech.email}</td>
+                        <td data-label="Phone">${tech.phoneNumber}</td>
+                        <td data-label="PAN">${tech.pan || 'N/A'}</td>
+                        <td data-label="Aadhaar">${tech.aadhaar || 'N/A'}</td>
+                        <td data-label="Actions">
+                            <button class="approve-btn" data-user-id="${tech.id}">Approve</button>
+                            <button class="reject-btn" data-user-id="${tech.id}">Reject</button>
+                        </td>
+                    `;
+                });
+                attachKycActionListeners();
+            }
+        }
+
+        function attachKycActionListeners() {
+            document.querySelectorAll('#kyc-table-body .approve-btn').forEach(button => {
+                button.onclick = null;
+                button.addEventListener('click', async (e) => {
+                    const userId = e.target.dataset.userId;
+                    try {
+                        const response = await fetch(`/api/admin/users/${userId}/grant-technician`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            fetchAdminData();
+                        } else {
+                            showMessage(result.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Approve Technician Error:', error);
+                        showMessage('Network error during approval.', 'error');
+                    }
+                });
+            });
+
+            document.querySelectorAll('#kyc-table-body .reject-btn').forEach(button => {
+                button.onclick = null;
+                button.addEventListener('click', async (e) => {
+                    const userId = e.target.dataset.userId;
+                    try {
+                        const response = await fetch(`/api/admin/users/${userId}/reject-technician`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            fetchAdminData();
+                        } else {
+                            showMessage(result.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Reject Technician Error:', error);
+                        showMessage('Network error during rejection.', 'error');
+                    }
+                });
+            });
+        }
+
+
+        function populateLiveJobsTable(jobs) {
+            const tableBody = document.getElementById('live-jobs-table-body');
+            tableBody.innerHTML = '';
+
+            // Live jobs are Pending, Accepted, In Progress, Diagnosed
+            const liveJobs = jobs.filter(job =>
+                job.status === 'Pending' ||
+                job.status === 'Accepted' ||
+                job.status === 'In Progress' ||
+                job.status === 'Diagnosed'
+            );
+
+            if (liveJobs.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #777;">No live jobs currently.</td></tr>';
+            } else {
+                liveJobs.sort((a, b) => new Date(b.lastUpdated || b.createdAt) - new Date(a.lastUpdated || a.createdAt));
+
+                liveJobs.forEach(job => {
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td data-label="Job ID">${job.id}</td>
+                        <td data-label="Customer Name">${job.customerName}</td>
+                        <td data-label="Appliance">${job.applianceType}</td>
+                        <td data-label="Technician">${job.assignedTechnicianName || 'Pending Assignment'}</td>
+                        <td data-label="Status">${job.status}</td>
+                        <td data-label="Last Updated">${new Date(job.lastUpdated || job.createdAt).toLocaleString()}</td>
+                    `;
+                });
+            }
+        }
+
+        function populateCustomersTable(users, jobs) {
+            const tableBody = document.getElementById('customers-table-body');
+            tableBody.innerHTML = '';
+
+            const customers = users.filter(user => user.role === 'user');
+
+            if (customers.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #777;">No customer registered yet.</td></tr>';
+            } else {
+                customers.forEach(customer => {
+                    const customerJobsCount = jobs.filter(job => job.userId === customer.id).length;
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                        <td data-label="Name">${customer.fullName}</td>
+                        <td data-label="Email">${customer.email}</td>
+                        <td data-label="Phone">${customer.phoneNumber}</td>
+                        <td data-label="Registered On">${new Date(customer.createdAt).toLocaleDateString()}</td>
+                        <td data-label="Total Jobs">${customerJobsCount}</td>
+                    `;
+                });
+            }
+        }
+
+
+        function renderBarChart(elementId, data, maxDataValue, labels, barColor = '#3498db') {
+            const chartDiv = document.getElementById(elementId);
+            if (!chartDiv) return;
+
+            chartDiv.innerHTML = '';
+            const maxHeight = 150;
+            data.forEach((value) => {
+                const barHeight = (value / maxDataValue) * maxHeight;
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${barHeight}px`;
+                bar.style.backgroundColor = barColor;
+                bar.innerHTML = `<span>${value}</span>`;
+                chartDiv.appendChild(bar);
+            });
+
+            const labelContainerId = elementId.replace('chart', 'labels');
+            let labelContainer = document.getElementById(labelContainerId);
+            if (!labelContainer) {
+                labelContainer = document.createElement('div');
+                labelContainer.id = labelContainerId;
+                labelContainer.style.cssText = 'display:flex; justify-content: space-around; font-size:0.8em; color:#777; margin-top: 5px;';
+                chartDiv.parentNode.appendChild(labelContainer);
+            }
+            labelContainer.innerHTML = labels.map(label => `<span>${label}</span>`).join('');
+        }
+
+        function renderCharts(allJobs, allUsers) {
+            // Jobs Completed (Monthly)
+            const monthlyJobCounts = {};
+            const now = new Date();
+            for (let i = 0; i < 6; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthYear = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+                monthlyJobCounts[monthYear] = 0;
+            }
+
+            allJobs.forEach(job => {
+                if (job.status === 'Completed' && job.completedAt) {
+                    const jobDate = new Date(job.completedAt);
+                    const monthYear = `${jobDate.getFullYear()}-${(jobDate.getMonth() + 1).toString().padStart(2, '0')}`;
+                    if (monthlyJobCounts.hasOwnProperty(monthYear)) {
+                        monthlyJobCounts[monthYear]++;
+                    }
+                }
+            });
+
+            const sortedMonths = Object.keys(monthlyJobCounts).sort();
+            const monthlyData = sortedMonths.map(month => monthlyJobCounts[month]);
+            const monthLabels = sortedMonths.map(month => new Date(month + '-01').toLocaleString('en-us', { month: 'short' }));
+            renderBarChart('jobs-completed-chart', monthlyData, Math.max(...monthlyData, 1), monthLabels);
+
+            // Technician Performance (Jobs Completed)
+            const techJobCounts = {};
+            allUsers.filter(user => user.role === 'technician' && user.kycStatus === 'approved').forEach(tech => {
+                techJobCounts[tech.id] = { name: tech.fullName.split(' ')[0], count: 0 };
+            });
+
+            allJobs.forEach(job => {
+                if (job.status === 'Completed' && job.assignedTechnicianId && techJobCounts[job.assignedTechnicianId]) {
+                    techJobCounts[job.assignedTechnicianId].count++;
+                }
+            });
+
+            const techNames = [];
+            const techCounts = [];
+            Object.values(techJobCounts).sort((a,b) => b.count - a.count).slice(0, 5).forEach(tech => {
+                techNames.push(tech.name);
+                techCounts.push(tech.count);
+            });
+
+            renderBarChart('tech-performance-chart', techCounts, Math.max(...techCounts, 1), techNames, '#2ecc71');
+        }
+
+
+        // --- Event Listeners and Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAdminData(); // Initial data fetch and render
+
+            // Sidebar Navigation - Smooth Scroll
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.sidebar-menu a').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // Sidebar Toggle for Mobile
+            const menuToggleButton = document.getElementById('menu-toggle-btn');
+            const sidebarMenu = document.getElementById('sidebar-menu');
+            if (menuToggleButton && sidebarMenu) {
+                menuToggleButton.addEventListener('click', () => {
+                    sidebarMenu.classList.toggle('active');
+                });
+            }
+
+            // Logout functionality
+            const logoutButton = document.getElementById('logout-btn');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/logout', {
+                            method: 'POST'
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage('Logged out successfully!', 'success');
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 500);
+                        } else {
+                            showMessage(result.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        showMessage('Network error during logout.', 'error');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

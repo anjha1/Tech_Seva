@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva - Connecting Bharat to Trusted Local Technicians</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa; /* Light grey background */
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header / Navbar */
+        header {
+            background-color: #2c3e50; /* Dark blue/grey */
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap; /* Allow wrapping for mobile */
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            font-size: 1.2em; /* Emoji size */
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 25px; /* Spacing between nav items */
+        }
+
+        .nav-item a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-item a:hover, .nav-item a.active {
+            background-color: #34495e; /* Slightly lighter blue/grey on hover */
+        }
+
+        /* Hamburger menu (for mobile) */
+        .menu-toggle {
+            display: none; /* Hidden on desktop */
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8em;
+            cursor: pointer;
+        }
+
+        /* Main Content Container */
+        main {
+            flex: 1; /* Allows main content to grow and push footer down */
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Section Styling */
+        section {
+            padding: 60px 0;
+            text-align: center;
+            background-color: white;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 1s ease-out; /* Fade-in animation */
+        }
+
+        section:nth-child(even) {
+            background-color: #f4f7f6; /* Alternate background for sections */
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.8em;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 2.2em;
+            margin-bottom: 30px;
+        }
+
+        p {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            background-color: #3498db; /* Blue */
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 30px; /* Rounded corners */
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            border: none;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .btn-green {
+            background-color: #27ae60; /* Green */
+        }
+
+        .btn:hover {
+            transform: translateY(-3px); /* Lift effect */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn-green:hover {
+            background-color: #229a53;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+
+        /* Hero Section Specifics */
+        .hero-section {
+            padding: 80px 20px;
+            background-color: #eaf2f8; /* Very light blue */
+        }
+
+        .hero-image-placeholder {
+            width: 100%;
+            max-width: 400px;
+            height: 250px;
+            background-color: #dbe9f5;
+            margin: 30px auto 0;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4em;
+            color: #8bbcdc;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        /* How It Works Section */
+        .how-it-works-steps {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap; /* Allow wrapping on mobile */
+            margin-top: 40px;
+        }
+
+        .step-card {
+            flex: 1;
+            min-width: 280px; /* Minimum width before wrapping */
+            max-width: 350px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .step-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .step-icon {
+            font-size: 3em;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .step-card h3 {
+            font-size: 1.5em;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+
+        /* Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .feature-item {
+            background-color: #eaf2f8; /* Light blue */
+            padding: 25px;
+            border-radius: 8px;
+            text-align: left;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s ease;
+        }
+        .feature-item:hover {
+            background-color: #dbe9f5;
+        }
+
+        .feature-item h3 {
+            font-size: 1.3em;
+            margin-top: 0;
+            color: #3498db;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .feature-icon {
+            font-size: 1.2em;
+        }
+        .feature-item p {
+            font-size: 0.95em;
+            color: #666;
+        }
+
+        /* User Types CTA Section */
+        .user-cta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .user-cta-card {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none; /* For link */
+            color: #333;
+        }
+
+        .user-cta-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .user-cta-card h3 {
+            font-size: 1.8em;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #34495e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .user-cta-card p {
+            font-size: 1em;
+            color: #666;
+        }
+
+        .user-icon {
+            font-size: 1.5em;
+            color: #3498db;
+        }
+        /* Specific colors for CTA cards */
+        .user-cta-card.customer h3 .user-icon { color: #28a745; } /* Green for customer */
+        .user-cta-card.technician h3 .user-icon { color: #ffc107; } /* Orange for technician */
+        .user-cta-card.admin h3 .user-icon { color: #dc3545; } /* Red for admin */
+
+        /* Multilingual Support Banner */
+        .multilingual-banner {
+            background-color: #3498db; /* Blue */
+            color: white;
+            padding: 40px 20px;
+        }
+        .multilingual-banner h2 {
+            color: white;
+        }
+        .multilingual-banner p {
+            color: #e0f2f7; /* Lighter white */
+        }
+        .language-dropdown-placeholder {
+            background-color: white;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: inline-block;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+
+        /* Testimonials Section */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+        .testimonial-card {
+            background-color: #f0f8ff; /* Very light blue */
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            text-align: left;
+            border-left: 5px solid #3498db;
+        }
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 15px;
+            color: #555;
+        }
+        .testimonial-author {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .testimonial-rating {
+            color: #f1c40f; /* Yellow stars */
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 0.9em;
+            margin-top: 25px; /* Space from last section */
+        }
+
+        .footer-links {
+            margin-bottom: 15px;
+        }
+        .footer-links a {
+            color: #3498db;
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+        .footer-links a:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+
+        .social-icons {
+            margin-top: 15px;
+            font-size: 1.5em;
+        }
+        .social-icons span {
+            margin: 0 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .social-icons span:hover {
+            transform: scale(1.2);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Styles for AI Diagnosis Section */
+        .ai-diagnosis-section {
+            background-color: #f0faff; /* Lighter blue background */
+            padding: 60px 20px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        .ai-diagnosis-section h2 {
+            color: #3498db; /* Blue for the AI section header */
+            margin-bottom: 20px;
+        }
+        .ai-diagnosis-section p {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .ai-diagnosis-section .form-group {
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+            text-align: left;
+        }
+        .ai-diagnosis-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #444;
+            font-size: 1.05em;
+        }
+        .ai-diagnosis-section textarea {
+            width: calc(100% - 20px);
+            min-height: 120px;
+            padding: 15px;
+            border: 1px solid #c0e0f0;
+            border-radius: 8px;
+            font-size: 1em;
+            box-sizing: border-box;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        .ai-diagnosis-section textarea:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        .diagnosis-result {
+            margin-top: 30px;
+            background-color: #e8f9f8; /* Very light green/blue */
+            padding: 20px;
+            border-radius: 8px;
+            text-align: left;
+            min-height: 50px; /* Ensure some height for display */
+            box-shadow: inset 0 0 8px rgba(0,0,0,0.05);
+            border: 1px solid #c1e0e8;
+            color: #2c3e50;
+            font-size: 1em;
+            line-height: 1.5;
+            white-space: pre-wrap; /* Preserve whitespace and breaks */
+        }
+        #loading-indicator {
+            text-align: center;
+            font-style: italic;
+            color: #3498db;
+            display: none;
+            margin-top: 10px;
+        }
+
+        /* --- Auth Modal Specific Styles --- */
+        .auth-overlay {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px); /* Optional: add blur effect */
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .auth-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            max-width: 450px;
+            width: 90%;
+            position: relative;
+            text-align: left; /* Override center for form elements */
+            max-height: 90vh; /* Max height before scrolling starts */
+            overflow-y: auto; /* Enable vertical scrolling */
+        }
+
+        .close-auth-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #555;
+            transition: color 0.3s ease;
+        }
+        .close-auth-modal:hover {
+            color: #333;
+        }
+
+        .auth-header-modal { /* Renamed to avoid conflict with main page header */
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-header-modal h1 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 0;
+        }
+        .auth-header-modal p {
+            color: #555;
+            font-size: 1rem;
+        }
+
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.8rem;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #7f8c8d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            outline: none; /* Remove focus outline */
+        }
+
+        .tab-btn.active {
+            color: #3498db;
+            border-color: #3498db;
+        }
+
+        .role-selection {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .role-selection label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+            color: #555;
+        }
+
+        .role-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .role-btn {
+            background-color: #ecf0f1;
+            border: 2px solid #ecf0f1;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #555;
+            outline: none; /* Remove focus outline */
+        }
+
+        .role-btn:hover {
+            border-color: #bdc3c7;
+        }
+
+        .role-btn.active {
+            background-color: #eaf2f8;
+            border-color: #3498db;
+            color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .role-btn i {
+            font-size: 1.1em;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group input[type="text"],
+        .form-group input[type="tel"],
+        .form-group select {
+            width: calc(100% - 20px); /* Adjust for padding */
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+
+        .password-input {
+            position: relative;
+        }
+
+        .password-input input {
+            padding-right: 2.5rem; /* Space for eye icon */
+        }
+
+        .toggle-password, .toggle-confirm-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .auth-btn:hover {
+            background: #2980b9;
+        }
+
+        .auth-footer {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .forgot-password {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        /* OTP Modal Styles */
+        .otp-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1002; /* Higher than auth-overlay */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .otp-modal .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-otp-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .otp-input {
+            display: flex;
+            justify-content: space-between;
+            margin: 1.5rem 0;
+            gap: 5px; /* Space between OTP digits */
+        }
+
+        .otp-digit {
+            width: 40px; /* Fixed width for OTP boxes */
+            height: 40px;
+            text-align: center;
+            font-size: 1.5rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box; /* Include padding/border in width */
+        }
+
+        .resend-otp {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .resend-otp a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Message Box */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10002;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: fadeOut 0.5s forwards 4.5s;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Technician Specific Fields */
+        #technician-fields {
+            display: none; /* Hidden by default */
+        }
+        #technician-fields input {
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+            }
+            .nav-menu {
+                flex-direction: column;
+                width: 100%;
+                gap: 5px;
+                margin-top: 15px;
+                display: none; /* Hidden by default on mobile */
+            }
+            .nav-menu.active {
+                display: flex; /* Show when active */
+            }
+            .nav-item {
+                width: 100%;
+                text-align: center;
+            }
+            .nav-item a {
+                display: block;
+                padding: 10px;
+            }
+            .menu-toggle {
+                display: block; /* Show hamburger */
+                align-self: flex-end; /* Push to right in header */
+                margin-top: -30px; /* Adjust vertical position */
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            p {
+                font-size: 1em;
+            }
+            .btn {
+                padding: 12px 25px;
+                font-size: 1em;
+                width: calc(100% - 20px); /* Full width minus margin */
+                box-sizing: border-box;
+            }
+
+            .how-it-works-steps,
+            .features-grid,
+            .user-cta-grid,
+            .testimonials-grid {
+                grid-template-columns: 1fr; /* Stack columns vertically */
+            }
+
+            .step-card, .feature-item, .user-cta-card, .testimonial-card {
+                margin-bottom: 20px; /* Add margin between stacked cards */
+                max-width: none; /* Remove max-width constraint */
+            }
+
+            /* Auth modal responsive */
+            .auth-container {
+                margin: 1rem;
+                padding: 1.5rem;
+                width: 95%; /* Adjust width for smaller screens */
+            }
+
+            .auth-header-modal h1 {
+                font-size: 1.8rem;
+            }
+
+            .tab-btn {
+                font-size: 0.9rem;
+                padding: 0.7rem;
+            }
+
+            .role-options {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .role-btn {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .otp-digit {
+                width: 35px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+
+            .otp-modal .modal-content {
+                padding: 2rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="#" class="logo">
+            <span class="logo-icon">🔧</span> TechSeva
+        </a>
+        <button class="menu-toggle" id="menu-toggle">☰</button>
+        <nav class="nav-menu" id="main-nav-menu">
+            <li class="nav-item"><a href="#" class="active">Home</a></li>
+            <li class="nav-item"><a href="#how-it-works">How It Works</a></li>
+            <li class="nav-item"><a href="#contact">Contact</a></li>
+            <!-- Updated login link to show modal -->
+            <li class="nav-item"><a href="javascript:void(0)" id="login-nav-btn">Login/Signup</a></li>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero-section">
+            <div class="container">
+                <h1>Connecting Bharat to Trusted Local Technicians 🚀</h1>
+                <p>Book repair services easily via App, Web, or IVR — in your own language.</p>
+                <div class="hero-buttons">
+                    <a href="javascript:void(0)" class="btn btn-primary" id="book-service-btn">Book Service</a>
+                    <a href="javascript:void(0)" id="join-tech-btn" class="btn btn-green">Join as Technician</a>
+                </div>
+                <div class="hero-image-placeholder">
+                    ✨
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Diagnosis Section -->
+        <section id="ai-diagnosis-section" class="ai-diagnosis-section">
+            <div class="container">
+                <h2>✨ AI Appliance Diagnoser ✨</h2>
+                <p>Describe your appliance's problem and get an instant preliminary diagnosis from our AI. This can help you understand the issue better before booking a service.</p>
+                <div class="form-group">
+                    <label for="appliance-problem">What's wrong with your appliance?</label>
+                    <textarea id="appliance-problem" placeholder="e.g., My refrigerator is not cooling, but the light is on."></textarea>
+                </div>
+                <button id="get-diagnosis-btn" class="btn btn-primary">Get AI Diagnosis ✨</button>
+                <div id="diagnosis-result" class="diagnosis-result" style="display: none;">
+                    <!-- AI Diagnosis will be displayed here -->
+                </div>
+                <p id="loading-indicator" style="display: none;">Diagnosing problem... Please wait.</p>
+            </div>
+        </section>
+
+
+        <section id="how-it-works" class="how-it-works-section">
+            <div class="container">
+                <h2>How TechSeva Works</h2>
+                <div class="how-it-works-steps">
+                    <div class="step-card">
+                        <div class="step-icon">📞</div>
+                        <h3>Step 1: Book Service</h3>
+                        <p>Easily book a service request through our intuitive app, website, or via a simple call to our IVR system. Select your appliance type and describe the issue.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-icon">🛠️</div>
+                        <h3>Step 2: Technician Auto-Assignment</h3>
+                        <p>Our AI-powered system intelligently matches your request to the best-suited local technician available in your area. You'll receive instant notification of assignment.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-icon">💵</div>
+                        <h3>Step 3: Repair & Secure Payment</h3>
+                        <p>The technician performs the repair. Review the auto-generated quotation, pay securely via UPI/COD, and receive a digital invoice and warranty for peace of mind.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features-section">
+            <div class="container">
+                <h2>Why Choose TechSeva?</h2>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <h3><span class="feature-icon">🧠</span> AI-based Technician Matching</h3>
+                        <p>Our smart algorithms connect you with the right expert for your specific repair needs, ensuring faster and more effective service.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3><span class="feature-icon">📸</span> Image-based Diagnosis</h3>
+                        <p>Upload photos of your appliance's issue for quicker preliminary diagnosis and accurate estimations, saving you time and hassle.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3><span class="feature-icon">💰</span> Auto-Quotation</h3>
+                        <p>Get transparent and instant quotations for parts, labor, and travel, eliminating guesswork and ensuring fair pricing.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3><span class="feature-icon">💳</span> UPI/COD Payments</h3>
+                        <p>Pay conveniently using popular digital payment methods like UPI (Google Pay, PhonePe, Paytm) or opt for Cash on Delivery.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3><span class="feature-icon">📄</span> Warranty & Invoice</h3>
+                        <p>Receive a digital invoice and a service warranty for every repair, ensuring accountability and long-term trust.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h3><span class="feature-icon">🇮🇳</span> Works in Tier-2 & Tier-3 India</h3>
+                        <p>Our services are specifically designed to cater to the unique needs of customers and technicians in smaller cities and towns across India.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="user-types-cta-section">
+            <div class="container">
+                <h2>Who Are You?</h2>
+                <div class="user-cta-grid">
+                    <a href="javascript:void(0)" class="user-cta-card customer" id="customer-cta-btn">
+                        <h3><span class="user-icon">👤</span> I am a Customer</h3>
+                        <p>Need a quick and reliable appliance repair? Book a service now!</p>
+                        <button class="btn btn-primary" style="margin-top: 20px;">Book Service</button>
+                    </a>
+                    <a href="javascript:void(0)" class="user-cta-card technician" id="technician-cta-btn">
+                        <h3><span class="user-icon">👷</span> I am a Technician</h3>
+                        <p>Grow your business, get more jobs, and earn more with TechSeva.</p>
+                        <button class="btn btn-green" style="margin-top: 20px;">Join Now</button>
+                    </a>
+                    <a href="javascript:void(0)" class="user-cta-card admin" id="admin-cta-btn">
+                        <h3><span class="user-icon">👑</span> I am an Admin</h3>
+                        <p>Manage users, jobs, and platform operations efficiently.</p>
+                        <button class="btn btn-secondary" style="margin-top: 20px;">Access Admin</button>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="multilingual-banner">
+            <div class="container">
+                <h2>Available in Your Language!</h2>
+                <p>Available in Hindi, Bhojpuri, Bengali, Tamil, Telugu & more!</p>
+                <div class="language-dropdown-placeholder">
+                    Select Language 🌐
+                    <!-- This is a placeholder for UI demonstration. A real dropdown would be here -->
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonials" class="testimonials-section">
+            <div class="container">
+                <h2>What Our Users Say</h2>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"TechSeva fixed my AC quickly and the technician was very professional. Highly recommended!"</p>
+                        <p class="testimonial-author">- Aarti P., Delhi</p>
+                        <div class="testimonial-rating">★★★★★</div>
+                    </div>
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"As a technician, TechSeva has transformed my earnings. I get reliable jobs and payments are instant."</p>
+                        <p class="testimonial-author">- Ramesh K., Lucknow</p>
+                        <div class="testimonial-rating">★★★★★</div>
+                    </div>
+                    <div class="testimonial-card">
+                        <p class="testimonial-text">"Booking my washing machine repair was so easy. The auto-quotation was transparent, no hidden costs!"</p>
+                        <p class="testimonial-author">- Pooja S., Patna</p>
+                        <div class="testimonial-rating">★★★★☆</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="#">About Us</a> |
+                <a href="#">Privacy Policy</a> |
+                <a href="#">Terms of Service</a> |
+                <a href="#">Careers</a>
+            </div>
+            <p>&copy; 2023 TechSeva. All rights reserved.</p>
+            <div class="social-icons">
+                <span><i class="fab fa-facebook-f"></i></span>
+                <span><i class="fab fa-twitter"></i></span>
+                <span><i class="fab fa-instagram"></i></span>
+                <span><i class="fab fa-linkedin-in"></i></span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth Overlay and Modals -->
+    <div class="auth-overlay" id="auth-overlay">
+        <div class="auth-container">
+            <span class="close-auth-modal" id="close-auth-modal">&times;</span>
+            <div class="auth-header-modal">
+                <img src="https://placehold.co/90x90/3498DB/FFFFFF/png?text=TS" alt="Service Logo" class="logo" style="width: 70px; height: 70px; margin-bottom: 10px;">
+                <h1>Welcome to TechSeva</h1>
+                <p>Login or create your account to get started.</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="tab-btn active" id="login-tab">Login</button>
+                <button class="tab-btn" id="signup-tab">Sign Up</button>
+            </div>
+
+            <div class="role-selection">
+                <label>I am a:</label>
+                <div class="role-options">
+                    <button class="role-btn active" data-role="user">
+                        <i class="fas fa-user"></i> User
+                    </button>
+                    <button class="role-btn" data-role="technician">
+                        <i class="fas fa-tools"></i> Technician
+                    </button>
+                    <button class="role-btn" data-role="admin">
+                        <i class="fas fa-shield-alt"></i> Admin
+                    </button>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form active">
+                <div class="form-group">
+                    <label for="login-email">Email:</label>
+                    <input type="email" id="login-email" name="email" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group password-input">
+                    <label for="login-password">Password:</label>
+                    <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+                    <i class="fas fa-eye toggle-password"></i>
+                </div>
+                <input type="hidden" id="login-user-role" name="role" value="user"> <!-- Hidden input for role -->
+                <button type="submit" class="auth-btn">Login</button>
+                <div class="auth-footer">
+                    <a href="javascript:void(0)" class="forgot-password">Forgot Password?</a>
+                </div>
+            </form>
+
+            <!-- Sign Up Form -->
+            <form id="signup-form" class="auth-form">
+                <div class="form-group">
+                    <label for="signup-fullname">Full Name:</label>
+                    <input type="text" id="signup-fullname" name="fullName" placeholder="Your Full Name" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email:</label>
+                    <input type="email" id="signup-email" name="email" placeholder="Your Email Address" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-phone">Phone Number:</label>
+                    <input type="tel" id="signup-phone" name="phoneNumber" placeholder="e.g., 9876543210" pattern="[0-9]{10}" required>
+                </div>
+                <div class="form-group password-input">
+                    <label for="signup-password">Password:</label>
+                    <input type="password" id="signup-password" name="password" placeholder="Min 8 characters" minlength="8" required>
+                    <i class="fas fa-eye toggle-password"></i>
+                </div>
+                <div class="form-group password-input" id="signup-confirm-password-group">
+                    <label for="signup-confirm-password">Confirm Password:</label>
+                    <input type="password" id="signup-confirm-password" name="confirmPassword" placeholder="Confirm your password" minlength="8" required>
+                    <i class="fas fa-eye toggle-confirm-password"></i>
+                </div>
+
+                <!-- Technician Specific Fields (Initially Hidden) -->
+                <div id="technician-fields">
+                    <div class="form-group">
+                        <label for="signup-aadhaar">Aadhaar Number:</label>
+                        <input type="text" id="signup-aadhaar" name="aadhaar" placeholder="12-digit Aadhaar" pattern="[0-9]{12}">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-pan">PAN Number:</label>
+                        <input type="text" id="signup-pan" name="pan" placeholder="10-character PAN (e.g., ABCDE1234F)" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-bank">Bank Details:</label>
+                        <input type="text" id="signup-bank" name="bankDetails" placeholder="Bank Name, Account, IFSC">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-skills">Skills (comma-separated):</label>
+                        <input type="text" id="signup-skills" name="skills" placeholder="e.g., AC Repair, Electrician">
+                    </div>
+                </div>
+
+                <input type="hidden" id="signup-user-role" name="role" value="user">
+                <button type="submit" class="auth-btn">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- OTP Verification Modal -->
+    <div id="otp-modal" class="otp-modal">
+        <div class="modal-content">
+            <span class="close-otp-modal">&times;</span>
+            <h2>Email Verification</h2>
+            <p>We've sent a 6-digit OTP to your email <span id="user-email-display"></span></p>
+            <div class="otp-input">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+            </div>
+            <button id="verify-otp" class="auth-btn">Verify</button>
+            <p class="resend-otp">Didn't receive OTP? <a href="javascript:void(0)" id="resend-otp">Resend</a></p>
+        </div>
+    </div>
+
+    <!-- Message Box Placeholder -->
+    <div id="message-container"></div>
+
+    <script>
+        // Utility for displaying messages (replaces alert/confirm)
+        const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            // Remove any existing messages to only show the latest
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+
+            setTimeout(() => {
+                // Fade out and remove the message box
+                messageBox.style.opacity = '0';
+                setTimeout(() => messageBox.remove(), 500); // Wait for fadeOut animation
+            }, 4500); // Message visible for 4.5 seconds before fading out
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- General UI Elements ---
+            const menuToggle = document.getElementById('menu-toggle');
+            const mainNavMenu = document.getElementById('main-nav-menu');
+            const loginNavBtn = document.getElementById('login-nav-btn');
+            const joinTechBtn = document.getElementById('join-tech-btn'); // Hero section 'Join as Technician'
+            const customerCtaBtn = document.getElementById('customer-cta-btn'); // 'I am a Customer' CTA
+            const technicianCtaBtn = document.getElementById('technician-cta-btn'); // 'I am a Technician' CTA
+            const adminCtaBtn = document.getElementById('admin-cta-btn'); // 'I am an Admin' CTA
+            const bookServiceBtn = document.getElementById('book-service-btn'); // Hero section 'Book Service'
+
+            // --- Auth Modal Elements ---
+            const authOverlay = document.getElementById('auth-overlay');
+            const closeAuthModal = document.getElementById('close-auth-modal');
+            const loginTab = document.getElementById('login-tab');
+            const signupTab = document.getElementById('signup-tab');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const roleButtons = document.querySelectorAll('.role-btn');
+            const loginRoleInput = document.getElementById('login-user-role');
+            const signupRoleInput = document.getElementById('signup-user-role');
+            const technicianFields = document.getElementById('technician-fields');
+            const signupConfirmPasswordGroup = document.getElementById('signup-confirm-password-group');
+
+            // --- OTP Modal Elements ---
+            const otpModal = document.getElementById('otp-modal');
+            const closeOtpModalBtn = otpModal.querySelector('.close-otp-modal');
+            const userEmailDisplay = document.getElementById('user-email-display');
+            const otpDigits = otpModal.querySelectorAll('.otp-digit');
+            const verifyOtpBtn = document.getElementById('verify-otp');
+            const resendOtpBtn = document.getElementById('resend-otp');
+
+            // --- AI Diagnosis Elements ---
+            const applianceProblemInput = document.getElementById('appliance-problem');
+            const getDiagnosisBtn = document.getElementById('get-diagnosis-btn');
+            const diagnosisResultDiv = document.getElementById('diagnosis-result');
+            const loadingIndicator = document.getElementById('loading-indicator');
+
+
+            // --- Navbar Hamburger Menu Toggle ---
+            menuToggle.addEventListener('click', () => {
+                mainNavMenu.classList.toggle('active');
+            });
+
+            // --- Show Auth Modal Function ---
+            const showAuthModal = (initialTab = 'login', initialRole = 'user') => {
+                authOverlay.style.display = 'flex'; // Show the modal
+                // Set initial tab and role
+                if (initialTab === 'signup') {
+                    signupTab.click(); // Programmatically click signup tab
+                } else {
+                    loginTab.click(); // Programmatically click login tab
+                }
+
+                // Set initial role (simulate click on role button)
+                roleButtons.forEach(button => {
+                    if (button.dataset.role === initialRole) {
+                        button.click();
+                    }
+                });
+            };
+
+            // --- Event Listeners to Open Auth Modal ---
+            loginNavBtn.addEventListener('click', () => showAuthModal('login', 'user'));
+            joinTechBtn.addEventListener('click', () => showAuthModal('signup', 'technician'));
+            bookServiceBtn.addEventListener('click', () => showAuthModal('login', 'user')); // Book service leads to login
+            customerCtaBtn.addEventListener('click', (e) => { e.preventDefault(); showAuthModal('login', 'user'); });
+            technicianCtaBtn.addEventListener('click', (e) => { e.preventDefault(); showAuthModal('signup', 'technician'); });
+            adminCtaBtn.addEventListener('click', (e) => { e.preventDefault(); showAuthModal('login', 'admin'); }); // Admin CTA leads to login
+
+            // --- Close Auth Modal ---
+            closeAuthModal.addEventListener('click', () => {
+                authOverlay.style.display = 'none';
+            });
+
+            // Close modal if clicked outside
+            authOverlay.addEventListener('click', (e) => {
+                if (e.target === authOverlay) {
+                    authOverlay.style.display = 'none';
+                }
+            });
+
+
+            // --- Tab Switching Logic (Login/Signup) ---
+            loginTab.addEventListener('click', () => {
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+                loginForm.classList.add('active');
+                signupForm.classList.remove('active');
+                // Ensure confirm password group is hidden for login, and technician fields are hidden
+                technicianFields.style.display = 'none';
+                signupConfirmPasswordGroup.style.display = 'block'; // Always visible for signup if switching back later
+            });
+
+            signupTab.addEventListener('click', () => {
+                signupTab.classList.add('active');
+                loginTab.classList.remove('active');
+                signupForm.classList.add('active');
+                loginForm.classList.remove('active');
+                // Hide technician fields by default on signup tab switch if not technician role
+                if (signupRoleInput.value !== 'technician') {
+                    technicianFields.style.display = 'none';
+                }
+                signupConfirmPasswordGroup.style.display = 'block';
+            });
+
+            // --- Role Selection Logic (User, Technician, Admin) ---
+            roleButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    roleButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const selectedRole = button.dataset.role;
+
+                    // Update hidden role inputs for both forms based on active tab
+                    if (loginForm.classList.contains('active')) {
+                        loginRoleInput.value = selectedRole;
+                    } else if (signupForm.classList.contains('active')) {
+                        signupRoleInput.value = selectedRole;
+                        // Toggle technician-specific fields visibility
+                        if (selectedRole === 'technician') {
+                            technicianFields.style.display = 'block';
+                            // Make technician fields required for signup
+                            document.getElementById('signup-aadhaar').setAttribute('required', 'required');
+                            document.getElementById('signup-pan').setAttribute('required', 'required');
+                            document.getElementById('signup-bank').setAttribute('required', 'required');
+                            document.getElementById('signup-skills').setAttribute('required', 'required');
+                        } else {
+                            technicianFields.style.display = 'none';
+                            // Remove required attribute if not technician
+                            document.getElementById('signup-aadhaar').removeAttribute('required');
+                            document.getElementById('signup-pan').removeAttribute('required');
+                            document.getElementById('signup-bank').removeAttribute('required');
+                            document.getElementById('signup-skills').removeAttribute('required');
+                        }
+                    }
+                });
+            });
+
+            // Set initial role for both hidden inputs based on default active button (User)
+            // This ensures the hidden input matches the default active role button.
+            loginRoleInput.value = document.querySelector('.role-btn[data-role="user"]').dataset.role;
+            signupRoleInput.value = document.querySelector('.role-btn[data-role="user"]').dataset.role;
+
+
+            // --- Password Toggle Logic ---
+            document.querySelectorAll('.toggle-password, .toggle-confirm-password').forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const passwordInput = toggle.previousElementSibling;
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    toggle.classList.toggle('fa-eye');
+                    toggle.classList.toggle('fa-eye-slash');
+                });
+            });
+
+            // --- Login Form Submission ---
+            loginForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const role = loginRoleInput.value; // Get role from hidden input
+
+                try {
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password, role })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        showMessage(result.message, 'success');
+                        // Store JWT token if provided by backend
+                        if (result.token) {
+                            localStorage.setItem('jwtToken', result.token);
+                        }
+                        // Redirect after a short delay
+                        setTimeout(() => {
+                            window.location.href = result.redirect;
+                        }, 500);
+                    } else {
+                        showMessage(result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showMessage('Network error during login. Please try again.', 'error');
+                }
+            });
+
+
+            // --- Signup Form Submission (Initiates OTP Send) ---
+            signupForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const fullName = document.getElementById('signup-fullname').value;
+                const email = document.getElementById('signup-email').value;
+                const phoneNumber = document.getElementById('signup-phone').value;
+                const password = document.getElementById('signup-password').value;
+                const confirmPassword = document.getElementById('signup-confirm-password').value;
+                const role = signupRoleInput.value;
+
+                // Password confirmation validation
+                if (password !== confirmPassword) {
+                    showMessage('Passwords do not match.', 'error');
+                    return;
+                }
+
+                const signupData = { fullName, email, phoneNumber, password, role };
+                if (role === 'technician') {
+                    // Collect technician-specific fields only if role is technician
+                    signupData.aadhaar = document.getElementById('signup-aadhaar').value;
+                    signupData.pan = document.getElementById('signup-pan').value;
+                    signupData.bankDetails = document.getElementById('signup-bank').value;
+                    signupData.skills = document.getElementById('signup-skills').value;
+                }
+
+                try {
+                    // Send OTP first
+                    const otpResponse = await fetch('/send-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: signupData.email })
+                    });
+                    const otpResult = await otpResponse.json();
+
+                    if (otpResult.success) {
+                        userEmailDisplay.textContent = signupData.email;
+                        otpModal.style.display = 'flex'; // Show OTP modal
+                        showMessage(otpResult.message, 'success');
+                        // Store signup data temporarily for verification stage
+                        sessionStorage.setItem('pendingSignupData', JSON.stringify(signupData));
+                    } else {
+                        showMessage(otpResult.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Signup (OTP Send) error:', error);
+                    showMessage('Network error during signup. Please try again.', 'error');
+                }
+            });
+
+            // --- OTP Input focus management ---
+            otpDigits.forEach((digitInput, index) => {
+                digitInput.addEventListener('input', () => {
+                    if (digitInput.value.length === 1 && index < otpDigits.length - 1) {
+                        otpDigits[index + 1].focus();
+                    }
+                });
+                digitInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && digitInput.value === '' && index > 0) {
+                        otpDigits[index - 1].focus();
+                    }
+                });
+            });
+
+            // --- Close OTP Modal ---
+            closeOtpModalBtn.addEventListener('click', () => {
+                otpModal.style.display = 'none';
+                sessionStorage.removeItem('pendingSignupData'); // Clear stored data if modal closed
+            });
+
+            // --- Verify OTP and Complete Registration ---
+            verifyOtpBtn.addEventListener('click', async () => {
+                const enteredOtp = Array.from(otpDigits).map(input => input.value).join('');
+                const storedSignupData = JSON.parse(sessionStorage.getItem('pendingSignupData'));
+
+                if (!storedSignupData || !storedSignupData.email) {
+                    showMessage('No pending signup data found. Please restart registration.', 'error');
+                    otpModal.style.display = 'none';
+                    return;
+                }
+
+                try {
+                    // Verify OTP
+                    const verifyResponse = await fetch('/verify-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: storedSignupData.email, otp: enteredOtp })
+                    });
+                    const verifyResult = await verifyResponse.json();
+
+                    if (verifyResult.success) {
+                        showMessage(verifyResult.message, 'success');
+                        // If OTP is verified, proceed with user registration
+                        const registerResponse = await fetch('/register', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(storedSignupData) // Send all collected signup data
+                        });
+                        const registerResult = await registerResponse.json();
+
+                        if (registerResult.success) {
+                            showMessage(registerResult.message + ' You can now login.', 'success');
+                            otpModal.style.display = 'none';
+                            sessionStorage.removeItem('pendingSignupData');
+                            // Optionally switch back to login tab after successful registration
+                            loginTab.click();
+                            authOverlay.style.display = 'none'; // Close the main auth modal
+                        } else {
+                            showMessage(registerResult.message, 'error');
+                            otpModal.style.display = 'none'; // Close modal on registration error
+                            sessionStorage.removeItem('pendingSignupData');
+                        }
+
+                    } else {
+                        showMessage(verifyResult.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('OTP Verification/Registration error:', error);
+                    showMessage('Network error during OTP verification or registration.', 'error');
+                    otpModal.style.display = 'none';
+                    sessionStorage.removeItem('pendingSignupData');
+                }
+            });
+
+            // --- Resend OTP ---
+            resendOtpBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const storedSignupData = JSON.parse(sessionStorage.getItem('pendingSignupData'));
+
+                if (!storedSignupData || !storedSignupData.email) {
+                    showMessage('No email found to resend OTP. Please restart registration.', 'error');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/send-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: storedSignupData.email })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        showMessage(result.message, 'success');
+                    } else {
+                        showMessage(result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Resend OTP error:', error);
+                    showMessage('Network error while resending OTP.', 'error');
+                }
+            });
+
+            // --- AI Diagnosis Logic ---
+            getDiagnosisBtn.addEventListener('click', async () => {
+                const problemDescription = applianceProblemInput.value.trim();
+                if (!problemDescription) {
+                    showMessage('Please describe the problem with your appliance.', 'error');
+                    return;
+                }
+
+                diagnosisResultDiv.style.display = 'none'; // Hide previous result
+                diagnosisResultDiv.textContent = ''; // Clear previous result
+                loadingIndicator.style.display = 'block'; // Show loading indicator
+
+                try {
+                    // Call the LLM to generate text for diagnosis
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: `Provide a concise, preliminary diagnosis for an appliance problem. User input: "${problemDescription}". Suggest possible causes and basic troubleshooting steps. Keep it under 200 words.` }] });
+
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // API key is provided by Canvas runtime
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const diagnosisText = result.candidates[0].content.parts[0].text;
+                        diagnosisResultDiv.textContent = diagnosisText;
+                        diagnosisResultDiv.style.display = 'block';
+                    } else {
+                        diagnosisResultDiv.textContent = 'Could not get a diagnosis. Please try again or rephrase.';
+                        diagnosisResultDiv.style.display = 'block';
+                        showMessage('Failed to get AI diagnosis.', 'error');
+                    }
+                } catch (error) {
+                    console.error('AI Diagnosis API error:', error);
+                    diagnosisResultDiv.textContent = 'An error occurred during diagnosis. Please try again later.';
+                    diagnosisResultDiv.style.display = 'block';
+                    showMessage('Error connecting to AI diagnosis service.', 'error');
+                } finally {
+                    loadingIndicator.style.display = 'none'; // Hide loading indicator
+                }
+            });
+        });
+    </script>
+</body>
+</html>

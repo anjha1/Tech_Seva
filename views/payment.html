@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva Payment</title>
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Inline SVG for TechSeva logo */
+        .logo-svg {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            vertical-align: middle;
+            fill: currentColor; /* Inherit color from parent */
+        }
+
+        .platform-name {
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        .back-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Main Content Container */
+        .container {
+            flex: 1;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Card Styling */
+        .card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Quotation Summary Section */
+        .quote-details p {
+            margin: 8px 0;
+            font-size: 1em;
+            color: #444;
+        }
+        .quote-details p strong {
+            color: #333;
+        }
+
+        .quote-breakdown {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #eee;
+        }
+        .quote-breakdown p {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+        .quote-breakdown .total-amount {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .quote-breakdown .total-amount span {
+            color: #27ae60; /* Green for total */
+        }
+
+        /* Payment Approval Section */
+        .payment-approval-section p {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* Form Group */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: calc(100% - 20px); /* Account for padding */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            box-sizing: border-box; /* Include padding in width */
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        /* Payment Method Options */
+        .payment-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .payment-option {
+            background-color: #ecf0f1;
+            border: 2px solid #ecf0f1;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .payment-option:hover {
+            border-color: #bdc3c7;
+        }
+
+        .payment-option.selected {
+            background-color: #eaf2f8;
+            border-color: #3498db;
+            color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .payment-details-fields > div {
+            display: none; /* Hidden by default */
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .payment-details-fields > div.active {
+            display: block;
+        }
+
+        /* Button Styling */
+        .button-primary {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #27ae60; /* Green for primary action */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .button-primary:hover {
+            background-color: #229a53;
+        }
+
+        .button-disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto; /* Pushes footer to the bottom */
+            font-size: 0.8em;
+            line-height: 1.4;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                padding: 10px;
+            }
+            .header-left {
+                margin-bottom: 10px;
+            }
+            .back-button {
+                width: 100%;
+                text-align: center;
+            }
+            .container {
+                margin: 15px auto;
+                padding: 0 10px;
+            }
+            .card {
+                padding: 18px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.3em;
+            }
+            input[type="text"],
+            input[type="number"] {
+                width: 100%;
+            }
+            .payment-options {
+                flex-direction: column;
+            }
+            .payment-option {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <svg class="logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93H3.07C3.52 16.14 6.4 19.02 10 19.93V19.93zM10 4.07V4c-3.6.91-6.48 3.79-6.93 7h1.07c0-4.08 3.05-7.39 7-7.93zm2 15.93v-2.07c4.2-.45 7.47-3.73 7.93-7.93H20.93C20.48 16.14 17.6 19.02 14 19.93zm0-15.93V4.07c3.95.49 7 3.85 7 7.93h1.07c-.45-4.14-3.33-7.02-6.93-7z"/>
+            </svg>
+            <span class="platform-name">TechSeva Payment</span>
+        </div>
+        <a href="/user-dashboard" class="back-button">Back to Dashboard</a>
+    </header>
+
+    <div class="container">
+        <h1>Complete Your Payment</h1>
+
+        <section class="card quotation-summary-section">
+            <h2>Quotation Summary</h2>
+            <div class="quote-details">
+                <p><strong>Job ID:</strong> <span id="summary-job-id">J101-ABC</span></p>
+                <p><strong>Technician:</strong> <span id="summary-technician-name">Rajesh Kumar</span></p>
+                <p><strong>Appliance Type:</strong> <span id="summary-appliance-type">Washing Machine Repair</span></p>
+                <p><strong>Service Date & Time:</strong> <span id="summary-service-datetime">2024-06-12, 14:00 PM</span></p>
+            </div>
+
+            <div class="quote-breakdown">
+                <h3>Quote Breakdown</h3>
+                <p>Part Cost: ₹<span id="summary-part-cost">0.00</span></p>
+                <p>Labor Cost: ₹<span id="summary-labor-cost">0.00</span></p>
+                <p>Travel Charges: ₹<span id="summary-travel-charges">0.00</span></p>
+                <p class="total-amount">Total Amount: ₹<span id="summary-total-amount">0.00</span></p>
+            </div>
+        </section>
+
+        <section class="card payment-approval-section">
+            <h2>Payment Approval</h2>
+            <p>Please review the quote and proceed to payment to confirm the service.</p>
+            <button id="approve-pay-now-btn" class="button-primary">Approve and Pay Now</button>
+        </section>
+
+        <section class="card payment-methods-section" style="display:none;">
+            <h2>Select Payment Method</h2>
+            <div class="payment-options">
+                <div class="payment-option" data-method="upi">UPI</div>
+                <div class="payment-option" data-method="card">Debit/Credit Card</div>
+                <div class="payment-option" data-method="cod">Cash on Delivery</div>
+            </div>
+
+            <div class="payment-details-fields">
+                <div id="upi-fields">
+                    <div class="form-group">
+                        <label for="upi-id">Enter your UPI ID:</label>
+                        <input type="text" id="upi-id" placeholder="e.g., yourname@bankname">
+                    </div>
+                </div>
+
+                <div id="card-fields">
+                    <div class="form-group">
+                        <label for="card-number">Card Number:</label>
+                        <input type="text" id="card-number" placeholder="XXXX XXXX XXXX XXXX" maxlength="19">
+                    </div>
+                    <div class="form-group">
+                        <label for="expiry-date">Expiry Date (MM/YY):</label>
+                        <input type="text" id="expiry-date" placeholder="MM/YY" maxlength="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="cvv">CVV:</label>
+                        <input type="number" id="cvv" placeholder="XXX" maxlength="4">
+                    </div>
+                </div>
+            </div>
+
+            <button id="complete-payment-btn" class="button-primary button-disabled" disabled>Complete Payment</button>
+        </section>
+    </div>
+
+    <footer>
+        <p>All payments are encrypted and secured via PCI-compliant payment gateways.</p>
+        <p>&copy; 2024 TechSeva. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const approvePayNowBtn = document.getElementById('approve-pay-now-btn');
+            const paymentMethodsSection = document.querySelector('.payment-methods-section');
+            const paymentOptions = document.querySelectorAll('.payment-option');
+            const upiFields = document.getElementById('upi-fields');
+            const cardFields = document.getElementById('card-fields');
+            const completePaymentBtn = document.getElementById('complete-payment-btn');
+
+            let selectedPaymentMethod = null;
+
+            // --- Dummy Data for Quotation Summary (replace with actual fetch in a real app) ---
+            const dummyQuote = {
+                jobId: 'J101-ABC',
+                technicianName: 'Rajesh Kumar',
+                applianceType: 'Washing Machine Repair',
+                serviceDateTime: '2024-06-12, 14:00 PM',
+                partCost: 500.00,
+                laborCost: 350.00,
+                travelCharges: 50.00
+            };
+            dummyQuote.totalAmount = dummyQuote.partCost + dummyQuote.laborCost + dummyQuote.travelCharges;
+
+            document.getElementById('summary-job-id').textContent = dummyQuote.jobId;
+            document.getElementById('summary-technician-name').textContent = dummyQuote.technicianName;
+            document.getElementById('summary-appliance-type').textContent = dummyQuote.applianceType;
+            document.getElementById('summary-service-datetime').textContent = dummyQuote.serviceDateTime;
+            document.getElementById('summary-part-cost').textContent = dummyQuote.partCost.toFixed(2);
+            document.getElementById('summary-labor-cost').textContent = dummyQuote.laborCost.toFixed(2);
+            document.getElementById('summary-travel-charges').textContent = dummyQuote.travelCharges.toFixed(2);
+            document.getElementById('summary-total-amount').textContent = dummyQuote.totalAmount.toFixed(2);
+
+            // --- "Approve and Pay Now" Button Logic ---
+            approvePayNowBtn.addEventListener('click', () => {
+                paymentMethodsSection.style.display = 'block'; // Show payment options
+                approvePayNowBtn.style.display = 'none'; // Hide the approval button
+            });
+
+            // --- Payment Method Selection Logic ---
+            paymentOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove 'selected' class from all options
+                    paymentOptions.forEach(opt => opt.classList.remove('selected'));
+                    // Add 'selected' class to the clicked option
+                    option.classList.add('selected');
+
+                    selectedPaymentMethod = option.dataset.method;
+
+                    // Hide all payment detail fields
+                    upiFields.classList.remove('active');
+                    cardFields.classList.remove('active');
+
+                    // Show fields relevant to the selected method
+                    if (selectedPaymentMethod === 'upi') {
+                        upiFields.classList.add('active');
+                        completePaymentBtn.classList.remove('button-disabled');
+                        completePaymentBtn.disabled = false;
+                    } else if (selectedPaymentMethod === 'card') {
+                        cardFields.classList.add('active');
+                        completePaymentBtn.classList.remove('button-disabled');
+                        completePaymentBtn.disabled = false;
+                    } else if (selectedPaymentMethod === 'cod') {
+                        completePaymentBtn.classList.remove('button-disabled');
+                        completePaymentBtn.disabled = false;
+                    } else {
+                        completePaymentBtn.classList.add('button-disabled');
+                        completePaymentBtn.disabled = true;
+                    }
+                });
+            });
+
+            // --- "Complete Payment" Button Logic ---
+            completePaymentBtn.addEventListener('click', () => {
+                if (!selectedPaymentMethod) {
+                    alert('Please select a payment method.');
+                    return;
+                }
+
+                let paymentDetails = {};
+                let isValid = true;
+
+                if (selectedPaymentMethod === 'upi') {
+                    const upiId = document.getElementById('upi-id').value.trim();
+                    if (!upiId) {
+                        alert('Please enter your UPI ID.');
+                        isValid = false;
+                    }
+                    paymentDetails.upiId = upiId;
+                } else if (selectedPaymentMethod === 'card') {
+                    const cardNumber = document.getElementById('card-number').value.trim();
+                    const expiryDate = document.getElementById('expiry-date').value.trim();
+                    const cvv = document.getElementById('cvv').value.trim();
+
+                    if (!cardNumber || cardNumber.length < 16) {
+                        alert('Please enter a valid Card Number.');
+                        isValid = false;
+                    } else if (!expiryDate || !/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDate)) {
+                        alert('Please enter a valid Expiry Date (MM/YY).');
+                        isValid = false;
+                    } else if (!cvv || cvv.length < 3) {
+                        alert('Please enter a valid CVV.');
+                        isValid = false;
+                    }
+                    paymentDetails = { cardNumber, expiryDate, cvv };
+                } else if (selectedPaymentMethod === 'cod') {
+                    // No specific input for COD, just confirmation
+                    paymentDetails.method = 'Cash on Delivery';
+                }
+
+                if (!isValid) return;
+
+                // Simulate loading spinner (optional)
+                completePaymentBtn.textContent = 'Processing...';
+                completePaymentBtn.classList.add('button-disabled');
+                completePaymentBtn.disabled = true;
+
+                setTimeout(() => {
+                    alert(`Payment of ₹${dummyQuote.totalAmount.toFixed(2)} successful via ${selectedPaymentMethod.toUpperCase()} for Job ID: ${dummyQuote.jobId}!`);
+                    // In a real app, send data to backend here
+                    // fetch('/api/process-payment', { method: 'POST', body: JSON.stringify({...paymentDetails, jobId: dummyQuote.jobId, totalAmount: dummyQuote.totalAmount }) })
+                    // .then(response => response.json())
+                    // .then(data => { /* handle success/failure */ })
+                    // .catch(error => { /* handle error */ });
+
+                    // Redirect to a confirmation page or dashboard
+                    window.location.href = '/user-dashboard';
+                }, 2000); // Simulate 2-second processing time
+            });
+
+            // --- Input Formatting for Card Number and Expiry Date ---
+            const cardNumberInput = document.getElementById('card-number');
+            if (cardNumberInput) {
+                cardNumberInput.addEventListener('input', (e) => {
+                    // Remove non-digits
+                    let value = e.target.value.replace(/\D/g, '');
+                    // Add spaces every 4 digits
+                    value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                    e.target.value = value;
+                });
+            }
+
+            const expiryDateInput = document.getElementById('expiry-date');
+            if (expiryDateInput) {
+                expiryDateInput.addEventListener('input', (e) => {
+                    let value = e.target.value.replace(/\D/g, '');
+                    if (value.length > 2) {
+                        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                    }
+                    e.target.value = value;
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>

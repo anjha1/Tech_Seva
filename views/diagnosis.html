@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva Diagnosis</title>
+    <link rel="stylesheet" href="/public/css/style.css">
+</head>
+<body>
+    <h1>Perform Diagnosis</h1>
+
+    <section>
+        <h2>Job Details</h2>
+        <p><strong>Job ID:</strong> <span id="job-id">Loading...</span></p>
+        <p><strong>Appliance Type:</strong> <span id="appliance-type">Loading...</span></p>
+        <p><strong>Location:</strong> <span id="location">Loading...</span></p>
+        <!-- More job details can be added here -->
+    </section>
+
+    <section>
+        <h2>Diagnosis Information</h2>
+        <form id="diagnosis-form">
+            <label for="appliance-photo">Upload Appliance Photo:</label>
+            <input type="file" id="appliance-photo" name="appliancePhoto" accept="image/*">
+
+            <br><br>
+
+            <label for="faulty-parts">Identify Faulty Parts:</label>
+            <input type="text" id="faulty-parts" name="faultyParts" placeholder="e.g., Fan motor, AC compressor">
+
+            <br><br>
+
+            <label for="labor-estimate">Labor Estimate (in hours):</label>
+            <input type="text" id="labor-estimate" name="laborEstimate" placeholder="e.g., 2.5">
+
+            <br><br>
+
+            <button type="submit">Submit Diagnosis</button>
+        </form>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const jobId = urlParams.get('jobId');
+
+            if (jobId) {
+                document.getElementById('job-id').textContent = jobId;
+                // Fetch job details (assuming an endpoint /api/jobs/:jobId exists)
+                fetch(`/api/jobs/${jobId}`)
+                    .then(response => response.json())
+                    .then(job => {
+                        document.getElementById('appliance-type').textContent = job.applianceType || 'N/A';
+                        document.getElementById('location').textContent = job.location || 'N/A';
+                        // Populate other job details as needed
+                    })
+                    .catch(error => {
+                        console.error('Error fetching job details:', error);
+                        document.getElementById('appliance-type').textContent = 'Error';
+                        document.getElementById('location').textContent = 'Error';
+                    });
+            } else {
+                document.getElementById('job-id').textContent = 'N/A';
+                console.error('No Job ID provided in the URL');
+            }
+        });
+
+        document.getElementById('diagnosis-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            alert('Diagnosis submitted (placeholder)');
+            // In a real app, gather form data and send to a backend endpoint
+            // const formData = new FormData(event.target);
+            // fetch('/api/submit-diagnosis', { method: 'POST', body: formData }).then(...).then(...)
+        });
+
+        document.getElementById('diagnosis-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const jobId = urlParams.get('jobId');
+
+            const formData = new FormData(event.target);
+            formData.append('jobId', jobId); // Add job ID to form data
+
+            try {
+                const response = await fetch('/api/technician/diagnosis', {
+                    method: 'POST',
+                    body: formData // FormData handles file uploads
+                });
+                const result = await response.json();
+                console.log('Diagnosis submission response:', result);
+                alert(result.message || 'Diagnosis submitted.');
+            } catch (error) {
+                console.error('Error submitting diagnosis:', error);
+                alert('Failed to submit diagnosis.');
+            }
+        });
+
+    </script>
+</body>
+</html>
