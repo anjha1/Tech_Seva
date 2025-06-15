@@ -1,8 +1,9 @@
 console.log("script.js loaded successfully");
-document.addEventListener('DOMContentLoaded', () => {
+
+document.addEventListener('DOMContentLoaded', async () => {
     const currentPage = window.location.pathname;
 
-    if (currentPage === '/technician-dashboard') {
+    if (currentPage === '/technician-dashboard.html') {
         // Placeholder technician ID - replace with actual logic to get the logged-in technician's ID
         const technicianId = 'technician1'; 
 
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => {
                 console.error('Error fetching technician jobs:', error);
             });
-    } else if (currentPage === '/admin-dashboard') {
+    } else if (currentPage === '/admin-dashboard.html') {
         // Fetch and display all users for the admin dashboard
         fetch('/api/admin/users')
             .then(response => response.json())
@@ -61,6 +62,53 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => {
                 console.error('Error fetching users for admin dashboard:', error);
             });
+    }
+
+    // Login form submission handler (moved inside DOMContentLoaded)
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Redirect based on the URL provided by the server
+                    if (data.redirect) {
+                        window.location.href = data.redirect; // Use the redirect URL from the server
+                    } else {
+                        console.warn('Login successful but no redirect URL provided by server.');
+                        window.location.href = '/'; // Default to homepage if no redirect
+                    }
+                } else {
+                    throw new Error(data.message || 'Login failed');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message || 'An error occurred during login');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login';
+            }
+        });
     }
 });
 
