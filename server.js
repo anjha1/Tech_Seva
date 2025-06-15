@@ -66,15 +66,21 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Session management middleware setup.
+require('dotenv').config();
+
+app.set('trust proxy', 1);
+
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'a_very_long_random_secret_for_session_management', // ⚠️ IMPORTANT: Use environment variable
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production (requires HTTPS)
-        maxAge: 24 * 60 * 60 * 1000 // Session lasts for 24 hours
-    }
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax'
+  }
 }));
+
 
 // === Email Transporter Setup for Nodemailer ===
 const transporter = nodemailer.createTransport({
