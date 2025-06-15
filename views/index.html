@@ -1656,7 +1656,7 @@
                         chatHistory.push({ role: "user", parts: [{ text: `Provide a concise, preliminary diagnosis for an appliance problem. User input: "${problemDescription}". Suggest possible causes and basic troubleshooting steps. Keep it under 200 words.` }] });
 
                         const payload = { contents: chatHistory };
-                        const apiKey = "AIzaSyBHEEp4sU0iFcTdZnYwt_LZI1RTKvj6BE0";
+                        const apiKey = "";
                         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
                         const response = await fetch(apiUrl, {
