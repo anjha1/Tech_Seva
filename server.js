@@ -179,7 +179,7 @@ function isAuthenticated(req, res, next) {
 
 // Serve specific HTML files WITH authentication and role checks FIRST
 // Order matters: specific protected routes before general static serving
-app.get('/user.html', isAuthenticated, (req, res) => {
+app.get('/user', isAuthenticated, (req, res) => {
     if (req.session.user.role === 'user' || req.session.user.role === 'admin') {
         res.sendFile(path.join(__dirname, 'views', 'user.html'));
     } else {
@@ -187,7 +187,7 @@ app.get('/user.html', isAuthenticated, (req, res) => {
     }
 });
 
-app.get('/technician.html', isAuthenticated, (req, res) => {
+app.get('/technician', isAuthenticated, (req, res) => {
     // isAuthenticated middleware already handles the redirect for HTML requests if not authenticated
     if (req.session.user.role === 'technician' || req.session.user.role === 'admin') {
         res.sendFile(path.join(__dirname, 'views', 'technician.html'));
@@ -198,7 +198,7 @@ app.get('/technician.html', isAuthenticated, (req, res) => {
     }
 });
 
-app.get('/admin.html', isAuthenticated, (req, res) => {
+app.get('/admin', isAuthenticated, (req, res) => {
     if (req.session.user.role === 'admin') {
         res.sendFile(path.join(__dirname, 'views', 'admin.html'));
     } else {
@@ -206,7 +206,7 @@ app.get('/admin.html', isAuthenticated, (req, res) => {
     }
 });
 
-app.get('/payment.html', isAuthenticated, (req, res) => {
+app.get('/payment', isAuthenticated, (req, res) => {
     if (req.session.user.role === 'user' || req.session.user.role === 'admin') {
         res.sendFile(path.join(__dirname, 'views', 'payment.html'));
     } else {
@@ -214,7 +214,7 @@ app.get('/payment.html', isAuthenticated, (req, res) => {
     }
 });
 
-app.get('/diagnosis.html', isAuthenticated, (req, res) => {
+app.get('/diagnosis', isAuthenticated, (req, res) => {
     if (req.session.user.role === 'technician' || req.session.user.role === 'user' || req.session.user.role === 'admin') {
         res.sendFile(path.join(__dirname, 'views', 'diagnosis.html'));
     } else {
@@ -405,13 +405,13 @@ app.post('/login', async (req, res) => {
         let redirectUrl;
         switch (user.role) {
             case 'user':
-                redirectUrl = '/user.html';
+                redirectUrl = '/user';
                 break;
             case 'technician':
-                redirectUrl = '/technician.html';
+                redirectUrl = '/technician';
                 break;
             case 'admin':
-                redirectUrl = '/admin.html';
+                redirectUrl = '/admin';
                 break;
             default:
                 console.warn(`Login successful for unknown role: ${user.role}. Redirecting to /`);
