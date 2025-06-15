@@ -179,8 +179,73 @@ function isAuthenticated(req, res, next) {
 
 // Serve specific HTML files WITH authentication and role checks FIRST
 // Order matters: specific protected routes before general static serving
+// app.get('/user', isAuthenticated, (req, res) => {
+//     if (req.session.user.role === 'user' || req.session.user.role === 'admin') {
+//         res.sendFile(path.join(__dirname, 'views', 'user.html'));
+//     } else {
+//         res.status(403).send('Access Denied: You do not have permission to view this page.');
+//     }
+// });
+
+// app.get('/technician', isAuthenticated, (req, res) => {
+//     // isAuthenticated middleware already handles the redirect for HTML requests if not authenticated
+//     if (req.session.user.role === 'technician' || req.session.user.role === 'admin') {
+//         res.sendFile(path.join(__dirname, 'views', 'technician.html'));
+//     } else {
+//         // If isAuthenticated didn't redirect (e.g., due to role mismatch), send 403.
+//         // This line is mostly for clarity; isAuthenticated handles actual unauthenticated access.
+//         res.status(403).send('Access Denied: You do not have permission to view this page.');
+//     }
+// });
+
+// app.get('/admin', isAuthenticated, (req, res) => {
+//     if (req.session.user.role === 'admin') {
+//         res.sendFile(path.join(__dirname, 'views', 'admin.html'));
+//     } else {
+//         res.status(403).send('Access Denied: You must be an administrator to view this page.');
+//     }
+// });
+
+// app.get('/payment', isAuthenticated, (req, res) => {
+//     if (req.session.user.role === 'user' || req.session.user.role === 'admin') {
+//         res.sendFile(path.join(__dirname, 'views', 'payment.html'));
+//     } else {
+//         res.status(403).send('Access Denied: You do not have permission to view this page.');
+//     }
+// });
+
+// app.get('/diagnosis', isAuthenticated, (req, res) => {
+//     if (req.session.user.role === 'technician' || req.session.user.role === 'user' || req.session.user.role === 'admin') {
+//         res.sendFile(path.join(__dirname, 'views', 'diagnosis.html'));
+//     } else {
+//         res.status(403).send('Access Denied: You do not have permission to view this page.');
+//     }
+// });
+
+// // Serve static files (like CSS, JavaScript, images) from 'public'
+// app.use(express.static(path.join(__dirname, 'public')));
+
+// // Serve all HTML files directly from 'views' if no specific route matches above
+// // This MUST come AFTER specific protected HTML routes to apply isAuthenticated
+// app.use(express.static(path.join(__dirname, 'views')));
+
+// // Serve the main index.html file as the homepage (this will now be caught by the static serve above)
+// app.get('/', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'views', 'index.html'));
+// });
+function isAuthenticated(req, res, next) {
+    if (req.session.user) {
+        return next();
+    }
+    res.redirect('/');
+}
+
+// Serve static assets (CSS, JS, Images)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// === PROTECTED ROUTES ===
 app.get('/user', isAuthenticated, (req, res) => {
-    if (req.session.user.role === 'user' || req.session.user.role === 'admin') {
+    if (['user', 'admin'].includes(req.session.user.role)) {
         res.sendFile(path.join(__dirname, 'views', 'user.html'));
     } else {
         res.status(403).send('Access Denied: You do not have permission to view this page.');
@@ -188,12 +253,9 @@ app.get('/user', isAuthenticated, (req, res) => {
 });
 
 app.get('/technician', isAuthenticated, (req, res) => {
-    // isAuthenticated middleware already handles the redirect for HTML requests if not authenticated
-    if (req.session.user.role === 'technician' || req.session.user.role === 'admin') {
+    if (['technician', 'admin'].includes(req.session.user.role)) {
         res.sendFile(path.join(__dirname, 'views', 'technician.html'));
     } else {
-        // If isAuthenticated didn't redirect (e.g., due to role mismatch), send 403.
-        // This line is mostly for clarity; isAuthenticated handles actual unauthenticated access.
         res.status(403).send('Access Denied: You do not have permission to view this page.');
     }
 });
@@ -207,7 +269,7 @@ app.get('/admin', isAuthenticated, (req, res) => {
 });
 
 app.get('/payment', isAuthenticated, (req, res) => {
-    if (req.session.user.role === 'user' || req.session.user.role === 'admin') {
+    if (['user', 'admin'].includes(req.session.user.role)) {
         res.sendFile(path.join(__dirname, 'views', 'payment.html'));
     } else {
         res.status(403).send('Access Denied: You do not have permission to view this page.');
@@ -215,23 +277,36 @@ app.get('/payment', isAuthenticated, (req, res) => {
 });
 
 app.get('/diagnosis', isAuthenticated, (req, res) => {
-    if (req.session.user.role === 'technician' || req.session.user.role === 'user' || req.session.user.role === 'admin') {
+    if (['user', 'technician', 'admin'].includes(req.session.user.role)) {
         res.sendFile(path.join(__dirname, 'views', 'diagnosis.html'));
     } else {
         res.status(403).send('Access Denied: You do not have permission to view this page.');
     }
 });
 
-// Serve static files (like CSS, JavaScript, images) from 'public'
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Serve all HTML files directly from 'views' if no specific route matches above
-// This MUST come AFTER specific protected HTML routes to apply isAuthenticated
-app.use(express.static(path.join(__dirname, 'views')));
-
-// Serve the main index.html file as the homepage (this will now be caught by the static serve above)
+// === HOMEPAGE ===
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
+
+// === API: Get current user ===
+app.get('/api/user/me', isAuthenticated, async (req, res) => {
+    try {
+        const users = await readUsers();
+        const currentUser = users.find(u => u.id === req.session.user.id);
+        if (currentUser) {
+            const { password, ...safeUser } = currentUser;
+            res.json({ success: true, user: safeUser });
+        } else {
+            req.session.destroy(err => {
+                if (err) console.error('Session destruction error on user not found:', err);
+                res.status(401).json({ success: false, message: 'User session invalid. Please log in again.', redirect: '/' });
+            });
+        }
+    } catch (err) {
+        console.error('Error in /api/user/me:', err);
+        res.status(500).json({ success: false, message: 'Internal server error while fetching user details.' });
+    }
 });
 
 
