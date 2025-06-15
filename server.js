@@ -81,7 +81,7 @@ const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: process.env.EMAIL_USER, // ⚠️ IMPORTANT: Get from environment variable
-        pass: process.env.EMAIL_PASS  // ⚠️ IMPORTANT: Get from environment variable (App password for Gmail)
+        pass: process.env.EMAIL_PASS // ⚠️ IMPORTANT: Get from environment variable (App password for Gmail)
     }
 });
 
@@ -334,7 +334,7 @@ app.post('/register', async (req, res) => {
             role,
             createdAt: new Date().toISOString(),
             verified: true, // Assumed true after OTP verification
-            kycStatus: '1'  // Set default KYC status
+            kycStatus: '1' // Set default KYC status
         };
 
         if (role === 'technician') {
@@ -366,6 +366,7 @@ app.post('/register', async (req, res) => {
 // User Login
 app.post('/login', async (req, res) => {
     try {
+        console.log('Received login request body:', req.body);
         const { email, password, role } = req.body;
         let users = await readUsers(); // Read users from file for login
 
@@ -414,12 +415,13 @@ app.post('/login', async (req, res) => {
                 break;
             default:
                 console.warn(`Login successful for unknown role: ${user.role}. Redirecting to /`);
-                redirectUrl = '/'; 
+                redirectUrl = '/';
                 break;
         }
 
         console.log(`User ${user.email} (${user.role}) logged in. Redirecting to ${redirectUrl}`); // For debugging
 
+        console.log('Sending login response:', { success: true, message: 'Login successful', redirect: redirectUrl, user: req.session.user });
         return res.json({
             success: true,
             message: 'Login successful',
@@ -491,7 +493,7 @@ app.get('/api/technician/jobs', isAuthenticated, async (req, res) => {
 
         const technicianId = req.session.user.id;
         let jobs = await readJobs();
-        
+
         const technicianJobs = jobs.filter(job =>
             (job.assignedTechnicianId === technicianId && job.status !== 'Completed' && job.status !== 'Cancelled') ||
             (job.status === 'Pending' && !job.assignedTechnicianId)
@@ -522,7 +524,7 @@ app.post('/api/technician/jobs/accept', isAuthenticated, async (req, res) => {
             if (jobs[jobIndex].assignedTechnicianId && jobs[jobIndex].assignedTechnicianId !== req.session.user.id) {
                 return res.status(409).json({ success: false, message: 'This job has already been assigned to another technician.' });
             }
-            
+
             jobs[jobIndex].assignedTechnicianId = req.session.user.id;
             jobs[jobIndex].assignedTechnicianName = req.session.user.fullName;
             jobs[jobIndex].status = 'Accepted';
@@ -720,27 +722,41 @@ app.post('/api/process-payment', isAuthenticated, async (req, res) => {
         const jobIndex = jobs.findIndex(j => j.id === jobId);
 
         if (jobIndex > -1) {
+            // Ensure only the job owner or an admin can process payment for this job
             if (jobs[jobIndex].userId !== req.session.user.id && req.session.user.role !== 'admin') {
                 return res.status(403).json({ success: false, message: 'Access denied to process payment for this job.' });
             }
 
+            // Check if the job is in a state where payment can be processed
             if (jobs[jobIndex].status !== 'Diagnosed' && jobs[jobIndex].status !== 'Completed') {
-                return res.status(400).json({ success: false, message: 'Payment can only be processed for diagnosed or already completed jobs.' });
-            }
-            if (jobs[jobIndex].paymentStatus === 'Paid') {
-                return res.status(400).json({ success: false, message: 'This job has already been paid for.' });
+                return res.status(400).json({ success: false, message: `Payment can only be processed for jobs that are 'Diagnosed' or 'Completed'. Current status: ${jobs[jobIndex].status}.` });
             }
 
-            jobs[jobIndex].paymentStatus = 'Paid';
-            jobs[jobIndex].paymentDetails = { method: paymentMethod, ...paymentDetails, amount: totalAmount };
-            jobs[jobIndex].status = 'Completed';
+            // Basic validation for payment details
+            if (!totalAmount || !paymentMethod) {
+                return res.status(400).json({ success: false, message: 'Total amount and payment method are required.' });
+            }
+
+            // Simulate payment processing (in a real app, integrate with a payment gateway)
+            console.log(`Processing payment for Job ID: ${jobId}, Amount: ${totalAmount}, Method: ${paymentMethod}`);
+            // Add more sophisticated payment processing logic here (e.g., calling a third-party API)
+
+            jobs[jobIndex].payment = {
+                amount: parseFloat(totalAmount),
+                method: paymentMethod,
+                details: paymentDetails, // e.g., transaction ID, last 4 digits of card
+                status: 'Paid',
+                paidAt: new Date().toISOString()
+            };
+            jobs[jobIndex].status = 'Paid'; // Update job status to Paid after successful payment
             jobs[jobIndex].lastUpdated = new Date().toISOString();
-            jobs[jobIndex].paidAt = new Date().toISOString();
 
-            await writeJobs(jobs);
-            res.json({ success: true, message: 'Payment processed successfully. Job marked as completed.' });
+            await writeJobs(jobs); // Save updated job data
+
+            res.json({ success: true, message: 'Payment processed successfully and job marked as Paid!', job: jobs[jobIndex] });
+
         } else {
-            res.status(404).json({ success: false, message: 'Job not found for payment processing.' });
+            res.status(404).json({ success: false, message: 'Job not found.' });
         }
     } catch (err) {
         console.error('Process Payment Error:', err);
@@ -748,56 +764,22 @@ app.post('/api/process-payment', isAuthenticated, async (req, res) => {
     }
 });
 
-// User Submit Review API
-app.post('/api/user/submit-review', isAuthenticated, async (req, res) => {
-    try {
-        if (req.session.user.role !== 'user') {
-            return res.status(403).json({ success: false, message: 'Access denied. Only users can submit reviews.' });
-        }
 
-        const { jobId, rating, reviewText } = req.body;
-        let jobs = await readJobs();
-        const jobIndex = jobs.findIndex(j => j.id === jobId && j.userId === req.session.user.id);
-
-        if (jobIndex > -1) {
-            if (jobs[jobIndex].status !== 'Completed') {
-                return res.status(400).json({ success: false, message: 'Only completed jobs can be reviewed.' });
-            }
-            if (jobs[jobIndex].rating || jobs[jobIndex].reviewText) {
-                return res.status(400).json({ success: false, message: 'This job has already been reviewed.' });
-            }
-
-            jobs[jobIndex].rating = rating;
-            jobs[jobIndex].reviewText = reviewText;
-            jobs[jobIndex].lastUpdated = new Date().toISOString();
-            await writeJobs(jobs);
-            res.json({ success: true, message: 'Review submitted successfully!' });
-        } else {
-            res.status(404).json({ success: false, message: 'Job not found or not associated with your account.' });
-        }
-    } catch (err) {
-        console.error('Submit Review Error:', err);
-        res.status(500).json({ success: false, message: 'Internal server error during review submission.' });
-    }
-});
-
-
-// === ADMIN SPECIFIC APIs ===
-
-// Admin Get All Users API
+// Admin API: Get All Users
 app.get('/api/admin/users', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: 'Access denied. Only admins can view users.' });
+            return res.status(403).json({ success: false, message: 'Access denied. Only administrators can view users.' });
         }
-        let users = await readUsers(); // Read users from file
+        const users = await readUsers();
+        // Filter out sensitive information like passwords before sending
         const safeUsers = users.map(user => {
-            const { password, ...rest } = user; // Exclude password for security
+            const { password, ...rest } = user;
             return rest;
         });
         res.json({ success: true, users: safeUsers });
     } catch (err) {
-        console.error('Admin Fetch Users Error:', err);
+        console.error('Admin Get Users Error:', err);
         res.status(500).json({ success: false, message: 'Internal server error while fetching users.' });
     }
 });
@@ -814,16 +796,16 @@ app.get('/api/admin/dashboard-overview', isAuthenticated, async (req, res) => {
 
         const totalJobs = currentJobs.length;
         const activeTechnicians = currentUsers.filter(u => u.role === 'technician' && u.kycStatus === 'approved').length;
-        
+
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
 
         const revenueThisMonth = currentJobs.reduce((sum, job) => {
-            if (job.paymentStatus === 'Paid' && job.paidAt) {
-                const paidDate = new Date(job.paidAt);
+            if (job.payment && job.payment.status === 'Paid' && job.payment.paidAt) {
+                const paidDate = new Date(job.payment.paidAt);
                 if (paidDate.getMonth() === currentMonth && paidDate.getFullYear() === currentYear) {
-                    return sum + (job.quotation && job.quotation.totalEstimate ? job.quotation.totalEstimate : (job.paymentDetails ? job.paymentDetails.amount : 0));
+                    return sum + (job.payment.amount || 0); // Use payment.amount for revenue calculation
                 }
             }
             return sum;
@@ -847,11 +829,11 @@ app.get('/api/admin/dashboard-overview', isAuthenticated, async (req, res) => {
     }
 });
 
-// Admin Get All Jobs API
+// Admin API: Get All Jobs (Enhanced)
 app.get('/api/admin/jobs', isAuthenticated, async (req, res) => {
     try {
         if (req.session.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: 'Access denied. Only admins can view all jobs.' });
+            return res.status(403).json({ success: false, message: 'Access denied. Only administrators can view all jobs.' });
         }
         let jobs = await readJobs(); // Read jobs from file
         let users = await readUsers(); // Read users from file to enhance job data
@@ -874,6 +856,44 @@ app.get('/api/admin/jobs', isAuthenticated, async (req, res) => {
     } catch (err) {
         console.error('Admin Fetch All Jobs Error:', err);
         res.status(500).json({ success: false, message: 'Internal server error while fetching all jobs.' });
+    }
+});
+
+// Admin API: Assign/Reassign Technician to a Job
+app.post('/api/admin/jobs/assign-technician', isAuthenticated, async (req, res) => {
+    try {
+        if (req.session.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Access denied. Only administrators can assign technicians.' });
+        }
+        const { jobId, technicianId } = req.body;
+        let jobs = await readJobs();
+        let users = await readUsers();
+
+        const jobIndex = jobs.findIndex(j => j.id === jobId);
+        if (jobIndex === -1) {
+            return res.status(404).json({ success: false, message: 'Job not found.' });
+        }
+
+        const technician = users.find(u => u.id === technicianId && u.role === 'technician' && u.kycStatus === 'approved');
+        if (!technician) {
+            return res.status(404).json({ success: false, message: 'Technician not found or not approved.' });
+        }
+
+        jobs[jobIndex].assignedTechnicianId = technician.id;
+        jobs[jobIndex].assignedTechnicianName = technician.fullName;
+        jobs[jobIndex].lastUpdated = new Date().toISOString();
+
+        // If the job was pending, change its status to 'Accepted' upon manual assignment
+        if (jobs[jobIndex].status === 'Pending') {
+            jobs[jobIndex].status = 'Accepted';
+        }
+
+        await writeJobs(jobs);
+        res.json({ success: true, message: `Technician ${technician.fullName} assigned to job ${jobId}.`, job: jobs[jobIndex] });
+
+    } catch (err) {
+        console.error('Admin Assign Technician Error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error while assigning technician.' });
     }
 });
 
@@ -939,17 +959,18 @@ app.post('/api/admin/users/:userId/reject-technician', isAuthenticated, async (r
 });
 
 
-// Logout route
+// Logout Route
 app.post('/logout', (req, res) => {
     req.session.destroy(err => {
         if (err) {
-            console.error('Session destruction error:', err);
-            return res.status(500).json({ success: false, message: 'Could not log out.' });
+            console.error('Error destroying session:', err);
+            return res.status(500).json({ success: false, message: 'Could not log out. Please try again.' });
         }
         res.clearCookie('connect.sid'); // Clear the session cookie
-        res.json({ success: true, message: 'Logged out successfully.', redirect: '/' }); // Added redirect for client-side
+        res.json({ success: true, message: 'Logged out successfully.', redirect: '/' });
     });
 });
+
 
 // Handle 404 - Keep this at the very end
 app.use((req, res, next) => {
@@ -957,11 +978,10 @@ app.use((req, res, next) => {
 });
 
 
-// === Start the Server ===
-// Use the PORT defined at the top
+// Start the server
 app.listen(PORT, () => {
     console.log(`✅ Server running at http://localhost:${PORT}`);
     console.log('⚠️ IMPORTANT: User and Job data is stored in JSON files but will reset on server restart on Render (ephemeral filesystem)!');
-    console.log('For persistent data on Render, use a real database (e.g., MongoDB Atlas, PostgreSQL).');
+    console.log('For persistent data on Render, you MUST use a real database (e.g., MongoDB Atlas, PostgreSQL).');
     console.log('Remember to set EMAIL_USER, EMAIL_PASS, and SESSION_SECRET in your Render environment variables!');
 });
