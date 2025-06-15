@@ -160,20 +160,20 @@ async function sendEmailOTP(email, otp) {
 
 // === Middleware for Authentication Protection ===
 // Modified to differentiate between HTML page requests and API requests
-function isAuthenticated(req, res, next) {
-    if (req.session.user && req.session.user.id) {
-        next();
-    } else {
-        // If client expects HTML (e.g., a direct page request like /technician.html), redirect to login page.
-        // This prevents the browser from trying to parse a JSON error as HTML.
-        if (req.accepts('html')) {
-            res.redirect('/');
-        } else {
-            // For API requests expecting JSON, send a JSON unauthorized response.
-            res.status(401).json({ success: false, message: 'Unauthorized. Please login.', redirect: '/' });
-        }
-    }
-}
+// function isAuthenticated(req, res, next) {
+//     if (req.session.user && req.session.user.id) {
+//         next();
+//     } else {
+//         // If client expects HTML (e.g., a direct page request like /technician.html), redirect to login page.
+//         // This prevents the browser from trying to parse a JSON error as HTML.
+//         if (req.accepts('html')) {
+//             res.redirect('/');
+//         } else {
+//             // For API requests expecting JSON, send a JSON unauthorized response.
+//             res.status(401).json({ success: false, message: 'Unauthorized. Please login.', redirect: '/' });
+//         }
+//     }
+// }
 
 // === Routes ===
 
