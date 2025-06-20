@@ -292,6 +292,38 @@
                 justify-content: center;
             }
         }
+
+        /* Message Box */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10002;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: fadeOut 0.5s forwards 4.5s;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+            min-width: 200px; /* Ensure message box is readable */
+            text-align: center; /* Center text in message box */
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -302,7 +334,7 @@
             </svg>
             <span class="platform-name">TechSeva Payment</span>
         </div>
-        <a href="/user-dashboard" class="back-button">Back to Dashboard</a>
+        <a href="/user" class="back-button">Back to Dashboard</a>
     </header>
 
     <div class="container">
@@ -311,10 +343,10 @@
         <section class="card quotation-summary-section">
             <h2>Quotation Summary</h2>
             <div class="quote-details">
-                <p><strong>Job ID:</strong> <span id="summary-job-id">J101-ABC</span></p>
-                <p><strong>Technician:</strong> <span id="summary-technician-name">Rajesh Kumar</span></p>
-                <p><strong>Appliance Type:</strong> <span id="summary-appliance-type">Washing Machine Repair</span></p>
-                <p><strong>Service Date & Time:</strong> <span id="summary-service-datetime">2024-06-12, 14:00 PM</span></p>
+                <p><strong>Job ID:</strong> <span id="summary-job-id">Loading...</span></p>
+                <p><strong>Technician:</strong> <span id="summary-technician-name">Loading...</span></p>
+                <p><strong>Appliance Type:</strong> <span id="summary-appliance-type">Loading...</span></p>
+                <p><strong>Service Date & Time:</strong> <span id="summary-service-datetime">Loading...</span></p>
             </div>
 
             <div class="quote-breakdown">
@@ -328,7 +360,7 @@
 
         <section class="card payment-approval-section">
             <h2>Payment Approval</h2>
-            <p>Please review the quote and proceed to payment to confirm the service.</p>
+            <p id="payment-status-message">Please review the quote and proceed to payment to confirm the service.</p>
             <button id="approve-pay-now-btn" class="button-primary">Approve and Pay Now</button>
         </section>
 
@@ -373,42 +405,141 @@
         <p>&copy; 2024 TechSeva. All rights reserved.</p>
     </footer>
 
+    <!-- Message Box Placeholder -->
+    <div id="message-container"></div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        // Utility for displaying messages (replaces alert/confirm)
+        const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            // Remove any existing messages to only show the latest
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+
+            setTimeout(() => {
+                // Fade out and remove the message box
+                messageBox.style.opacity = '0';
+                setTimeout(() => messageBox.remove(), 500); // Wait for fadeOut animation
+            }, 4500); // Message visible for 4.5 seconds before fading out
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const approvePayNowBtn = document.getElementById('approve-pay-now-btn');
             const paymentMethodsSection = document.querySelector('.payment-methods-section');
             const paymentOptions = document.querySelectorAll('.payment-option');
             const upiFields = document.getElementById('upi-fields');
             const cardFields = document.getElementById('card-fields');
             const completePaymentBtn = document.getElementById('complete-payment-btn');
+            const paymentStatusMessage = document.getElementById('payment-status-message');
 
             let selectedPaymentMethod = null;
+            let currentJobData = null; // To store fetched job data
 
-            // --- Dummy Data for Quotation Summary (replace with actual fetch in a real app) ---
-            const dummyQuote = {
-                jobId: 'J101-ABC',
-                technicianName: 'Rajesh Kumar',
-                applianceType: 'Washing Machine Repair',
-                serviceDateTime: '2024-06-12, 14:00 PM',
-                partCost: 500.00,
-                laborCost: 350.00,
-                travelCharges: 50.00
+            // --- Get Job ID from URL ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const jobId = urlParams.get('jobId');
+
+            if (!jobId) {
+                showMessage('Error: Job ID not found in URL. Please navigate from your dashboard.', 'error');
+                // Hide payment sections if no jobId
+                approvePayNowBtn.style.display = 'none';
+                paymentMethodsSection.style.display = 'none';
+                return;
+            }
+
+            // --- Fetch Job Details from Backend ---
+            const fetchJobDetails = async () => {
+                try {
+                    const response = await fetch(`/api/jobs/${jobId}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        currentJobData = data.job; // Store fetched data
+                        document.getElementById('summary-job-id').textContent = currentJobData.jobId;
+                        document.getElementById('summary-technician-name').textContent = currentJobData.assignedTechnicianName || 'Pending Assignment';
+                        document.getElementById('summary-appliance-type').textContent = currentJobData.applianceType;
+                        
+                        // Format date and time
+                        const scheduledDate = new Date(currentJobData.scheduledDateTime);
+                        document.getElementById('summary-service-datetime').textContent = scheduledDate.toLocaleString(); // Adjust formatting as needed
+
+                        // Populate quote breakdown
+                        if (currentJobData.quotation) {
+                            document.getElementById('summary-part-cost').textContent = currentJobData.quotation.partCost.toFixed(2);
+                            document.getElementById('summary-labor-cost').textContent = currentJobData.quotation.laborCost.toFixed(2);
+                            document.getElementById('summary-travel-charges').textContent = currentJobData.quotation.travelCharges.toFixed(2);
+                            document.getElementById('summary-total-amount').textContent = currentJobData.quotation.totalEstimate.toFixed(2);
+                        } else {
+                            // If no quotation, display appropriate messages and disable payment
+                            document.getElementById('summary-part-cost').textContent = 'N/A';
+                            document.getElementById('summary-labor-cost').textContent = 'N/A';
+                            document.getElementById('summary-travel-charges').textContent = 'N/A';
+                            document.getElementById('summary-total-amount').textContent = 'N/A';
+                            paymentStatusMessage.textContent = 'Quotation not yet provided by technician.';
+                            approvePayNowBtn.classList.add('button-disabled');
+                            approvePayNowBtn.disabled = true;
+                            showMessage('Quotation not yet available for this job.', 'error');
+                            return; // Stop further processing if no quote
+                        }
+
+                        // Check if job is already paid or cancelled
+                        if (currentJobData.status === 'Paid') {
+                            paymentStatusMessage.textContent = 'This job has already been paid.';
+                            approvePayNowBtn.style.display = 'none';
+                            paymentMethodsSection.style.display = 'none'; // Hide payment options
+                            showMessage('This job has already been paid.', 'success');
+                        } else if (currentJobData.status === 'Cancelled') {
+                            paymentStatusMessage.textContent = 'This job has been cancelled.';
+                            approvePayNowBtn.style.display = 'none';
+                            paymentMethodsSection.style.display = 'none'; // Hide payment options
+                            showMessage('This job has been cancelled.', 'error');
+                        } else if (currentJobData.status !== 'Diagnosed' && currentJobData.status !== 'Completed') {
+                            // Only allow payment for 'Diagnosed' or 'Completed' jobs
+                            paymentStatusMessage.textContent = `Payment can only be processed for jobs that are 'Diagnosed' or 'Completed'. Current status: ${currentJobData.status}.`;
+                            approvePayNowBtn.classList.add('button-disabled');
+                            approvePayNowBtn.disabled = true;
+                            showMessage('Payment cannot be processed for current job status.', 'error');
+                        } else {
+                            // Job is ready for payment
+                            approvePayNowBtn.classList.remove('button-disabled');
+                            approvePayNowBtn.disabled = false;
+                        }
+
+                    } else {
+                        showMessage(data.message || 'Failed to load job details.', 'error');
+                        approvePayNowBtn.style.display = 'none';
+                        paymentMethodsSection.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error fetching job details:', error);
+                    showMessage('An error occurred while fetching job details. Please try again.', 'error');
+                    approvePayNowBtn.style.display = 'none';
+                    paymentMethodsSection.style.display = 'none';
+                }
             };
-            dummyQuote.totalAmount = dummyQuote.partCost + dummyQuote.laborCost + dummyQuote.travelCharges;
 
-            document.getElementById('summary-job-id').textContent = dummyQuote.jobId;
-            document.getElementById('summary-technician-name').textContent = dummyQuote.technicianName;
-            document.getElementById('summary-appliance-type').textContent = dummyQuote.applianceType;
-            document.getElementById('summary-service-datetime').textContent = dummyQuote.serviceDateTime;
-            document.getElementById('summary-part-cost').textContent = dummyQuote.partCost.toFixed(2);
-            document.getElementById('summary-labor-cost').textContent = dummyQuote.laborCost.toFixed(2);
-            document.getElementById('summary-travel-charges').textContent = dummyQuote.travelCharges.toFixed(2);
-            document.getElementById('summary-total-amount').textContent = dummyQuote.totalAmount.toFixed(2);
+            // Call fetch job details on page load
+            await fetchJobDetails();
+
 
             // --- "Approve and Pay Now" Button Logic ---
             approvePayNowBtn.addEventListener('click', () => {
-                paymentMethodsSection.style.display = 'block'; // Show payment options
-                approvePayNowBtn.style.display = 'none'; // Hide the approval button
+                // Ensure there is a valid quote and status before showing payment options
+                if (currentJobData && currentJobData.quotation && (currentJobData.status === 'Diagnosed' || currentJobData.status === 'Completed')) {
+                    paymentMethodsSection.style.display = 'block'; // Show payment options
+                    approvePayNowBtn.style.display = 'none'; // Hide the approval button
+                } else {
+                    showMessage('Cannot proceed with payment. Quotation missing or job status is not ready.', 'error');
+                }
             });
 
             // --- Payment Method Selection Logic ---
@@ -445,19 +576,24 @@
             });
 
             // --- "Complete Payment" Button Logic ---
-            completePaymentBtn.addEventListener('click', () => {
+            completePaymentBtn.addEventListener('click', async () => {
                 if (!selectedPaymentMethod) {
-                    alert('Please select a payment method.');
+                    showMessage('Please select a payment method.', 'error');
+                    return;
+                }
+                if (!currentJobData || !currentJobData.quotation || !currentJobData.quotation.totalEstimate) {
+                    showMessage('Error: Job quotation not available.', 'error');
                     return;
                 }
 
                 let paymentDetails = {};
                 let isValid = true;
+                const totalAmount = currentJobData.quotation.totalEstimate; // Use actual total amount from fetched data
 
                 if (selectedPaymentMethod === 'upi') {
                     const upiId = document.getElementById('upi-id').value.trim();
                     if (!upiId) {
-                        alert('Please enter your UPI ID.');
+                        showMessage('Please enter your UPI ID.', 'error');
                         isValid = false;
                     }
                     paymentDetails.upiId = upiId;
@@ -467,49 +603,75 @@
                     const cvv = document.getElementById('cvv').value.trim();
 
                     if (!cardNumber || cardNumber.length < 16) {
-                        alert('Please enter a valid Card Number.');
+                        showMessage('Please enter a valid Card Number (16 digits).', 'error');
                         isValid = false;
                     } else if (!expiryDate || !/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDate)) {
-                        alert('Please enter a valid Expiry Date (MM/YY).');
+                        showMessage('Please enter a valid Expiry Date (MM/YY).', 'error');
                         isValid = false;
-                    } else if (!cvv || cvv.length < 3) {
-                        alert('Please enter a valid CVV.');
+                    } else if (!cvv || cvv.length < 3 || cvv.length > 4) { // CVV can be 3 or 4 digits
+                        showMessage('Please enter a valid CVV (3 or 4 digits).', 'error');
                         isValid = false;
                     }
                     paymentDetails = { cardNumber, expiryDate, cvv };
                 } else if (selectedPaymentMethod === 'cod') {
                     // No specific input for COD, just confirmation
-                    paymentDetails.method = 'Cash on Delivery';
+                    paymentDetails.method = 'Cash on Delivery'; // This will be duplicated in backend, but good for client log
                 }
 
                 if (!isValid) return;
 
-                // Simulate loading spinner (optional)
+                // Show loading state
                 completePaymentBtn.textContent = 'Processing...';
                 completePaymentBtn.classList.add('button-disabled');
                 completePaymentBtn.disabled = true;
 
-                setTimeout(() => {
-                    alert(`Payment of ₹${dummyQuote.totalAmount.toFixed(2)} successful via ${selectedPaymentMethod.toUpperCase()} for Job ID: ${dummyQuote.jobId}!`);
-                    // In a real app, send data to backend here
-                    // fetch('/api/process-payment', { method: 'POST', body: JSON.stringify({...paymentDetails, jobId: dummyQuote.jobId, totalAmount: dummyQuote.totalAmount }) })
-                    // .then(response => response.json())
-                    // .then(data => { /* handle success/failure */ })
-                    // .catch(error => { /* handle error */ });
+                try {
+                    const response = await fetch('/api/process-payment', {
+    method: 'POST',
+    credentials: 'include', // <-- IMPORTANT!
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        jobId: currentJobData.jobId,
+        totalAmount: totalAmount,
+        paymentMethod: selectedPaymentMethod,
+        paymentDetails: paymentDetails
+    })
+});
 
-                    // Redirect to a confirmation page or dashboard
-                    window.location.href = '/user-dashboard';
-                }, 2000); // Simulate 2-second processing time
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        // Redirect to user dashboard after successful payment
+                        setTimeout(() => {
+                            window.location.href = '/user'; // Changed to /user as per server.js route
+                        }, 2000);
+                    } else {
+                        showMessage(data.message || 'Payment failed. Please try again.', 'error');
+                        // Re-enable button on failure
+                        completePaymentBtn.textContent = 'Complete Payment';
+                        completePaymentBtn.classList.remove('button-disabled');
+                        completePaymentBtn.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Payment processing error:', error);
+                    showMessage('An unexpected error occurred during payment. Please try again.', 'error');
+                    // Re-enable button on error
+                    completePaymentBtn.textContent = 'Complete Payment';
+                    completePaymentBtn.classList.remove('button-disabled');
+                    completePaymentBtn.disabled = false;
+                }
             });
 
             // --- Input Formatting for Card Number and Expiry Date ---
             const cardNumberInput = document.getElementById('card-number');
             if (cardNumberInput) {
                 cardNumberInput.addEventListener('input', (e) => {
-                    // Remove non-digits
-                    let value = e.target.value.replace(/\D/g, '');
-                    // Add spaces every 4 digits
-                    value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+                    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                    value = value.replace(/(\d{4})(?=\d)/g, '$1 '); // Add spaces every 4 digits
                     e.target.value = value;
                 });
             }
@@ -517,14 +679,13 @@
             const expiryDateInput = document.getElementById('expiry-date');
             if (expiryDateInput) {
                 expiryDateInput.addEventListener('input', (e) => {
-                    let value = e.target.value.replace(/\D/g, '');
+                    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
                     if (value.length > 2) {
                         value = value.substring(0, 2) + '/' + value.substring(2, 4);
                     }
                     e.target.value = value;
                 });
             }
-
         });
     </script>
 </body>

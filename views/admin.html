@@ -207,6 +207,7 @@
             font-size: 0.9em;
             margin-right: 5px;
             transition: background-color 0.3s ease;
+            white-space: nowrap; /* Prevents button text from wrapping */
         }
 
         .data-table .approve-btn {
@@ -224,6 +225,19 @@
         .data-table .reject-btn:hover {
             background-color: #c82333;
         }
+
+        .data-table .mark-paid-btn {
+            background-color: #3498db; /* Blue for marking paid */
+            color: white;
+        }
+        .data-table .mark-paid-btn:hover {
+            background-color: #2980b9;
+        }
+        .data-table .mark-paid-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
 
         /* Charts */
         .chart-container {
@@ -465,11 +479,13 @@
                                 <th>Appliance</th>
                                 <th>Technician</th>
                                 <th>Status</th>
+                                <th>Payment Status</th> <!-- New Column -->
                                 <th>Last Updated</th>
+                                <th>Actions</th> <!-- New Column for Payment -->
                             </tr>
                         </thead>
                         <tbody id="live-jobs-table-body">
-                            <tr><td colspan="6" style="text-align: center; color: #777;">Loading live jobs...</td></tr>
+                            <tr><td colspan="8" style="text-align: center; color: #777;">Loading live jobs...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -526,20 +542,50 @@
         <p>&copy; 2024 TechSeva. All rights reserved.</p>
     </footer>
 
+    <!-- Message Box for Alerts -->
+    <div id="message-container"></div>
+
     <script>
         // --- Utility Functions ---
         const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            // Remove any existing messages to only show the latest
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
             const messageBox = document.createElement('div');
             messageBox.className = `message-box ${type}`;
             messageBox.textContent = message;
-            document.body.appendChild(messageBox);
-            setTimeout(() => messageBox.remove(), 5000);
+            messageContainer.appendChild(messageBox);
+            setTimeout(() => {
+                // Fade out and remove the message box
+                messageBox.style.opacity = '0';
+                setTimeout(() => messageBox.remove(), 500); // Wait for fadeOut animation
+            }, 4500); // Message visible for 4.5 seconds before fading out
         };
 
         // --- Fetch & Render Functions ---
 
         async function fetchAdminData() {
             try {
+                // Fetch overview data
+                const overviewResponse = await fetch('/api/admin/dashboard-overview');
+                const overviewResult = await overviewResponse.json();
+
+                if (overviewResult.success) {
+                    document.getElementById('total-jobs').textContent = overviewResult.data.totalJobs;
+                    document.getElementById('active-technicians').textContent = overviewResult.data.activeTechnicians;
+                    document.getElementById('revenue-month').textContent = `₹${overviewResult.data.revenueThisMonth.toFixed(2)}`;
+                    document.getElementById('pending-approvals').textContent = overviewResult.data.pendingApprovals;
+                } else {
+                    showMessage(overviewResult.message || 'Failed to load overview data.', 'error');
+                }
+
+                // Fetch all users and jobs for tables and charts
                 const [usersResponse, jobsResponse] = await Promise.all([
                     fetch('/api/admin/users'),
                     fetch('/api/admin/jobs')
@@ -552,29 +598,6 @@
                     const allUsers = usersResult.users;
                     const allJobs = jobsResult.jobs;
 
-                    // Update Overview Cards
-                    const totalJobs = allJobs.length;
-                    const activeTechnicians = allUsers.filter(user => user.role === 'technician' && user.kycStatus === 'approved').length;
-                    const pendingApprovals = allUsers.filter(user => user.role === 'technician' && user.kycStatus === 'pending').length;
-                    
-                    // Calculate estimated revenue from completed jobs with quotations for the current month
-                    const currentMonth = new Date().getMonth();
-                    const currentYear = new Date().getFullYear();
-                    const revenueThisMonth = allJobs
-                        .filter(job => 
-                            job.status === 'Completed' && 
-                            job.quotation && 
-                            job.completedAt && 
-                            new Date(job.completedAt).getMonth() === currentMonth &&
-                            new Date(job.completedAt).getFullYear() === currentYear
-                        )
-                        .reduce((sum, job) => sum + (job.quotation.totalEstimate || 0), 0);
-
-                    document.getElementById('total-jobs').textContent = totalJobs;
-                    document.getElementById('active-technicians').textContent = activeTechnicians;
-                    document.getElementById('revenue-month').textContent = `$${revenueThisMonth.toFixed(2)}`;
-                    document.getElementById('pending-approvals').textContent = pendingApprovals;
-
                     // Populate Tables
                     populateKycTable(allUsers);
                     populateLiveJobsTable(allJobs);
@@ -586,8 +609,8 @@
                 } else {
                     // Specific error handling for access denied
                     if (usersResponse.status === 403 || jobsResponse.status === 403) {
-                         showMessage('Access Denied: You are not authorized to view the admin dashboard.', 'error');
-                         setTimeout(() => { window.location.href = '/'; }, 1500); // Redirect to login
+                        showMessage('Access Denied: You are not authorized to view the admin dashboard.', 'error');
+                        setTimeout(() => { window.location.href = '/'; }, 1500); // Redirect to login
                     } else {
                         showMessage('Failed to load admin dashboard data.', 'error');
                         console.error('Failed to load admin data:', usersResult.message || jobsResult.message);
@@ -619,18 +642,26 @@
                         <td data-label="PAN">${tech.pan || 'N/A'}</td>
                         <td data-label="Aadhaar">${tech.aadhaar || 'N/A'}</td>
                         <td data-label="Actions">
-                            <button class="approve-btn" data-user-id="${tech.id}">Approve</button>
-                            <button class="reject-btn" data-user-id="${tech.id}">Reject</button>
+                            <button class="approve-btn" data-user-id="${tech._id}">Approve</button>
+                            <button class="reject-btn" data-user-id="${tech._id}">Reject</button>
                         </td>
                     `;
                 });
-                attachKycActionListeners();
+                attachKycActionListeners(); // Re-attach listeners after populating table
             }
         }
 
         function attachKycActionListeners() {
+            // Remove previous listeners to prevent duplicates
             document.querySelectorAll('#kyc-table-body .approve-btn').forEach(button => {
-                button.onclick = null;
+                button.replaceWith(button.cloneNode(true)); // Clone to remove all event listeners
+            });
+            document.querySelectorAll('#kyc-table-body .reject-btn').forEach(button => {
+                button.replaceWith(button.cloneNode(true)); // Clone to remove all event listeners
+            });
+
+            // Add new listeners
+            document.querySelectorAll('#kyc-table-body .approve-btn').forEach(button => {
                 button.addEventListener('click', async (e) => {
                     const userId = e.target.dataset.userId;
                     try {
@@ -641,7 +672,7 @@
                         const result = await response.json();
                         if (result.success) {
                             showMessage(result.message, 'success');
-                            fetchAdminData();
+                            fetchAdminData(); // Re-fetch data to update table
                         } else {
                             showMessage(result.message, 'error');
                         }
@@ -653,7 +684,6 @@
             });
 
             document.querySelectorAll('#kyc-table-body .reject-btn').forEach(button => {
-                button.onclick = null;
                 button.addEventListener('click', async (e) => {
                     const userId = e.target.dataset.userId;
                     try {
@@ -664,7 +694,7 @@
                         const result = await response.json();
                         if (result.success) {
                             showMessage(result.message, 'success');
-                            fetchAdminData();
+                            fetchAdminData(); // Re-fetch data to update table
                         } else {
                             showMessage(result.message, 'error');
                         }
@@ -681,32 +711,100 @@
             const tableBody = document.getElementById('live-jobs-table-body');
             tableBody.innerHTML = '';
 
-            // Live jobs are Pending, Accepted, In Progress, Diagnosed
+            // Filter jobs to show relevant "live" statuses
             const liveJobs = jobs.filter(job =>
                 job.status === 'Pending' ||
                 job.status === 'Accepted' ||
                 job.status === 'In Progress' ||
-                job.status === 'Diagnosed'
+                job.status === 'Diagnosed' ||
+                job.status === 'Completed' // Include completed jobs for payment status tracking
             );
 
             if (liveJobs.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #777;">No live jobs currently.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #777;">No live jobs currently.</td></tr>';
             } else {
                 liveJobs.sort((a, b) => new Date(b.lastUpdated || b.createdAt) - new Date(a.lastUpdated || a.createdAt));
 
                 liveJobs.forEach(job => {
                     const row = tableBody.insertRow();
+                    const paymentStatus = job.payment && job.payment.status ? job.payment.status : 'Pending';
+                    const totalAmount = job.quotation && job.quotation.totalEstimate ? job.quotation.totalEstimate.toFixed(2) : 'N/A';
+
+                    let actionsHtml = '';
+                    // Only show "Mark as Paid" button if job is Diagnosed or Completed, and payment is not Paid
+                    if ((job.status === 'Diagnosed' || job.status === 'Completed') && paymentStatus !== 'Paid') {
+                        actionsHtml = `<button class="mark-paid-btn" data-job-id="${job.jobId}" data-total-amount="${totalAmount}">Mark as Paid</button>`;
+                    } else if (paymentStatus === 'Paid') {
+                        actionsHtml = `<span>Paid</span>`; // Indicate that it's paid
+                    } else if (job.status === 'Cancelled') {
+                         actionsHtml = `<span>N/A</span>`; // No action needed for cancelled jobs
+                    }
+
+
                     row.innerHTML = `
-                        <td data-label="Job ID">${job.id}</td>
+                        <td data-label="Job ID">${job.jobId}</td>
                         <td data-label="Customer Name">${job.customerName}</td>
                         <td data-label="Appliance">${job.applianceType}</td>
-                        <td data-label="Technician">${job.assignedTechnicianName || 'Pending Assignment'}</td>
+                        <td data-label="Technician">${job.technicianName || 'Pending Assignment'}</td>
                         <td data-label="Status">${job.status}</td>
+                        <td data-label="Payment Status">${paymentStatus}</td>
                         <td data-label="Last Updated">${new Date(job.lastUpdated || job.createdAt).toLocaleString()}</td>
+                        <td data-label="Actions">${actionsHtml}</td>
                     `;
                 });
+                attachJobActionListeners(); // Attach listeners for new buttons
             }
         }
+
+        function attachJobActionListeners() {
+            // Remove previous listeners to prevent duplicates
+            document.querySelectorAll('#live-jobs-table-body .mark-paid-btn').forEach(button => {
+                button.replaceWith(button.cloneNode(true));
+            });
+
+            // Add new listeners
+            document.querySelectorAll('#live-jobs-table-body .mark-paid-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const jobId = e.target.dataset.jobId;
+                    const totalAmount = e.target.dataset.totalAmount;
+
+                    if (totalAmount === 'N/A' || parseFloat(totalAmount) <= 0) {
+                        showMessage('Cannot mark as paid: No valid quotation amount available.', 'error');
+                        return;
+                    }
+
+                    // Disable button to prevent multiple clicks
+                    e.target.disabled = true;
+                    e.target.textContent = 'Marking...';
+                    e.target.classList.add('button-disabled');
+
+                    try {
+                        const response = await fetch('/api/admin/jobs/mark-as-paid', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jobId, totalAmount: parseFloat(totalAmount) }) // Send job ID and total amount
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            fetchAdminData(); // Re-fetch all data to update dashboard
+                        } else {
+                            showMessage(result.message, 'error');
+                            e.target.disabled = false; // Re-enable button on error
+                            e.target.textContent = 'Mark as Paid';
+                            e.target.classList.remove('button-disabled');
+                        }
+                    } catch (error) {
+                        console.error('Mark as Paid Error:', error);
+                        showMessage('Network error during mark as paid action.', 'error');
+                        e.target.disabled = false; // Re-enable button on error
+                        e.target.textContent = 'Mark as Paid';
+                        e.target.classList.remove('button-disabled');
+                    }
+                });
+            });
+        }
+
 
         function populateCustomersTable(users, jobs) {
             const tableBody = document.getElementById('customers-table-body');
@@ -715,10 +813,12 @@
             const customers = users.filter(user => user.role === 'user');
 
             if (customers.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #777;">No customer registered yet.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #777;">No customers registered yet.</td></tr>';
             } else {
                 customers.forEach(customer => {
-                    const customerJobsCount = jobs.filter(job => job.userId === customer.id).length;
+                    // Count jobs specific to this customer (by userId, which is customer._id in the job record)
+                    const customerJobsCount = jobs.filter(job => job.userId === customer._id.toString()).length; // Convert ObjectId to string for comparison
+
                     const row = tableBody.insertRow();
                     row.innerHTML = `
                         <td data-label="Name">${customer.fullName}</td>
@@ -739,7 +839,7 @@
             chartDiv.innerHTML = '';
             const maxHeight = 150;
             data.forEach((value) => {
-                const barHeight = (value / maxDataValue) * maxHeight;
+                const barHeight = (value / Math.max(maxDataValue, 1)) * maxHeight; // Prevent division by zero if maxDataValue is 0
                 const bar = document.createElement('div');
                 bar.className = 'bar';
                 bar.style.height = `${barHeight}px`;
@@ -763,6 +863,7 @@
             // Jobs Completed (Monthly)
             const monthlyJobCounts = {};
             const now = new Date();
+            // Initialize last 6 months
             for (let i = 0; i < 6; i++) {
                 const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
                 const monthYear = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
@@ -773,24 +874,26 @@
                 if (job.status === 'Completed' && job.completedAt) {
                     const jobDate = new Date(job.completedAt);
                     const monthYear = `${jobDate.getFullYear()}-${(jobDate.getMonth() + 1).toString().padStart(2, '0')}`;
-                    if (monthlyJobCounts.hasOwnProperty(monthYear)) {
+                    if (monthlyJobCounts.hasOwnProperty(monthYear)) { // Only count for the last 6 months
                         monthlyJobCounts[monthYear]++;
                     }
                 }
             });
 
-            const sortedMonths = Object.keys(monthlyJobCounts).sort();
+            const sortedMonths = Object.keys(monthlyJobCounts).sort(); // Sort to ensure chronological order
             const monthlyData = sortedMonths.map(month => monthlyJobCounts[month]);
             const monthLabels = sortedMonths.map(month => new Date(month + '-01').toLocaleString('en-us', { month: 'short' }));
             renderBarChart('jobs-completed-chart', monthlyData, Math.max(...monthlyData, 1), monthLabels);
 
             // Technician Performance (Jobs Completed)
             const techJobCounts = {};
+            // Initialize counts for all approved technicians
             allUsers.filter(user => user.role === 'technician' && user.kycStatus === 'approved').forEach(tech => {
-                techJobCounts[tech.id] = { name: tech.fullName.split(' ')[0], count: 0 };
+                techJobCounts[tech._id.toString()] = { name: tech.fullName.split(' ')[0], count: 0 }; // Use _id as key
             });
 
             allJobs.forEach(job => {
+                // Ensure assignedTechnicianId exists and is an approved technician
                 if (job.status === 'Completed' && job.assignedTechnicianId && techJobCounts[job.assignedTechnicianId]) {
                     techJobCounts[job.assignedTechnicianId].count++;
                 }
@@ -798,6 +901,7 @@
 
             const techNames = [];
             const techCounts = [];
+            // Sort by jobs completed and take top 5
             Object.values(techJobCounts).sort((a,b) => b.count - a.count).slice(0, 5).forEach(tech => {
                 techNames.push(tech.name);
                 techCounts.push(tech.count);

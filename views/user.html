@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechSeva User Dashboard</title>
+    <!-- jsPDF library for client-side PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- html2canvas for capturing DOM elements for PDF, though we'll use raw images here -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* Basic Reset & Body Styling */
         body {
@@ -240,6 +244,14 @@
             background-color: #e0a800;
         }
 
+        .btn-info { /* New style for 'View Proof PDF' */
+            background-color: #17a2b8; /* Bootstrap Info Blue */
+            color: white;
+        }
+        .btn-info:hover {
+            background-color: #138496;
+        }
+
         .btn-disabled {
             background-color: #cccccc;
             cursor: not-allowed;
@@ -372,6 +384,11 @@
             background-color: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
+        }
+        .message-box.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
         }
         /* Fade Out Animation */
         @keyframes fadeOut {
@@ -597,8 +614,44 @@
         <p>&copy; 2024 TechSeva. All rights reserved.</p>
     </footer>
 
+    <!-- Message Box for Alerts -->
+    <div id="message-container"></div>
+
     <script>
+        // Utility for displaying messages (replaces alert)
+        function showMessage(message, type = 'success') {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) {
+                // Create container if it doesn't exist
+                const newContainer = document.createElement('div');
+                newContainer.id = 'message-container';
+                document.body.appendChild(newContainer);
+                messageContainer = newContainer;
+            }
+
+            // Remove any existing messages to only show the latest
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+
+            // Remove after 5 seconds
+            setTimeout(() => {
+                messageBox.style.opacity = '0'; // Start fade out
+                setTimeout(() => messageBox.remove(), 500); // Remove after fade out
+            }, 4500); // Message visible for 4.5 seconds before fading out
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Constants for Financial Calculations (Must match backend) ---
+            const APP_COMMISSION_RATE = 0.10; // 10%
+            const TAX_RATE_INDIA = 0.18; // 18% GST
+
             // --- Elements ---
             const welcomeGreeting = document.getElementById('welcome-greeting');
             const languageSelect = document.getElementById('language-select');
@@ -613,29 +666,18 @@
             const logoutButton = document.getElementById('logout-btn');
 
             let selectedRating = 0; // State for star rating
-
-            // --- Message Box Utility Function ---
-            function showMessage(message, type = 'success') {
-                const messageBox = document.createElement('div');
-                messageBox.className = `message-box ${type}`;
-                messageBox.textContent = message;
-                document.body.appendChild(messageBox);
-
-                // Remove after 5 seconds
-                setTimeout(() => {
-                    messageBox.remove();
-                }, 5000);
-            }
+            let currentUserData = null; // Store current user's full data
 
             // --- Fetch Current User Details and Update Welcome Greeting ---
             async function fetchCurrentUser() {
                 try {
                     const response = await fetch('/api/user/me');
                     const result = await response.json();
-                    if (result.success && result.user) {
-                        welcomeGreeting.textContent = `Welcome, ${result.user.fullName}!`;
+                    if (response.ok && result.success && result.user) {
+                        currentUserData = result.user; // Store user data
+                        welcomeGreeting.textContent = `Welcome, ${currentUserData.fullName || currentUserData.email}!`;
                     } else {
-                        console.error('Failed to fetch user details:', result.message);
+                        console.error('Failed to fetch user details:', result.message || 'Unknown error');
                         welcomeGreeting.textContent = 'Welcome, User!'; // Fallback
                         showMessage('Could not load user details.', 'error');
                         // Optionally redirect to login if session is truly invalid
@@ -658,12 +700,12 @@
                     const response = await fetch('/api/user/jobs');
                     const result = await response.json();
 
-                    if (result.success && result.jobs) {
+                    if (response.ok && result.success && result.jobs) {
                         const currentBookings = result.jobs.filter(job =>
-                            job.status !== 'Completed' && job.status !== 'Cancelled'
+                            job.status !== 'Completed' && job.status !== 'Cancelled' && job.status !== 'Paid' // Filter out paid jobs from current
                         );
                         const pastServices = result.jobs.filter(job =>
-                            job.status === 'Completed' || job.status === 'Cancelled'
+                            job.status === 'Completed' || job.status === 'Cancelled' || job.status === 'Paid'
                         );
 
                         // Render Current Bookings
@@ -674,15 +716,38 @@
                             currentBookings.forEach(booking => {
                                 const bookingItem = document.createElement('div');
                                 bookingItem.className = `booking-item ${booking.status.toLowerCase().replace(/\s/g, '-')}`;
+                                
+                                let quoteDetailsHtml = '';
+                                let paymentButton = '';
+                                if (booking.status === 'Diagnosed' && booking.quotation) {
+                                    quoteDetailsHtml = `
+                                        <p><strong>Quotation Details:</strong></p>
+                                        <ul>
+                                            <li>Parts Cost: ₹${booking.quotation.partCost.toFixed(2)}</li>
+                                            <li>Labor Cost: ₹${booking.quotation.laborCost.toFixed(2)}</li>
+                                            <li>Travel Charges: ₹${booking.quotation.travelCharges.toFixed(2)}</li>
+                                            <li><strong>Total Estimate: ₹${booking.quotation.totalEstimate.toFixed(2)}</strong></li>
+                                        </ul>
+                                    `;
+                                    // Only show pay button if not already paid (though backend prevents double pay)
+                                    if (!(booking.payment && booking.payment.status === 'Paid')) { // Check if not paid
+                                        paymentButton = `<button class="btn btn-warning view-quote-btn" data-job-id="${booking.jobId}" data-quotation='${JSON.stringify(booking.quotation)}'>View Quote & Pay</button>`;
+                                    } else {
+                                        paymentButton = `<button class="btn btn-success btn-disabled">Payment Paid</button>`;
+                                    }
+                                }
+
                                 bookingItem.innerHTML = `
-                                    <h3>Job ID: ${booking.id} (${booking.applianceType})</h3>
-                                    <p><strong>Technician:</strong> ${booking.assignedTechnicianName || 'Pending Assignment'} ${booking.assignedTechnicianName !== 'Pending Assignment' && booking.assignedTechnicianId ? `(ID: ${booking.assignedTechnicianId.slice(-4)})` : ''}</p>
+                                    <h3>Job ID: ${booking.jobId} (${booking.applianceType})</h3>
+                                    <p><strong>Technician:</strong> ${booking.assignedTechnicianName || 'Pending Assignment'} ${booking.assignedTechnicianName && booking.assignedTechnicianId ? `(ID: ${booking.assignedTechnicianId.slice(-4)})` : ''}</p>
                                     <p><strong>Location:</strong> ${booking.location}</p>
                                     <p><strong>Date & Time:</strong> ${new Date(booking.scheduledDateTime).toLocaleString()}</p>
                                     <p><strong>Status:</strong> ${booking.status}</p>
+                                    <p><strong>Payment Status:</strong> ${booking.payment && booking.payment.status ? booking.payment.status : 'N/A'}</p>
+                                    ${quoteDetailsHtml}
                                     <div class="booking-actions">
-                                        ${booking.status === 'Diagnosed' ? `<button class="btn btn-warning view-quote-btn" data-job-id="${booking.id}">View Quote</button>` : ''}
-                                        ${booking.status !== 'Completed' && booking.status !== 'Cancelled' ? `<button class="btn btn-danger cancel-booking-btn" data-job-id="${booking.id}">Cancel Booking</button>` : ''}
+                                        ${paymentButton}
+                                        ${booking.status !== 'Completed' && booking.status !== 'Cancelled' && booking.status !== 'Paid' ? `<button class="btn btn-danger cancel-booking-btn" data-job-id="${booking.jobId}">Cancel Booking</button>` : ''}
                                     </div>
                                 `;
                                 currentBookingsList.appendChild(bookingItem);
@@ -697,18 +762,42 @@
                             pastServices.forEach(service => {
                                 const row = pastServicesTableBody.insertRow();
                                 const ratingDisplay = service.rating ? `<span>${'★'.repeat(service.rating)}${'☆'.repeat(5 - service.rating)}</span>` : 'N/A';
-                                const amountDisplay = service.quotation && service.quotation.totalEstimate ? `₹${service.quotation.totalEstimate}` : 'N/A';
+                                
+                                let amountDisplay = 'N/A';
+                                if (service.quotation && service.payment && service.payment.status === 'Paid') {
+                                    const grossAmountCustomerPaid = service.quotation.totalEstimate;
+                                    amountDisplay = `₹${grossAmountCustomerPaid.toFixed(2)}`;
+                                } else if (service.quotation && service.quotation.totalEstimate) {
+                                    amountDisplay = `₹${service.quotation.totalEstimate.toFixed(2)} (Unpaid)`;
+                                }
+
+                                let actionsCellHtml = '';
+                                if (service.status === 'Completed' || service.status === 'Paid') { // Also allow actions if paid
+                                    if (service.payment && service.payment.status === 'Paid') {
+                                        actionsCellHtml += `<button class="btn btn-secondary download-invoice-btn" data-job-id="${service.jobId}" data-quotation='${JSON.stringify(service.quotation)}' data-payment='${JSON.stringify(service.payment)}' data-appliance-type="${service.applianceType}" data-technician-name="${service.assignedTechnicianName}" data-customer-name="${currentUserData.fullName || 'Customer'}" data-job-location="${service.location}">Download Invoice</button>`;
+                                        if (service.appliancePhotos && service.appliancePhotos.length > 0) {
+                                            actionsCellHtml += ` <button class="btn btn-info view-proof-pdf-btn" data-job-id="${service.jobId}" data-proof-images='${JSON.stringify(service.appliancePhotos)}'>View Proof PDF</button>`;
+                                        }
+                                    } else {
+                                        // If completed but not paid, offer to pay now
+                                        actionsCellHtml += `<button class="btn btn-warning view-quote-btn" data-job-id="${service.jobId}" data-quotation='${JSON.stringify(service.quotation)}'>Pay Now</button>`;
+                                    }
+                                    if (!service.rating) { // Only show 'Leave Review' if not already rated
+                                        actionsCellHtml += ` <button class="btn btn-success leave-review-shortcut-btn" data-job-id="${service.jobId}">Leave Review</button>`;
+                                    }
+                                } else {
+                                    actionsCellHtml += `Status: ${service.status}`;
+                                }
+
+
                                 row.innerHTML = `
-                                    <td data-label="Job ID">${service.id}</td>
+                                    <td data-label="Job ID">${service.jobId}</td>
                                     <td data-label="Appliance">${service.applianceType}</td>
                                     <td data-label="Technician">${service.assignedTechnicianName || 'N/A'}</td>
                                     <td data-label="Date & Time">${new Date(service.scheduledDateTime).toLocaleString()}</td>
                                     <td data-label="Amount Paid">${amountDisplay}</td>
                                     <td data-label="Rating" class="rating-stars">${ratingDisplay}</td>
-                                    <td data-label="Action">
-                                        ${service.status === 'Completed' ? `<button class="btn btn-secondary download-invoice-btn" data-job-id="${service.id}">Download Invoice</button>` : `Status: ${service.status}`}
-                                        ${service.status === 'Completed' && !service.rating ? `<button class="btn btn-success leave-review-shortcut-btn" data-job-id="${service.id}">Leave Review</button>` : ''}
-                                    </td>
+                                    <td data-label="Action">${actionsCellHtml}</td>
                                 `;
                             });
                         }
@@ -718,7 +807,7 @@
                         attachPastServiceActionListeners();
 
                     } else {
-                        console.error('Failed to fetch user jobs:', result.message);
+                        console.error('Failed to fetch user jobs:', result.message || 'Unknown error');
                         currentBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Failed to load bookings. Please try again.</p>';
                         pastServicesTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">Failed to load past services.</td></tr>';
                         showMessage('Failed to load your bookings.', 'error');
@@ -726,70 +815,390 @@
                 } catch (error) {
                     console.error('Error fetching user jobs:', error);
                     currentBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Network error. Could not load bookings.</p>';
-                    pastServicesTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">Network error. Could not load past services.</td></tr>';
+                    pastServicesTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">Network error. Could not load past services.</p></td></tr>';
                     showMessage('Network error while loading bookings.', 'error');
                 }
             }
 
             // --- Attach Event Listeners for Current Bookings Actions ---
             function attachBookingActionListeners() {
+                // Clear previous listeners to prevent duplicates
                 currentBookingsList.querySelectorAll('.view-quote-btn').forEach(button => {
-                    button.onclick = null; // Remove old listeners
-                    button.addEventListener('click', (e) => {
-                        const jobId = e.target.dataset.jobId;
-                        // Redirect to payment.html with jobId as a query parameter
-                        window.location.href = `/views/payment.html?jobId=${jobId}`; // Updated path
-                    });
+                    button.removeEventListener('click', handleViewQuoteAndPay);
+                });
+                currentBookingsList.querySelectorAll('.cancel-booking-btn').forEach(button => {
+                    button.removeEventListener('click', handleCancelBooking);
                 });
 
+                // Add new listeners
+                currentBookingsList.querySelectorAll('.view-quote-btn').forEach(button => {
+                    button.addEventListener('click', handleViewQuoteAndPay);
+                });
                 currentBookingsList.querySelectorAll('.cancel-booking-btn').forEach(button => {
-                    button.onclick = null; // Remove old listeners
-                    button.addEventListener('click', async (e) => {
-                        const jobId = e.target.dataset.jobId;
-                        if (confirm(`Are you sure you want to cancel Job ID: ${jobId}?`)) {
-                            try {
-                                const response = await fetch('/api/user/jobs/cancel', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ jobId })
-                                });
-                                const result = await response.json();
-                                if (result.success) {
-                                    showMessage(result.message, 'success');
-                                    fetchAndRenderUserJobs(); // Re-render to show updated status
-                                } else {
-                                    showMessage(result.message, 'error');
-                                }
-                            } catch (error) {
-                                console.error('Cancel booking error:', error);
-                                showMessage('Network error during cancellation.', 'error');
-                            }
-                        }
-                    });
+                    button.addEventListener('click', handleCancelBooking);
                 });
             }
 
+            async function handleViewQuoteAndPay(e) {
+                const button = e.target;
+                const jobId = button.dataset.jobId;
+                // Redirect to payment route with jobId as a query parameter
+                window.location.href = `/payment?jobId=${jobId}`;
+            }
+
+            async function handleCancelBooking(e) {
+                const button = e.target;
+                const jobId = button.dataset.jobId;
+                // Use a custom modal or a more styled confirmation in a real app
+                if (confirm(`Are you sure you want to cancel Job ID: ${jobId}?`)) {
+                    button.disabled = true;
+                    button.textContent = 'Cancelling...';
+                    try {
+                        const response = await fetch('/api/user/jobs/cancel', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jobId })
+                        });
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            showMessage(result.message, 'success');
+                            fetchAndRenderUserJobs(); // Re-render to show updated status
+                        } else {
+                            showMessage(result.message || 'Cancellation failed.', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Cancel booking error:', error);
+                        showMessage('Network error during cancellation.', 'error');
+                    } finally {
+                        button.disabled = false;
+                        button.textContent = 'Cancel Booking';
+                    }
+                }
+            }
+
+
             // --- Attach Event Listeners for Past Service Actions ---
             function attachPastServiceActionListeners() {
+                // Clear previous listeners to prevent duplicates
                 document.querySelectorAll('.download-invoice-btn').forEach(button => {
-                    button.onclick = null; // Remove old listeners
-                    button.addEventListener('click', (e) => {
-                        const jobId = e.target.dataset.jobId;
-                        showMessage(`Downloading invoice for Job ID: ${jobId} (simulated).`);
-                        // In a real app, trigger PDF generation/download from backend:
-                        // window.location.href = `/api/download-invoice?jobId=${jobId}`;
-                    });
+                    button.removeEventListener('click', handleDownloadInvoice);
+                });
+                document.querySelectorAll('.view-proof-pdf-btn').forEach(button => {
+                    button.removeEventListener('click', handleViewProofPdf);
+                });
+                document.querySelectorAll('.leave-review-shortcut-btn').forEach(button => {
+                    button.removeEventListener('click', handleLeaveReviewShortcut);
+                });
+                document.querySelectorAll('.view-quote-btn').forEach(button => { // For 'Pay Now' on past services
+                    button.removeEventListener('click', handleViewQuoteAndPay); // Reuse existing handler
                 });
 
-                document.querySelectorAll('.leave-review-shortcut-btn').forEach(button => {
-                    button.onclick = null; // Remove old listeners
-                    button.addEventListener('click', (e) => {
-                        const jobId = e.target.dataset.jobId;
-                        document.getElementById('review-job-id').value = jobId;
-                        // Scroll to feedback section
-                        document.getElementById('feedback-system').scrollIntoView({ behavior: 'smooth' });
-                    });
+
+                // Add new listeners
+                document.querySelectorAll('.download-invoice-btn').forEach(button => {
+                    button.addEventListener('click', handleDownloadInvoice);
                 });
+                document.querySelectorAll('.view-proof-pdf-btn').forEach(button => {
+                    button.addEventListener('click', handleViewProofPdf);
+                });
+                document.querySelectorAll('.leave-review-shortcut-btn').forEach(button => {
+                    button.addEventListener('click', handleLeaveReviewShortcut);
+                });
+                document.querySelectorAll('.view-quote-btn').forEach(button => { // For 'Pay Now' on past services
+                    button.addEventListener('click', handleViewQuoteAndPay); // Reuse existing handler
+                });
+            }
+
+            async function handleDownloadInvoice(e) {
+                const button = e.target;
+                const jobId = button.dataset.jobId;
+                const quotation = JSON.parse(button.dataset.quotation);
+                const payment = JSON.parse(button.dataset.payment);
+                // Get additional data from dataset attributes (passed from renderJobs)
+                const applianceType = button.dataset.applianceType || 'N/A';
+                const technicianName = button.dataset.technicianName || 'N/A';
+                const customerName = button.dataset.customerName || 'Customer'; // Fallback if currentUserData is not set
+                const jobLocation = button.dataset.jobLocation || 'N/A';
+
+
+                button.disabled = true;
+                button.textContent = 'Generating Invoice...';
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: "portrait",
+                    unit: "pt",
+                    format: "a4"
+                });
+
+                let yOffset = 30; // Starting Y position
+                const marginX = 40; // Left/Right margin
+                const lineHeight = 14; // Standard line height
+                const sectionSpacing = 20; // Space between sections
+
+                // --- Invoice Header ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(26);
+                doc.setTextColor(44, 62, 80); // Dark blue for headers
+                doc.text("TechSeva Invoice", doc.internal.pageSize.getWidth() / 2, yOffset, { align: "center" });
+                yOffset += lineHeight;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100); // Gray for taglines
+                doc.text("Your Reliable Appliance Service Partner", doc.internal.pageSize.getWidth() / 2, yOffset, { align: "center" });
+                yOffset += sectionSpacing;
+
+                doc.setDrawColor(200, 200, 200); // Light gray line
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Invoice Details & Bill To ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(52, 73, 94); // Medium blue for sub-headers
+                doc.text("Invoice Details:", marginX, yOffset);
+                yOffset += lineHeight;
+                
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                doc.setTextColor(50, 50, 50); // Darker gray for details
+                doc.text(`Invoice No: ${jobId}`, marginX, yOffset);
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.getWidth() - marginX, yOffset, { align: "right" });
+                yOffset += lineHeight * 2; // Extra space
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.text("Bill To:", marginX, yOffset);
+                yOffset += lineHeight;
+                
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                doc.text(`${customerName}`, marginX, yOffset);
+                yOffset += lineHeight;
+                // Splitting location if it's too long, or assume it fits
+                doc.text(`${jobLocation}`, marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                doc.setDrawColor(200, 200, 200);
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Service Details ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(52, 73, 94);
+                doc.text("Service Information:", marginX, yOffset);
+                yOffset += lineHeight;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                doc.setTextColor(50, 50, 50);
+                doc.text(`Appliance Type: ${applianceType}`, marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text(`Technician: ${technicianName}`, marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text(`Service Date: ${new Date(quotation.createdAt || new Date()).toLocaleDateString()}`, marginX, yOffset); // Use quote creation date or current date
+                yOffset += sectionSpacing;
+                
+                doc.setDrawColor(200, 200, 200);
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Charges Breakdown ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(52, 73, 94);
+                doc.text("Charges Breakdown:", marginX, yOffset);
+                yOffset += lineHeight * 1.5; // More space for column headers
+
+                // Table headers
+                const tableCol1X = marginX + 10;
+                const tableCol2X = doc.internal.pageSize.getWidth() - marginX - 50; // Align right
+
+                doc.setFontSize(12);
+                doc.setTextColor(50, 50, 50);
+                doc.text("Description", tableCol1X, yOffset);
+                doc.text("Amount (₹)", tableCol2X, yOffset, { align: "right" });
+                yOffset += lineHeight;
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset); // Underline headers
+                yOffset += 10;
+
+                // Table rows
+                doc.setFont("helvetica", "normal");
+                doc.text("Parts Cost", tableCol1X, yOffset);
+                doc.text(`₹${quotation.partCost.toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
+                yOffset += lineHeight;
+
+                doc.text("Labor Cost", tableCol1X, yOffset);
+                doc.text(`₹${quotation.laborCost.toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
+                yOffset += lineHeight;
+
+                doc.text("Travel Charges", tableCol1X, yOffset);
+                doc.text(`₹${quotation.travelCharges.toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
+                yOffset += sectionSpacing;
+
+                doc.setDrawColor(150, 150, 150); // Slightly darker line above total
+                doc.line(tableCol1X, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += 10;
+
+                // --- Total Amount ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.setTextColor(39, 174, 96); // Green for total
+                doc.text("TOTAL AMOUNT:", tableCol1X, yOffset);
+                doc.text(`₹${quotation.totalEstimate.toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
+                yOffset += sectionSpacing + 10; // More space after total
+
+                doc.setDrawColor(200, 200, 200);
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Payment Status ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(52, 73, 94);
+                doc.text("Payment Information:", marginX, yOffset);
+                yOffset += lineHeight;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                doc.setTextColor(50, 50, 50);
+                doc.text(`Status: ${payment.status}`, marginX + 10, yOffset);
+                yOffset += lineHeight;
+                doc.text(`Paid On: ${new Date(payment.paidAt).toLocaleString()}`, marginX + 10, yOffset);
+                yOffset += sectionSpacing;
+
+
+                // --- Footer ---
+                doc.setFont("helvetica", "italic");
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text("Thank you for choosing TechSeva for your appliance service needs!", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 40, { align: "center" });
+                doc.text("Contact us: support@techseva.com | www.techseva.com", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 25, { align: "center" });
+
+
+                doc.save(`invoice_job_${jobId}.pdf`);
+                showMessage(`Invoice for Job ID: ${jobId} downloaded.`, 'success');
+                button.disabled = false;
+                button.textContent = 'Download Invoice';
+            }
+
+            function handleLeaveReviewShortcut(e) {
+                const jobId = e.target.dataset.jobId;
+                document.getElementById('review-job-id').value = jobId;
+                // Scroll to feedback section
+                document.getElementById('feedback-system').scrollIntoView({ behavior: 'smooth' });
+            }
+            
+            // Function to get image format from Base64 data URL
+            function getImageFormat(imageDataUrl) {
+                const mimeTypeMatch = imageDataUrl.match(/^data:image\/(png|jpeg|gif|webp);base64,/);
+                if (mimeTypeMatch && mimeTypeMatch[1]) {
+                    // Map 'jpeg' to 'jpg' as jspdf expects 'jpg'
+                    if (mimeTypeMatch[1].toLowerCase() === 'jpeg') {
+                        return 'JPG';
+                    }
+                    return mimeTypeMatch[1].toUpperCase();
+                }
+                return 'JPEG'; // Default to JPEG if format cannot be determined
+            }
+
+            // Function to generate PDF for proof images
+            async function generateProofPdfForJob(jobId, imageDataUrls) {
+                if (!imageDataUrls || imageDataUrls.length === 0) {
+                    showMessage('No proof images available for this job.', 'info');
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: "portrait",
+                    unit: "pt",
+                    format: "a4"
+                });
+
+                let yOffset = 40;
+                const margin = 40; // Increased margin for better spacing
+                const imgMaxWidth = doc.internal.pageSize.getWidth() - (2 * margin); // Max width for image, respecting margins
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const textLineHeight = 12; // Height for captions
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(18);
+                doc.setTextColor(44, 62, 80);
+                doc.text(`Proof Images for Job ID: ${jobId}`, doc.internal.pageSize.getWidth() / 2, yOffset, { align: "center" });
+                yOffset += 30;
+
+                doc.setDrawColor(200, 200, 200);
+                doc.line(margin, yOffset, doc.internal.pageSize.getWidth() - margin, yOffset);
+                yOffset += 20;
+
+
+                for (let i = 0; i < imageDataUrls.length; i++) {
+                    const imgData = imageDataUrls[i];
+                    const img = new Image();
+                    img.src = imgData;
+                    
+                    // Wait for image to load to get its dimensions
+                    await new Promise(resolve => {
+                        img.onload = () => resolve();
+                        img.onerror = () => {
+                            console.error(`Error loading image ${i} for PDF generation.`);
+                            resolve(); // Resolve even on error to not block the loop
+                        };
+                    });
+
+                    // IMPORTANT: Check for naturalWidth AND naturalHeight as 0 indicates a loading failure
+                    if (!img.complete || img.naturalWidth === 0 || img.naturalHeight === 0) {
+                        console.warn(`Skipping invalid or incomplete image data for PDF: ${imgData.substring(0, 50)}...`);
+                        showMessage(`Could not load image ${i+1} for PDF (invalid data).`, 'error');
+                        continue;
+                    }
+
+                    const imgHeight = (img.height * imgMaxWidth) / img.width; // Maintain aspect ratio with max width
+                    
+                    // Add new page if image doesn't fit with caption and padding
+                    if (yOffset + imgHeight + textLineHeight + margin + 10 > pageHeight) {
+                        doc.addPage();
+                        yOffset = margin; // Reset yOffset for new page
+                    }
+                    
+                    // Extract image format dynamically
+                    const imageFormat = getImageFormat(imgData);
+
+                    // Add image to PDF
+                    doc.addImage(imgData, imageFormat, margin, yOffset, imgMaxWidth, imgHeight);
+                    
+                    // Add image caption
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(10);
+                    doc.setTextColor(80, 80, 80);
+                    doc.text(`Image ${i + 1}`, margin, yOffset + imgHeight + 5);
+                    yOffset += imgHeight + textLineHeight + 20; // Add padding after image and caption
+                }
+
+                doc.save(`job_${jobId}_proofs.pdf`);
+                showMessage('Proof PDF generated successfully!', 'success');
+            }
+
+            async function handleViewProofPdf(e) {
+                const button = e.target;
+                const jobId = button.dataset.jobId;
+                const proofImagesData = button.dataset.proofImages; // This will be a JSON string of Base64 URLs
+                
+                button.disabled = true;
+                button.textContent = 'Generating PDF...';
+
+                try {
+                    const imageDataUrls = JSON.parse(proofImagesData);
+                    await generateProofPdfForJob(jobId, imageDataUrls);
+                } catch (error) {
+                    console.error('Error parsing proof images data or generating PDF:', error);
+                    showMessage('Failed to generate proof PDF. Image data might be corrupted.', 'error');
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'View Proof PDF';
+                }
             }
 
 
@@ -810,7 +1219,7 @@
                         if (navigator.geolocation) {
                             navigator.geolocation.getCurrentPosition((position) => {
                                 // Simulate reverse geocoding or just use coordinates
-                                locationInput.value = `Lat: ${position.coords.latitude}, Lon: ${position.coords.longitude}`;
+                                locationInput.value = `Lat: ${position.coords.latitude.toFixed(4)}, Lon: ${position.coords.longitude.toFixed(4)}`;
                                 locationInput.placeholder = "GPS location fetched";
                             }, (error) => {
                                 console.error("Error getting location:", error);
@@ -847,6 +1256,12 @@
                         return;
                     }
 
+                    // Disable button and show loading text
+                    const bookBtn = document.getElementById('book-service-btn');
+                    bookBtn.disabled = true;
+                    const originalBookText = bookBtn.textContent;
+                    bookBtn.textContent = 'Booking...';
+
                     try {
                         const response = await fetch('/api/book-service', {
                             method: 'POST',
@@ -855,16 +1270,27 @@
                         });
                         const result = await response.json();
 
-                        if (result.success) {
+                        if (response.ok && result.success) {
                             showMessage(result.message, 'success');
                             bookingForm.reset();
+                            // Reset GPS checkbox and location input if it was used
+                            if (useGpsCheckbox.checked) {
+                                useGpsCheckbox.checked = false;
+                                locationInput.value = "";
+                                locationInput.placeholder = "Enter your address";
+                                locationInput.disabled = false;
+                            }
                             fetchAndRenderUserJobs(); // Re-fetch and render jobs to include the new one
                         } else {
-                            showMessage(result.message, 'error');
+                            showMessage(result.message || 'Booking failed.', 'error');
                         }
                     } catch (error) {
                         console.error('Service booking error:', error);
                         showMessage('Network error during service booking.', 'error');
+                    } finally {
+                        // Re-enable button and restore text
+                        bookBtn.disabled = false;
+                        bookBtn.textContent = originalBookText;
                     }
                 });
             }
@@ -926,6 +1352,13 @@
                         return;
                     }
 
+                    // Disable button and show loading text
+                    const submitReviewBtn = document.getElementById('submit-review-btn');
+                    submitReviewBtn.disabled = true;
+                    const originalReviewText = submitReviewBtn.textContent;
+                    submitReviewBtn.textContent = 'Submitting...';
+
+
                     try {
                         const response = await fetch('/api/user/submit-review', {
                             method: 'POST',
@@ -934,18 +1367,22 @@
                         });
                         const result = await response.json();
 
-                        if (result.success) {
+                        if (response.ok && result.success) {
                             showMessage(result.message, 'success');
                             reviewForm.reset();
                             selectedRating = 0; // Reset stars visually
                             starRatingContainer.querySelectorAll('.star').forEach(star => star.classList.remove('filled'));
                             fetchAndRenderUserJobs(); // Re-fetch to update review status
                         } else {
-                            showMessage(result.message, 'error');
+                            showMessage(result.message || 'Review submission failed.', 'error');
                         }
                     } catch (error) {
                         console.error('Submit review error:', error);
                         showMessage('Network error during review submission.', 'error');
+                    } finally {
+                        // Re-enable button and restore text
+                        submitReviewBtn.disabled = false;
+                        submitReviewBtn.textContent = originalReviewText;
                     }
                 });
             }
@@ -959,13 +1396,13 @@
                             method: 'POST'
                         });
                         const result = await response.json();
-                        if (result.success) {
+                        if (response.ok && result.success) {
                             showMessage('Logged out successfully!', 'success');
                             setTimeout(() => {
                                 window.location.href = '/'; // Redirect to homepage
                             }, 500);
                         } else {
-                            showMessage(result.message, 'error');
+                            showMessage(result.message || 'Logout failed.', 'error');
                         }
                     } catch (error) {
                         console.error('Logout error:', error);

@@ -599,7 +599,6 @@
         .role-btn i {
             font-size: 1.1em;
         }
-
         .auth-form {
             display: none;
         }
@@ -682,10 +681,11 @@
             color: #3498db;
             text-decoration: none;
             font-size: 0.9rem;
+            cursor: pointer; /* Ensure it looks clickable */
         }
 
         /* OTP Modal Styles */
-        .otp-modal {
+        .otp-modal, .forgot-password-modal { /* Combined styles for both OTP modals */
             display: none;
             position: fixed;
             top: 0;
@@ -696,9 +696,11 @@
             z-index: 1002; /* Higher than auth-overlay */
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
 
-        .otp-modal .modal-content {
+        .otp-modal .modal-content, .forgot-password-modal .modal-content {
             background: white;
             padding: 2rem;
             border-radius: 10px;
@@ -707,21 +709,29 @@
             position: relative;
             text-align: center;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            max-height: 90vh; /* Added for responsiveness */
+            overflow-y: auto; /* Added for responsiveness */
         }
 
-        .close-otp-modal {
+        .close-otp-modal, .close-forgot-password-modal {
             position: absolute;
             top: 15px;
             right: 15px;
             font-size: 1.5rem;
             cursor: pointer;
+            color: #555;
+            transition: color 0.3s ease;
+        }
+        .close-otp-modal:hover, .close-forgot-password-modal:hover {
+            color: #333;
         }
 
         .otp-input {
             display: flex;
             justify-content: space-between;
-            margin: 1.5rem 0;
+            margin: 1.5rem auto; /* Centered for better mobile look */
             gap: 5px; /* Space between OTP digits */
+            max-width: 280px; /* Limit width for OTP inputs */
         }
 
         .otp-digit {
@@ -732,6 +742,11 @@
             border: 1px solid #ccc;
             border-radius: 5px;
             box-sizing: border-box; /* Include padding/border in width */
+        }
+        .otp-digit:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
         }
 
         .resend-otp {
@@ -759,6 +774,8 @@
             animation: fadeOut 0.5s forwards 4.5s;
             opacity: 1;
             transition: opacity 0.5s ease-out;
+            min-width: 200px; /* Ensure message box is readable */
+            text-align: center; /* Center text in message box */
         }
         .message-box.success {
             background-color: #d4edda;
@@ -801,14 +818,6 @@
             .nav-menu.active {
                 display: flex; /* Show when active */
             }
-            .nav-item {
-                width: 100%;
-                text-align: center;
-            }
-            .nav-item a {
-                display: block;
-                padding: 10px;
-            }
             .menu-toggle {
                 display: block; /* Show hamburger */
                 align-self: flex-end; /* Push to right in header */
@@ -844,7 +853,7 @@
             }
 
             /* Auth modal responsive */
-            .auth-container {
+            .auth-container, .otp-modal .modal-content, .forgot-password-modal .modal-content {
                 margin: 1rem;
                 padding: 1.5rem;
                 width: 95%; /* Adjust width for smaller screens */
@@ -875,8 +884,11 @@
                 font-size: 1.3rem;
             }
 
-            .otp-modal .modal-content {
-                padding: 2rem 1.5rem;
+            /* message box responsive */
+            .message-box {
+                left: 10px;
+                right: 10px;
+                width: auto;
             }
         }
     </style>
@@ -979,7 +991,7 @@
                     <div class="feature-item">
                         <h3><span class="feature-icon">🇮🇳</span> Works in Tier-2 & Tier-3 India</h3>
                         <p>Our services are specifically designed to cater to the unique needs of customers and technicians in smaller cities and towns across India.</p>
-                    C                   </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1104,7 +1116,7 @@
                 <input type="hidden" id="login-user-role" name="role" value="user"> <!-- Hidden input for role -->
                 <button type="submit" class="auth-btn">Login</button>
                 <div class="auth-footer">
-                    <a href="javascript:void(0)" class="forgot-password">Forgot Password?</a>
+                    <a href="javascript:void(0)" class="forgot-password" id="forgot-password-link">Forgot Password?</a>
                 </div>
             </form>
 
@@ -1159,7 +1171,7 @@
         </div>
     </div>
 
-    <!-- OTP Verification Modal -->
+    <!-- OTP Verification Modal (for Signup) -->
     <div id="otp-modal" class="otp-modal">
         <div class="modal-content">
             <span class="close-otp-modal">&times;</span>
@@ -1175,6 +1187,52 @@
             </div>
             <button id="verify-otp" class="auth-btn">Verify</button>
             <p class="resend-otp">Didn't receive OTP? <a href="javascript:void(0)" id="resend-otp">Resend</a></p>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="forgot-password-modal">
+        <div class="modal-content">
+            <span class="close-forgot-password-modal">&times;</span>
+            <h2 id="forgot-password-title">Forgot Password?</h2>
+            <p id="forgot-password-message">Enter your email to receive a password reset OTP.</p>
+
+            <!-- Forgot Password Email Input Form -->
+            <form id="forgot-password-email-form">
+                <div class="form-group">
+                    <label for="forgot-password-email">Email:</label>
+                    <input type="email" id="forgot-password-email" name="email" placeholder="Enter your registered email" required>
+                </div>
+                <button type="submit" class="auth-btn" id="send-reset-otp-btn">Send Reset OTP</button>
+                <div class="auth-footer" style="margin-top: 15px;">
+                    <a href="javascript:void(0)" id="back-to-login-from-forgot-password">Back to Login</a>
+                </div>
+            </form>
+
+            <!-- Reset Password Form (Hidden by default) -->
+            <form id="reset-password-form" style="display: none;">
+                <p id="reset-otp-sent-message">We've sent an OTP to <span id="reset-email-display"></span>. Please enter it below.</p>
+                <div class="otp-input">
+                    <input type="text" maxlength="1" class="otp-digit reset-otp-digit" pattern="\d*">
+                    <input type="text" maxlength="1" class="otp-digit reset-otp-digit" pattern="\d*">
+                    <input type="text" maxlength="1" class="otp-digit reset-otp-digit" pattern="\d*">
+                    <input type="text" maxlength="1" class="otp-digit reset-otp-digit" pattern="\d*">
+                    <input type="text" maxlength="1" class="otp-digit reset-otp-digit" pattern="\d*">
+                    <input type="text" maxlength="1" class="otp-digit reset-otp-digit" pattern="\d*">
+                </div>
+                <div class="form-group password-input">
+                    <label for="new-password">New Password:</label>
+                    <input type="password" id="new-password" name="newPassword" placeholder="Min 8 characters" minlength="8" required>
+                    <i class="fas fa-eye toggle-password"></i>
+                </div>
+                <div class="form-group password-input">
+                    <label for="confirm-new-password">Confirm New Password:</label>
+                    <input type="password" id="confirm-new-password" name="confirmNewPassword" placeholder="Confirm new password" minlength="8" required>
+                    <i class="fas fa-eye toggle-confirm-password"></i>
+                </div>
+                <button type="submit" class="auth-btn" id="submit-reset-password-btn">Reset Password</button>
+                <p class="resend-otp">Didn't receive OTP? <a href="javascript:void(0)" id="resend-reset-otp-btn">Resend</a></p>
+            </form>
         </div>
     </div>
 
@@ -1232,14 +1290,30 @@
             const signupRoleInput = document.getElementById('signup-user-role'); // Hidden input in signup form
             const technicianFields = document.getElementById('technician-fields'); // Technician specific fields div
             const signupConfirmPasswordGroup = document.getElementById('signup-confirm-password-group'); // Confirm password group for signup
+            const forgotPasswordLink = document.getElementById('forgot-password-link'); // Added ID to link
 
-            // --- OTP Modal Elements ---
+            // --- OTP Modal Elements (for Signup) ---
             const otpModal = document.getElementById('otp-modal');
             const closeOtpModalBtn = otpModal.querySelector('.close-otp-modal');
             const userEmailDisplay = document.getElementById('user-email-display');
             const otpDigits = otpModal.querySelectorAll('.otp-digit');
             const verifyOtpBtn = document.getElementById('verify-otp');
             const resendOtpBtn = document.getElementById('resend-otp');
+
+            // --- Forgot Password Modal Elements ---
+            const forgotPasswordModal = document.getElementById('forgot-password-modal');
+            const closeForgotPasswordModalBtn = forgotPasswordModal.querySelector('.close-forgot-password-modal');
+            const forgotPasswordEmailForm = document.getElementById('forgot-password-email-form');
+            const forgotPasswordEmailInput = document.getElementById('forgot-password-email');
+            const sendResetOtpBtn = document.getElementById('send-reset-otp-btn');
+            const resetPasswordForm = document.getElementById('reset-password-form');
+            const resetEmailDisplay = document.getElementById('reset-email-display');
+            const resetOtpDigits = resetPasswordForm.querySelectorAll('.reset-otp-digit'); // Specific class for reset OTP inputs
+            const newPasswordInput = document.getElementById('new-password');
+            const confirmNewPasswordInput = document.getElementById('confirm-new-password');
+            const submitResetPasswordBtn = document.getElementById('submit-reset-password-btn');
+            const resendResetOtpBtn = document.getElementById('resend-reset-otp-btn');
+            const backToLoginFromForgotPassword = document.getElementById('back-to-login-from-forgot-password');
 
 
             // --- Navbar Hamburger Menu Toggle ---
@@ -1250,6 +1324,7 @@
             // --- Show Auth Modal Function ---
             const showAuthModal = (initialTab = 'login', initialRole = 'user') => {
                 authOverlay.style.display = 'flex'; // Show the modal overlay
+                forgotPasswordModal.style.display = 'none'; // Ensure forgot password modal is hidden
 
                 // Set initial tab
                 if (initialTab === 'signup') {
@@ -1259,7 +1334,6 @@
                 }
 
                 // Set initial role (simulate click on role button)
-                // This is important for setting the correct active style and hidden input value
                 roleButtons.forEach(button => {
                     if (button.dataset.role === initialRole) {
                         button.click(); // This will trigger the role button's click handler
@@ -1506,7 +1580,7 @@
                 }
             });
 
-            // --- OTP Input focus management ---
+            // --- OTP Input focus management (for Signup OTP) ---
             otpDigits.forEach((digitInput, index) => {
                 digitInput.addEventListener('input', () => {
                     if (digitInput.value.length === 1 && index < otpDigits.length - 1) {
@@ -1525,7 +1599,7 @@
                 });
             });
 
-            // --- Close OTP Modal ---
+            // --- Close OTP Modal (for Signup OTP) ---
             closeOtpModalBtn.addEventListener('click', () => {
                 otpModal.style.display = 'none';
                 sessionStorage.removeItem('pendingSignupData');
@@ -1533,7 +1607,7 @@
                 otpDigits.forEach(digit => digit.value = '');
             });
 
-            // --- Verify OTP and Complete Registration ---
+            // --- Verify OTP and Complete Registration (for Signup OTP) ---
             verifyOtpBtn.addEventListener('click', async () => {
                 showMessage('', null);
 
@@ -1579,11 +1653,11 @@
 
                     otpModal.style.display = 'none';
                     showMessage('Registration successful! You can now login.', 'success');
-                    loginTab.click();
-                    signupForm.reset();
-                    otpDigits.forEach(digit => digit.value = '');
-                    sessionStorage.removeItem('pendingSignupData');
-                    authOverlay.style.display = 'none';
+                    loginTab.click(); // Switch to login tab after successful registration
+                    signupForm.reset(); // Clear signup form
+                    otpDigits.forEach(digit => digit.value = ''); // Clear OTP inputs
+                    sessionStorage.removeItem('pendingSignupData'); // Clear session storage
+                    authOverlay.style.display = 'none'; // Close the main auth modal
 
                 } catch (error) {
                     console.error('OTP Verification or Registration Error:', error);
@@ -1597,7 +1671,7 @@
                 }
             });
 
-            // --- Resend OTP ---
+            // --- Resend OTP (for Signup OTP) ---
             resendOtpBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 showMessage('', null);
@@ -1633,6 +1707,191 @@
                 }
             });
 
+            // --- Forgot Password Link Click ---
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                authOverlay.style.display = 'none'; // Hide main auth modal
+                forgotPasswordModal.style.display = 'flex'; // Show forgot password modal
+                // Reset its state
+                forgotPasswordEmailForm.style.display = 'block';
+                resetPasswordForm.style.display = 'none';
+                forgotPasswordEmailInput.value = '';
+                resetOtpDigits.forEach(input => input.value = '');
+                newPasswordInput.value = '';
+                confirmNewPasswordInput.value = '';
+                showMessage('', null); // Clear any messages
+            });
+
+            // --- Close Forgot Password Modal ---
+            closeForgotPasswordModalBtn.addEventListener('click', () => {
+                forgotPasswordModal.style.display = 'none';
+                sessionStorage.removeItem('pendingResetEmail'); // Clear stored email for reset
+                showMessage('', null);
+            });
+
+            // --- Send Reset OTP Form Submission ---
+            forgotPasswordEmailForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showMessage('', null);
+                const email = forgotPasswordEmailInput.value.trim();
+                if (!email) {
+                    showMessage('Please enter your email address.', 'error');
+                    return;
+                }
+
+                sendResetOtpBtn.disabled = true;
+                sendResetOtpBtn.textContent = 'Sending OTP...';
+
+                try {
+                    const response = await fetch('/send-reset-otp', { // New endpoint for reset OTP
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        sessionStorage.setItem('pendingResetEmail', email); // Store email for reset process
+                        resetEmailDisplay.textContent = email;
+                        forgotPasswordEmailForm.style.display = 'none'; // Hide email form
+                        resetPasswordForm.style.display = 'block'; // Show reset password form
+                        showMessage(result.message, 'success');
+                        resetOtpDigits[0].focus(); // Focus on first OTP digit
+                    } else {
+                        showMessage(result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Send Reset OTP Error:', error);
+                    showMessage('Network error while sending reset OTP. Please try again.', 'error');
+                } finally {
+                    sendResetOtpBtn.disabled = false;
+                    sendResetOtpBtn.textContent = 'Send Reset OTP';
+                }
+            });
+
+            // --- OTP Input focus management (for Reset OTP) ---
+            resetOtpDigits.forEach((digitInput, index) => {
+                digitInput.addEventListener('input', () => {
+                    if (digitInput.value.length === 1 && index < resetOtpDigits.length - 1) {
+                        resetOtpDigits[index + 1].focus();
+                    }
+                    // Do not auto-submit here, let user click 'Reset Password' after entering new password
+                });
+
+                digitInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && digitInput.value === '' && index > 0) {
+                        resetOtpDigits[index - 1].focus();
+                    }
+                });
+            });
+
+            // --- Resend Reset OTP ---
+            resendResetOtpBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                showMessage('', null);
+
+                const email = sessionStorage.getItem('pendingResetEmail');
+                if (!email) {
+                    showMessage('No email found to resend OTP. Please restart forgot password process.', 'error');
+                    forgotPasswordModal.style.display = 'none';
+                    return;
+                }
+
+                resendResetOtpBtn.disabled = true;
+                resendResetOtpBtn.textContent = 'Sending...';
+
+                try {
+                    const response = await fetch('/send-reset-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        showMessage(result.message, 'success');
+                    } else {
+                        showMessage(result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Resend Reset OTP error:', error);
+                    showMessage('Network error while resending reset OTP.', 'error');
+                } finally {
+                    resendResetOtpBtn.disabled = false;
+                    resendResetOtpBtn.textContent = 'Resend';
+                }
+            });
+
+
+            // --- Submit Reset Password Form ---
+            resetPasswordForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showMessage('', null);
+
+                const email = sessionStorage.getItem('pendingResetEmail');
+                const enteredOtp = Array.from(resetOtpDigits).map(input => input.value).join('');
+                const newPassword = newPasswordInput.value;
+                const confirmNewPassword = confirmNewPasswordInput.value;
+
+                if (!email || !enteredOtp || !newPassword || !confirmNewPassword) {
+                    showMessage('All fields are required.', 'error');
+                    return;
+                }
+                if (newPassword !== confirmNewPassword) {
+                    showMessage('New passwords do not match.', 'error');
+                    return;
+                }
+                if (newPassword.length < 8) {
+                    showMessage('New password must be at least 8 characters.', 'error');
+                    return;
+                }
+                if (enteredOtp.length !== 6) {
+                    showMessage('Please enter the complete 6-digit OTP.', 'error');
+                    return;
+                }
+
+                submitResetPasswordBtn.disabled = true;
+                submitResetPasswordBtn.textContent = 'Resetting...';
+
+                try {
+                    const response = await fetch('/reset-password', { // New endpoint for password reset
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, otp: enteredOtp, newPassword })
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showMessage(result.message, 'success');
+                        forgotPasswordModal.style.display = 'none'; // Close reset modal
+                        authOverlay.style.display = 'flex'; // Show main login modal
+                        loginTab.click(); // Switch to login tab
+                        // Clear forms and session storage
+                        forgotPasswordEmailForm.reset();
+                        resetPasswordForm.reset();
+                        resetOtpDigits.forEach(input => input.value = '');
+                        sessionStorage.removeItem('pendingResetEmail');
+                    } else {
+                        showMessage(result.message, 'error');
+                    }
+                } catch (error) {
+                    console.error('Reset Password Error:', error);
+                    showMessage('Network error during password reset. Please try again.', 'error');
+                } finally {
+                    submitResetPasswordBtn.disabled = false;
+                    submitResetPasswordBtn.textContent = 'Reset Password';
+                }
+            });
+
+            // --- Back to Login from Forgot Password ---
+            backToLoginFromForgotPassword.addEventListener('click', (e) => {
+                e.preventDefault();
+                forgotPasswordModal.style.display = 'none';
+                authOverlay.style.display = 'flex';
+                loginTab.click(); // Ensure login tab is active
+                showMessage('', null);
+            });
+
+
             // --- AI Diagnosis Logic ---
             if (getDiagnosisBtn && applianceProblemInput && diagnosisResultDiv && loadingIndicator) {
                 getDiagnosisBtn.addEventListener('click', async () => {
@@ -1652,31 +1911,24 @@
                     getDiagnosisBtn.textContent = 'Diagnosing...';
 
                     try {
-                        let chatHistory = [];
-                        chatHistory.push({ role: "user", parts: [{ text: `Provide a concise, preliminary diagnosis for an appliance problem. User input: "${problemDescription}". Suggest possible causes and basic troubleshooting steps. Keep it under 200 words.` }] });
-
-                        const payload = { contents: chatHistory };
-                        const apiKey = "";
-                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                        // Corrected API URL: Call your backend endpoint instead of the external Gemini API
+                        const apiUrl = '/api/ai-diagnosis'; // This now points to your server.js endpoint
 
                         const response = await fetch(apiUrl, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
+                            body: JSON.stringify({ problemDescription: problemDescription }) // Send problemDescription to your backend
                         });
 
                         const result = await response.json();
-                        if (result.candidates && result.candidates.length > 0 &&
-                            result.candidates[0].content && result.candidates[0].content.parts &&
-                            result.candidates[0].content.parts.length > 0) {
-                            const diagnosisText = result.candidates[0].content.parts[0].text;
-                            diagnosisResultDiv.textContent = diagnosisText;
+                        if (result.success && result.diagnosis) { // Check for 'success' and 'diagnosis' properties from your backend
+                            diagnosisResultDiv.textContent = result.diagnosis;
                             diagnosisResultDiv.style.display = 'block';
                             showMessage('Diagnosis complete!', 'success');
                         } else {
-                            diagnosisResultDiv.textContent = 'Could not get a diagnosis. Please try again or rephrase.';
+                            diagnosisResultDiv.textContent = result.message || 'Could not get a diagnosis. Please try again or rephrase.';
                             diagnosisResultDiv.style.display = 'block';
-                            showMessage('Failed to get AI diagnosis.', 'error');
+                            showMessage(result.message || 'Failed to get AI diagnosis.', 'error');
                         }
                     } catch (error) {
                         console.error('AI Diagnosis API error:', error);

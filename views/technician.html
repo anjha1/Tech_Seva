@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechSeva Technician Dashboard</title>
+    <!-- jsPDF library for client-side PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- html2canvas for capturing DOM elements for PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* Basic Reset & Body Styling */
         body {
@@ -228,6 +232,7 @@
             display: flex;
             flex-wrap: wrap; /* Allow wrapping on small screens */
             gap: 8px;
+            align-items: center; /* Align buttons and file inputs */
         }
 
         .action-btn {
@@ -252,6 +257,10 @@
         .btn-diagnose { background-color: #ffc107; color: #333; }
         .btn-diagnose:hover { background-color: #e0a800; }
 
+        .btn-view-pdf { background-color: #6c757d; color: white; }
+        .btn-view-pdf:hover { background-color: #5a6268; }
+
+
         .btn-disabled {
             background-color: #cccccc;
             cursor: not-allowed;
@@ -262,6 +271,7 @@
             margin-top: 15px;
             border-top: 1px dashed #eee;
             padding-top: 15px;
+            width: 100%; /* Take full width */
         }
         .file-upload-group label {
             display: block;
@@ -275,6 +285,20 @@
             padding: 5px;
             border: 1px solid #ddd;
             border-radius: 4px; /* Rounded corners */
+            margin-bottom: 10px;
+        }
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .image-preview {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
 
         /* Earnings Section */
@@ -323,9 +347,15 @@
             transition: background-color 0.3s ease;
             width: 100%;
             display: block;
+            margin-top: 20px; /* Added margin for separation */
         }
         .withdraw-btn:hover {
             background-color: #2980b9;
+        }
+        .withdraw-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
         }
 
         /* Settings & Availability */
@@ -339,7 +369,9 @@
             font-size: 0.95em;
         }
         .settings-form select,
-        .settings-form input[type="time"] { /* Only for time inputs */
+        .settings-form input[type="time"],
+        .settings-form input[type="text"],
+        .settings-form input[type="number"] { /* Added text and number for location */
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px; /* Rounded corners */
@@ -357,7 +389,7 @@
             width: auto;
             border-radius: 4px; /* Rounded corners */
         }
-        .update-availability-btn {
+        .update-button { /* Unified style for various update buttons */
             background-color: #27ae60;
             color: white;
             padding: 10px 20px;
@@ -369,8 +401,13 @@
             transition: background-color 0.3s ease;
             margin-top: 20px;
         }
-        .update-availability-btn:hover {
+        .update-button:hover {
             background-color: #229a53;
+        }
+        .update-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
         }
 
         /* Notifications Area */
@@ -456,6 +493,11 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
+        .message-box.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
         /* Keyframe for fadeOut animation */
         @keyframes fadeOut {
             from { opacity: 1; }
@@ -503,7 +545,9 @@
                 grid-template-columns: 1fr;
             }
             .settings-form select,
-            .settings-form input[type="time"] { /* Only for time inputs */
+            .settings-form input[type="time"],
+            .settings-form input[type="text"],
+            .settings-form input[type="number"] { /* Also for mobile */
                 width: 100%;
             }
         }
@@ -513,7 +557,7 @@
     <header>
         <div class="header-left">
             <svg class="logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93H3.07C3.52 16.14 6.4 19.02 10 19.93V19.93zM10 4.07V4c-3.6.91-6.48 3.79-6.93 7h1.07c0-4.08 3.05-7.39 7-7.93zm2 15.93v-2.07c4.2-.45 7.47-3.73 7.93-7.93H20.93C20.48 16.14 17.6 19.02 14 19.93zm0-15.93V4.07c3.95.49 7 3.85 7 7.93h1.07c-.45-4.14-3.33-7.02-6.93-7z"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93H3.07C3.52 16.14 6.4 19.02 10 19.93V19.93zM10 4.07V4c-3.6.91-6.48 3.79-6.93 7h1.07c0-4.08 3.05-7.39 7-7.93zm2 15.93v-2.07c4.2-.45 7.47-3.73 7.93-7.93H20.93C20.48 16.14 17.6 19.02 14 19.93zm0-15.93V4.07c3.95.49 7.0 3.85 7.0 7.93h1.07c-.45-4.14-3.33-7.02-6.93-7z"/>
             </svg>
             <span class="platform-name">TechSeva Technician</span>
         </div>
@@ -550,7 +594,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="value" id="stat-earnings">₹ 0</div>
-                        <div class="label">Earnings This Month</div>
+                        <div class="label">Available for Withdrawal</div>
                     </div>
                 </div>
             </section>
@@ -558,7 +602,7 @@
             <section class="card job-list-section">
                 <h2>Job Requests</h2>
                 <div id="job-list-container" class="job-list-container">
-                    <p style="text-align: center; color: #777;">Loading jobs...</p>
+                    <p style="text-align: center; color: #777;">No active job requests currently assigned or accepted.</p>
                 </div>
             </section>
 
@@ -567,24 +611,61 @@
                 <div class="earnings-summary">
                     <div class="earnings-card">
                         <div class="value" id="today-earnings">₹ 0</div>
-                        <div class="label">Today's Earnings</div>
+                        <div class="label">Today's Net Earnings</div>
                     </div>
                     <div class="earnings-card">
                         <div class="value" id="weekly-earnings">₹ 0</div>
-                        <div class="label">Weekly Earnings</div>
+                        <div class="label">Weekly Net Earnings</div>
                     </div>
                     <div class="earnings-card">
                         <div class="value" id="monthly-earnings">₹ 0</div>
-                        <div class="label">Monthly Earnings</div>
+                        <div class="label">Monthly Net Earnings</div>
                     </div>
                 </div>
-                <div class="bank-info" id="bank-details-info">
-                    <h3>Bank Account Details</h3>
-                    <p><strong>Bank Name:</strong> Loading...</p>
-                    <p><strong>Account No:</strong> Loading...</p>
-                    <p><strong>IFSC Code:</strong> Loading...</p>
+                <!-- Section for Available Balance with Refresh button -->
+                <div class="bank-info" id="available-balance-info" style="background-color: #d4edda; border-color: #c3e6cb; color: #155724; font-weight: bold; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3>Available Balance for Withdrawal</h3>
+                        <p class="value" id="available-balance">₹ 0.00</p>
+                    </div>
+                    <button id="refresh-balance-btn" class="update-button" style="margin-top: 0;">Refresh Balance</button>
                 </div>
-                <button id="withdraw-btn" class="withdraw-btn">Withdraw to Bank</button>
+
+                <!-- New Section for Bank/UPI Details -->
+                <section class="card payment-details-section">
+                    <h2>Payment Details for Withdrawal</h2>
+                    <form id="payment-details-form" class="settings-form">
+                        <div class="form-group">
+                            <label for="bank-name">Bank Name:</label>
+                            <input type="text" id="bank-name" placeholder="e.g., State Bank of India">
+                        </div>
+                        <div class="form-group">
+                            <label for="account-number">Account Number:</label>
+                            <input type="text" id="account-number" placeholder="Your Bank Account Number">
+                        </div>
+                        <div class="form-group">
+                            <label for="ifsc-code">IFSC Code:</label>
+                            <input type="text" id="ifsc-code" placeholder="e.g., SBIN0000001">
+                        </div>
+                        <div class="form-group">
+                            <label for="upi-id">UPI ID:</label>
+                            <input type="text" id="upi-id" placeholder="e.g., yourname@upi">
+                            <small style="color: #666;">Provide either Bank Account details OR UPI ID.</small>
+                        </div>
+                        <button type="submit" id="update-payment-details-btn" class="update-button">Update Payment Details</button>
+                    </form>
+                    <div class="bank-info" id="current-bank-details-info" style="margin-top: 20px;">
+                        <h3>Current Stored Details:</h3>
+                        <p><strong>Bank Name:</strong> <span id="display-bank-name">N/A</span></p>
+                        <p><strong>Account No:</strong> <span id="display-account-number">N/A</span></p>
+                        <p><strong>IFSC Code:</strong> <span id="display-ifsc-code">N/A</span></p>
+                        <p><strong>UPI ID:</strong> <span id="display-upi-id">N/A</span></p>
+                    </div>
+                </section>
+                <!------------------------------------------------->
+
+                <button id="withdraw-btn" class="withdraw-btn">Withdraw Now</button>
+                <p id="withdrawal-method-info" style="text-align: center; font-size: 0.9em; color: #555; margin-top: 10px;">Withdrawal will be processed based on your provided details.</p>
             </section>
 
             <section class="card settings-availability-section">
@@ -614,9 +695,32 @@
                         <input type="checkbox" id="emergency-calls">
                         <label for="emergency-calls">Available for emergency calls</label>
                     </div>
-                    <button type="submit" id="update-availability-btn" class="update-availability-btn">Update Availability</button>
+                    <button type="submit" id="update-availability-btn" class="update-button">Update Availability</button>
                 </form>
             </section>
+
+            <!-- New Section: Working Location & Service Area -->
+            <section class="card working-location-section">
+                <h2>Working Location & Service Area</h2>
+                <form id="location-settings-form" class="settings-form">
+                    <div class="form-group">
+                        <label for="working-location">Your Primary Working Location (City/Area):</label>
+                        <input type="text" id="working-location" placeholder="e.g., New Delhi, Connaught Place">
+                        <small style="color: #666;">This helps us assign jobs nearest to you.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="service-radius">Service Radius (in km):</label>
+                        <input type="number" id="service-radius" min="1" max="100" value="10" placeholder="e.g., 10">
+                        <small style="color: #666;">Jobs within this distance from your primary location will be considered.</small>
+                    </div>
+                    <button type="submit" id="update-location-btn" class="update-button">Update Location Settings</button>
+                </form>
+                <div style="margin-top: 20px; padding: 15px; background-color: #f0f8ff; border-left: 5px solid #3498db; border-radius: 4px;">
+                    <p style="font-size: 0.9em; color: #555;"><strong>Note on Advanced Location:</strong> In a real application, "Google advanced location" would integrate with <a href="https://developers.google.com/maps/documentation/places/web-service/overview" target="_blank" style="color: #3498db;">Google Places API</a> for autocomplete suggestions and <a href="https://developers.google.com/maps/documentation/geocoding/overview" target="_blank" style="color: #3498db;">Geocoding API</a> to convert addresses into precise latitude/longitude coordinates. This allows for accurate distance calculations and map-based job assignment. For this demo, please enter your location manually.</p>
+                </div>
+            </section>
+            <!------------------------------------------------->
+
         </div>
 
         <aside class="notifications-section">
@@ -641,17 +745,30 @@
         <p>&copy; 2024 TechSeva. All rights reserved.</p>
     </footer>
 
+    <!-- Message Box for Alerts -->
+    <div id="message-container"></div>
+
     <script>
         // Utility for displaying messages (replaces alert)
         const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            // Remove any existing messages to only show the latest
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
             const messageBox = document.createElement('div');
             messageBox.className = `message-box ${type}`;
             messageBox.textContent = message;
-            document.body.appendChild(messageBox); // Append to body to float above content
+            messageContainer.appendChild(messageBox);
 
             setTimeout(() => {
-                messageBox.remove();
-            }, 5000); // Message disappears after 5 seconds
+                messageBox.style.opacity = '0'; // Start fade out
+                setTimeout(() => messageBox.remove(), 500); // Remove after fade out
+            }, 4500); // Message visible for 4.5 seconds before fading out
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -662,29 +779,52 @@
             const profileRating = document.getElementById('profile-rating');
             const statJobsCompleted = document.getElementById('stat-jobs-completed');
             const statAverageRating = document.getElementById('stat-average-rating');
-            const statEarnings = document.getElementById('stat-earnings');
+            const statEarnings = document.getElementById('stat-earnings'); 
             const todayEarnings = document.getElementById('today-earnings');
             const weeklyEarnings = document.getElementById('weekly-earnings');
             const monthlyEarnings = document.getElementById('monthly-earnings');
-            const bankDetailsInfo = document.getElementById('bank-details-info');
+            const availableBalanceElement = document.getElementById('available-balance'); 
             const jobListContainer = document.getElementById('job-list-container');
             const notificationList = document.getElementById('notification-list');
             const logoutButton = document.getElementById('logout-btn');
             const withdrawButton = document.getElementById('withdraw-btn');
-            const availabilityForm = document.getElementById('availability-form'); // Corrected
+            const withdrawalMethodInfo = document.getElementById('withdrawal-method-info'); // New element
+            const availabilityForm = document.getElementById('availability-form');
             const availableDaysSelect = document.getElementById('available-days');
             const startTimeInput = document.getElementById('start-time');
             const endTimeInput = document.getElementById('end-time');
             const emergencyCallsCheckbox = document.getElementById('emergency-calls');
 
+            // Location settings elements
+            const locationSettingsForm = document.getElementById('location-settings-form');
+            const workingLocationInput = document.getElementById('working-location');
+            const serviceRadiusInput = document.getElementById('service-radius');
+            const updateLocationBtn = document.getElementById('update-location-btn');
 
-            let currentUser = null; // Store fetched user data
-            let currentJobs = []; // Store fetched job data
+            // New Payment Details elements
+            const paymentDetailsForm = document.getElementById('payment-details-form');
+            const bankNameInput = document.getElementById('bank-name');
+            const accountNumberInput = document.getElementById('account-number');
+            const ifscCodeInput = document.getElementById('ifsc-code');
+            const upiIdInput = document.getElementById('upi-id');
+            const updatePaymentDetailsBtn = document.getElementById('update-payment-details-btn');
+            const displayBankName = document.getElementById('display-bank-name');
+            const displayAccountNumber = document.getElementById('display-account-number');
+            const displayIfscCode = document.getElementById('display-ifsc-code');
+            const displayUpiId = document.getElementById('display-upi-id');
+            const refreshBalanceBtn = document.getElementById('refresh-balance-btn');
+
+
+            let currentUser = null; 
+            let currentJobs = []; 
+            const APP_COMMISSION_RATE = 0.10; 
+            const TAX_RATE_INDIA = 0.18; 
 
             // --- Fetch & Populate Data ---
             async function fetchTechnicianData() {
+                console.log("[FETCH DATA] Starting fetchTechnicianData...");
                 try {
-                    // Fetch current user details
+                    // Fetch current user details (this is where the balance is stored)
                     const userResponse = await fetch('/api/user/me');
                     if (!userResponse.ok) {
                         const errorData = await userResponse.json();
@@ -697,7 +837,10 @@
                         setTimeout(() => { window.location.href = '/'; }, 1500);
                         return;
                     }
-                    currentUser = userResult.user;
+                    currentUser = userResult.user; // Update currentUser with latest data including balance
+                    console.log("[FETCH DATA] Current User Data:", currentUser);
+                    console.log("[FETCH DATA] Current User Balance:", currentUser.balance);
+
 
                     // Fetch technician's assigned jobs
                     const jobsResponse = await fetch('/api/technician/jobs');
@@ -710,53 +853,104 @@
                     if (!jobsResult.success) {
                         showMessage('Failed to load job requests.', 'error');
                         console.error('Failed to load jobs:', jobsResult.message);
-                        currentJobs = []; // Ensure it's an empty array on failure
+                        currentJobs = []; 
                     } else {
                         currentJobs = jobsResult.jobs;
+                        console.log("[FETCH DATA] Fetched Jobs:", currentJobs);
                     }
 
                     // Populate Profile Overview
                     if (technicianDisplayName) technicianDisplayName.textContent = `Hello, ${currentUser.fullName || currentUser.email}!`;
                     if (profileName) profileName.textContent = currentUser.fullName || currentUser.email;
                     if (profileSkills) profileSkills.textContent = `Skills: ${currentUser.skills ? currentUser.skills.join(', ') : 'N/A'}`;
-                    if (profileRating) profileRating.textContent = `★★★★☆ (N/A)`; // Placeholder, requires review data
+                    
+                    // Display Average Rating
+                    if (profileRating) {
+                        const avgRating = currentUser.averageRating ? currentUser.averageRating.toFixed(1) : 'N/A';
+                        const stars = currentUser.averageRating ? '★'.repeat(Math.round(currentUser.averageRating)) + '☆'.repeat(5 - Math.round(currentUser.averageRating)) : '☆☆☆☆☆';
+                        profileRating.textContent = `${stars} (${avgRating})`;
+                    }
+                    if (statAverageRating) statAverageRating.textContent = currentUser.averageRating ? currentUser.averageRating.toFixed(1) : '0';
+
 
                     // Calculate stats from fetched jobs
-                    const completedJobs = currentJobs.filter(job => job.status === 'Completed');
-                    if (statJobsCompleted) statJobsCompleted.textContent = completedJobs.length;
-                    if (statAverageRating) statAverageRating.textContent = 'N/A'; // Placeholder
+                    // Jobs Completed count: Filter for jobs that are 'Completed' or 'Paid'
+                    const completedJobsCount = currentJobs.filter(job => job.status === 'Completed' || job.status === 'Paid').length;
+                    if (statJobsCompleted) statJobsCompleted.textContent = completedJobsCount;
 
-                    // Calculate earnings (placeholder logic for demo)
-                    const totalEarnings = completedJobs.reduce((sum, job) => sum + (job.quotation?.totalEstimate || 0), 0);
-                    if (statEarnings) statEarnings.textContent = `₹ ${totalEarnings.toFixed(2)}`;
-                    if (todayEarnings) todayEarnings.textContent = `₹ ${calculateDailyEarnings(completedJobs).toFixed(2)}`;
-                    if (weeklyEarnings) weeklyEarnings.textContent = `₹ ${calculateWeeklyEarnings(completedJobs).toFixed(2)}`;
-                    if (monthlyEarnings) monthlyEarnings.textContent = `₹ ${calculateMonthlyEarnings(completedJobs).toFixed(2)}`;
+                    // Now, directly use currentUser.balance for the main "Available for Withdrawal" stat
+                    if (statEarnings) statEarnings.textContent = `₹ ${currentUser.balance ? currentUser.balance.toFixed(2) : '0.00'}`;
+                    if (availableBalanceElement) availableBalanceElement.textContent = `₹ ${currentUser.balance ? currentUser.balance.toFixed(2) : '0.00'}`;
 
-                    // Populate Bank Details
-                    if (bankDetailsInfo) {
-                        if (currentUser.bankDetails) {
-                            const [bankName, accountNumber, ifscCode] = currentUser.bankDetails.split(',').map(s => s.trim());
-                            bankDetailsInfo.innerHTML = `
-                                <h3>Bank Account Details</h3>
-                                <p><strong>Bank Name:</strong> ${bankName || 'N/A'}</p>
-                                <p><strong>Account No:</strong> ${accountNumber || 'N/A'}</p>
-                                <p><strong>IFSC Code:</strong> ${ifscCode || 'N/A'}</p>
-                            `;
+                    // Earnings for Today, Weekly, Monthly are calculated from jobs marked 'Paid'
+                    // The 'Paid' status is set when the customer pays.
+                    const jobsPaidToTechnician = currentJobs.filter(job => job.payment && job.payment.status === 'Paid'); 
+                    
+                    if (todayEarnings) todayEarnings.textContent = `₹ ${calculateDailyEarnings(jobsPaidToTechnician).toFixed(2)}`;
+                    if (weeklyEarnings) weeklyEarnings.textContent = `₹ ${calculateWeeklyEarnings(jobsPaidToTechnician).toFixed(2)}`;
+                    if (monthlyEarnings) monthlyEarnings.textContent = `₹ ${calculateMonthlyEarnings(jobsPaidToTechnician).toFixed(2)}`;
+                    
+                    // Enable/disable withdraw button based on balance AND payment details
+                    if (withdrawButton) {
+                        const hasBankDetails = currentUser.bankDetails && currentUser.bankDetails.accountNumber && currentUser.bankDetails.bankName && currentUser.bankDetails.ifscCode;
+                        const hasUpiId = currentUser.bankDetails && currentUser.bankDetails.upiId;
+
+                        const canWithdraw = (currentUser.balance || 0) > 0 && (hasBankDetails || hasUpiId);
+                        withdrawButton.disabled = !canWithdraw;
+                        
+                        if (canWithdraw) {
+                            if (hasUpiId) {
+                                withdrawalMethodInfo.textContent = `Withdrawal will be made to UPI ID: ${currentUser.bankDetails.upiId}`;
+                            } else if (hasBankDetails) {
+                                withdrawalMethodInfo.textContent = `Withdrawal will be made to Bank Account: ${currentUser.bankDetails.accountNumber} (${currentUser.bankDetails.bankName})`;
+                            } else {
+                                withdrawalMethodInfo.textContent = "Withdrawal will be processed based on your provided details.";
+                            }
                         } else {
-                            bankDetailsInfo.innerHTML = `
-                                <h3>Bank Account Details</h3>
-                                <p>No bank details provided. Please update in settings.</p>
-                            `;
+                            if ((currentUser.balance || 0) <= 0) {
+                                withdrawalMethodInfo.textContent = "No available balance to withdraw.";
+                            } else {
+                                withdrawalMethodInfo.textContent = "Please provide valid bank account details or a UPI ID to enable withdrawal.";
+                            }
                         }
+                        console.log("[WITHDRAW BUTTON] Withdraw button disabled status:", withdrawButton.disabled);
                     }
 
-                    // Populate Availability Settings (if implemented in backend)
-                    // This assumes currentUser object might have availability properties like availableDays, startTime, endTime, emergencyCalls
+
+                    // Populate Payment Details (Bank/UPI)
+                    console.log("[FETCH DATA] Populating payment details from currentUser.bankDetails:", currentUser.bankDetails);
+                    if (currentUser.bankDetails) {
+                        displayBankName.textContent = currentUser.bankDetails.bankName || 'N/A';
+                        displayAccountNumber.textContent = currentUser.bankDetails.accountNumber || 'N/A';
+                        displayIfscCode.textContent = currentUser.bankDetails.ifscCode || 'N/A';
+                        displayUpiId.textContent = currentUser.bankDetails.upiId || 'N/A';
+
+                        // Also populate the form fields for editing
+                        bankNameInput.value = currentUser.bankDetails.bankName || '';
+                        accountNumberInput.value = currentUser.bankDetails.accountNumber || '';
+                        ifscCodeInput.value = currentUser.bankDetails.ifscCode || '';
+                        upiIdInput.value = currentUser.bankDetails.upiId || '';
+                    } else {
+                        displayBankName.textContent = 'N/A';
+                        displayAccountNumber.textContent = 'N/A';
+                        displayIfscCode.textContent = 'N/A';
+                        displayUpiId.textContent = 'N/A';
+
+                        // Clear form fields if no bank details exist
+                        bankNameInput.value = '';
+                        accountNumberInput.value = '';
+                        ifscCodeInput.value = '';
+                        upiIdInput.value = '';
+                    }
+
+
+                    // Populate Availability Settings
                     if (currentUser.availability) {
                         Array.from(availableDaysSelect.options).forEach(option => {
                             if (currentUser.availability.availableDays && currentUser.availability.availableDays.includes(option.value)) {
                                 option.selected = true;
+                            } else {
+                                option.selected = false; // Ensure unselected days are marked
                             }
                         });
                         startTimeInput.value = currentUser.availability.startTime || '09:00';
@@ -764,91 +958,174 @@
                         emergencyCallsCheckbox.checked = currentUser.availability.emergencyCalls || false;
                     }
 
+                    // Populate Working Location Settings
+                    if (currentUser.workingLocation) {
+                        workingLocationInput.value = currentUser.workingLocation.address || '';
+                        serviceRadiusInput.value = currentUser.workingLocation.radiusKm || '10';
+                    }
 
-                    renderJobs(); // Render fetched jobs
-                    // renderNotifications(); // Render notifications (if you implement dynamic notifications)
+                    renderJobs(); 
+                    console.log("[FETCH DATA] fetchTechnicianData completed.");
 
                 } catch (error) {
                     showMessage(`Error fetching technician data: ${error.message}. Redirecting to login.`, 'error');
                     console.error('Error fetching technician data:', error);
-                    setTimeout(() => { window.location.href = '/'; }, 1500); // Redirect on severe error
+                    setTimeout(() => { window.location.href = '/'; }, 1500); 
                 }
             }
 
-            // Dummy earnings calculation (replace with actual backend logic)
+            // Helper functions for earnings calculation
+            // These functions calculate earnings for jobs that have been paid by the customer,
+            // and apply the commission and tax rates to determine net earnings for the technician
+            function calculateNetEarningForJob(job) {
+                if (job.quotation && job.quotation.totalEstimate) {
+                    const grossAmount = job.quotation.totalEstimate;
+                    const appCommission = grossAmount * APP_COMMISSION_RATE;
+                    const amountBeforeTax = grossAmount - appCommission;
+                    const technicianTaxDeduction = amountBeforeTax * TAX_RATE_INDIA;
+                    return amountBeforeTax - technicianTaxDeduction;
+                }
+                return 0;
+            }
+
             function calculateDailyEarnings(jobs) {
                 const today = new Date();
-                return jobs.filter(job => {
-                    const completedDate = new Date(job.completedAt);
-                    return completedDate.getDate() === today.getDate() &&
-                           completedDate.getMonth() === today.getMonth() &&
-                           completedDate.getFullYear() === today.getFullYear();
-                }).reduce((sum, job) => sum + (job.quotation?.totalEstimate || 0), 0);
+                let dailyNet = 0;
+                jobs.filter(job => {
+                    // Check if job was paid today
+                    const paidDate = job.payment && job.payment.paidAt ? new Date(job.payment.paidAt) : null;
+                    return paidDate && 
+                           paidDate.getDate() === today.getDate() &&
+                           paidDate.getMonth() === today.getMonth() &&
+                           paidDate.getFullYear() === today.getFullYear();
+                }).forEach(job => {
+                    dailyNet += calculateNetEarningForJob(job);
+                });
+                return dailyNet;
             }
 
             function calculateWeeklyEarnings(jobs) {
                 const today = new Date();
-                const firstDayOfWeek = new Date(today.setDate(today.getDate() - today.getDay())); // Sunday
-                const lastDayOfWeek = new Date(today.setDate(today.getDate() + 6)); // Saturday
+                const firstDayOfWeek = new Date(today);
+                firstDayOfWeek.setDate(today.getDate() - today.getDay()); 
+                firstDayOfWeek.setHours(0, 0, 0, 0);
 
-                return jobs.filter(job => {
-                    const completedDate = new Date(job.completedAt);
-                    return completedDate >= firstDayOfWeek && completedDate <= lastDayOfWeek;
-                }).reduce((sum, job) => sum + (job.quotation?.totalEstimate || 0), 0);
+                const lastDayOfWeek = new Date(firstDayOfWeek);
+                lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6); 
+                lastDayOfWeek.setHours(23, 59, 59, 999);
+
+                let weeklyNet = 0;
+                jobs.filter(job => {
+                    // Check if job was paid this week
+                    const paidDate = job.payment && job.payment.paidAt ? new Date(job.payment.paidAt) : null;
+                    return paidDate && paidDate >= firstDayOfWeek && paidDate <= lastDayOfWeek;
+                }).forEach(job => {
+                    weeklyNet += calculateNetEarningForJob(job);
+                });
+                return weeklyNet;
             }
 
             function calculateMonthlyEarnings(jobs) {
                 const today = new Date();
-                return jobs.filter(job => {
-                    const completedDate = new Date(job.completedAt);
-                    return completedDate.getMonth() === today.getMonth() &&
-                           completedDate.getFullYear() === today.getFullYear();
-                }).reduce((sum, job) => sum + (job.quotation?.totalEstimate || 0), 0);
+                let monthlyNet = 0;
+                jobs.filter(job => {
+                    // Check if job was paid this month
+                    const paidDate = job.payment && job.payment.paidAt ? new Date(job.payment.paidAt) : null;
+                    return paidDate && 
+                           paidDate.getMonth() === today.getMonth() &&
+                           paidDate.getFullYear() === today.getFullYear();
+                }).forEach(job => {
+                    monthlyNet += calculateNetEarningForJob(job);
+                });
+                return monthlyNet;
             }
-
 
             // --- Populate Job List ---
             function renderJobs() {
                 if (!jobListContainer) return;
-                jobListContainer.innerHTML = ''; // Clear existing jobs
+                jobListContainer.innerHTML = ''; 
 
-                if (currentJobs.length === 0) {
-                    jobListContainer.innerHTML = '<p style="text-align: center; color: #777;">No job requests currently assigned or accepted.</p>';
+                const jobsForDisplay = currentJobs.filter(job => 
+                    job.status !== 'Cancelled' // Show all non-cancelled jobs, including Completed and Paid in history
+                );
+
+                if (jobsForDisplay.length === 0) {
+                    jobListContainer.innerHTML = '<p style="text-align: center; color: #777;">No active or completed job requests.</p>';
                     return;
                 }
 
-                currentJobs.forEach(job => {
+                jobsForDisplay.forEach(job => {
                     const jobCard = document.createElement('div');
-                    jobCard.className = `job-card ${job.status === 'In Progress' ? 'highlight' : ''} rounded-lg shadow-sm`; // Added Tailwind classes
-                    // Format date and time
+                    // Highlight if In Progress or Diagnosed (requiring technician action)
+                    jobCard.className = `job-card ${job.status === 'In Progress' || job.status === 'Diagnosed' ? 'highlight' : ''} rounded-lg shadow-sm`;
+                    
                     const formattedDateTime = job.scheduledDateTime ? new Date(job.scheduledDateTime).toLocaleString() : 'N/A';
-                    const lastUpdatedDisplay = job.lastUpdated ? new Date(job.lastUpdated).toLocaleString() : new Date(job.createdAt).toLocaleString();
+                    const lastUpdatedDisplay = job.updatedAt ? new Date(job.updatedAt).toLocaleString() : new Date(job.createdAt).toLocaleString();
+                    const paymentStatus = job.payment && job.payment.status ? job.payment.status : 'Pending';
 
+                    let actionsHtml = '';
+                    let fileUploadHtml = '';
+                    let pdfButtonHtml = '';
+
+                    // Action buttons based on job status and assignment
+                    if (job.status === 'Pending' && (!job.assignedTechnicianId || job.assignedTechnicianId.toString() === currentUser._id)) {
+                        actionsHtml += `<button class="action-btn btn-accept rounded-md" data-job-id="${job.jobId}">Accept</button>`;
+                    } else if (job.status === 'Accepted' && job.assignedTechnicianId && job.assignedTechnicianId.toString() === currentUser._id) {
+                        actionsHtml += `<button class="action-btn btn-start rounded-md" data-job-id="${job.jobId}">Start Repair</button>`;
+                    } else if (job.status === 'In Progress' && job.assignedTechnicianId && job.assignedTechnicianId.toString() === currentUser._id) {
+                        actionsHtml += `<button class="action-btn btn-diagnose rounded-md" data-job-id="${job.jobId}">Diagnose & Quote</button>`;
+                    } else if (job.status === 'Diagnosed' && job.assignedTechnicianId && job.assignedTechnicianId.toString() === currentUser._id) {
+                        // Mark as Complete button and file upload group
+                        actionsHtml += `<button class="action-btn btn-complete rounded-md" data-job-id="${job.jobId}">Mark as Complete</button>`;
+                        fileUploadHtml = `
+                            <div class="file-upload-group">
+                                <label for="proof-photo-${job.jobId}">Upload Proof Photo(s):</label>
+                                <input type="file" id="proof-photo-${job.jobId}" accept="image/*" multiple data-job-id="${job.jobId}">
+                                <div class="image-preview-container" id="image-preview-${job.jobId}"></div>
+                            </div>
+                        `;
+                    } else {
+                        // Display status for jobs that are not actionable by the current technician
+                        // Or jobs that are already completed/paid/cancelled
+                        actionsHtml += `<button class="action-btn btn-disabled rounded-md" disabled>${job.status}</button>`;
+                    }
+
+                    // PDF View button (only if job has proof images, regardless of current status as they are persistent)
+                    if (job.proofImages && job.proofImages.length > 0) {
+                         pdfButtonHtml = `<button class="action-btn btn-view-pdf rounded-md mt-2" data-job-id="${job.jobId}">View Proof PDF</button>`;
+                    }
+
+                    // Payment details display for completed and paid jobs
+                    let paymentDetailsHtml = '';
+                    if (job.quotation && job.quotation.totalEstimate) {
+                        const netEarning = calculateNetEarningForJob(job);
+                        paymentDetailsHtml += `<p><strong>Quotation:</strong> ₹ ${job.quotation.totalEstimate.toFixed(2)}</p>`;
+                        if (job.payment && job.payment.status === 'Paid') {
+                            paymentDetailsHtml += `
+                                <p><strong>Customer Paid:</strong> ₹ ${job.quotation.totalEstimate.toFixed(2)}</p>
+                                <p><strong>App Commission (${(APP_COMMISSION_RATE * 100).toFixed(0)}%):</strong> ₹ ${(job.quotation.totalEstimate * APP_COMMISSION_RATE).toFixed(2)}</p>
+                                <p><strong>Tax Deduction (${(TAX_RATE_INDIA * 100).toFixed(0)}%):</strong> ₹ ${((job.quotation.totalEstimate * (1 - APP_COMMISSION_RATE)) * TAX_RATE_INDIA).toFixed(2)}</p>
+                                <p><strong>Your Net Earning:</strong> <span style="color: #27ae60; font-weight: bold;">₹ ${netEarning.toFixed(2)}</span></p>
+                            `;
+                        } else if (job.status === 'Completed' || job.status === 'Diagnosed') {
+                            paymentDetailsHtml += `<p><em>(Waiting for customer payment)</em></p>`;
+                        }
+                    }
 
                     jobCard.innerHTML = `
-                        <h3>Job ID: ${job.id} (${job.applianceType})</h3>
-                        <p><strong>Customer:</strong> ${job.customerName}</p>
+                        <h3>Job ID: ${job.jobId} (${job.applianceType})</h3>
+                        <p><strong>Customer:</strong> ${job.customerName} (Phone: ${job.customerPhoneNumber || 'N/A'})</p>
                         <p><strong>Location:</strong> ${job.location}</p>
                         <p><strong>Scheduled:</strong> ${formattedDateTime}</p>
-                        <p><strong>Status:</strong> <span id="status-${job.id}">${job.status}</span></p>
+                        <p><strong>Status:</strong> <span id="status-${job.jobId}">${job.status}</span></p>
+                        <p><strong>Payment Status:</strong> <span id="payment-status-${job.jobId}">${paymentStatus}</span></p>
                         <p>Last Updated: ${lastUpdatedDisplay}</p>
-                        ${job.quotation && job.status !== 'Pending' ? `
-                            <p><strong>Quotation:</strong> ₹ ${job.quotation.totalEstimate.toFixed(2)}</p>
-                            <p><em>(Parts: ₹${job.quotation.partCost.toFixed(2)}, Labor: ₹${job.quotation.laborCost.toFixed(2)}, Travel: ₹${job.quotation.travelCharges.toFixed(2)})</em></p>
-                        ` : ''}
-                        <div class="job-actions" id="actions-${job.id}">
-                            ${job.status === 'Pending' ? `<button class="action-btn btn-accept rounded-md" data-job-id="${job.id}">Accept</button>` : ''}
-                            ${job.status === 'Accepted' || job.status === 'Assigned' ? `<button class="action-btn btn-start rounded-md" data-job-id="${job.id}">Start Repair</button>` : ''}
-                            ${job.status === 'In Progress' ? `<button class="action-btn btn-diagnose rounded-md" data-job-id="${job.id}">Diagnose & Quote</button>` : ''}
-                            ${(job.status === 'In Progress' || job.status === 'Diagnosed') ? `
-                                <button class="action-btn btn-complete rounded-md" data-job-id="${job.id}">Mark as Complete</button>
-                                <!-- This file upload group is a placeholder. Real file upload requires backend changes (multer etc.) -->
-                                <div class="file-upload-group">
-                                    <label for="proof-photo-${job.id}">Upload Proof Photo(s):</label>
-                                    <input type="file" id="proof-photo-${job.id}" accept="image/*" multiple disabled title="File upload not implemented in backend yet.">
-                                </div>
-                            ` : ''}
+                        ${paymentDetailsHtml} 
+                        <div class="job-actions" id="actions-${job.jobId}">
+                            ${actionsHtml}
+                            ${fileUploadHtml}
                         </div>
+                        ${pdfButtonHtml}
                     `;
                     jobListContainer.appendChild(jobCard);
                 });
@@ -857,21 +1134,145 @@
             }
 
             function attachJobActionListeners() {
+                // Clear previous listeners to prevent duplicates
                 jobListContainer.querySelectorAll('.action-btn').forEach(button => {
-                    // Remove existing listeners to prevent duplicates
                     button.removeEventListener('click', handleJobAction);
+                });
+                jobListContainer.querySelectorAll('input[type="file"]').forEach(input => {
+                    input.removeEventListener('change', handleFileSelect);
+                });
+                jobListContainer.querySelectorAll('.btn-view-pdf').forEach(button => {
+                    button.removeEventListener('click', handleViewPdf);
+                });
+
+
+                // Add new listeners
+                jobListContainer.querySelectorAll('.action-btn').forEach(button => {
                     button.addEventListener('click', handleJobAction);
                 });
+                jobListContainer.querySelectorAll('input[type="file"]').forEach(input => {
+                    input.addEventListener('change', handleFileSelect);
+                });
+                jobListContainer.querySelectorAll('.btn-view-pdf').forEach(button => {
+                    button.addEventListener('click', handleViewPdf);
+                });
             }
+
+            // Handles file selection and displays previews
+            function handleFileSelect(event) {
+                const fileInput = event.target;
+                const jobId = fileInput.dataset.jobId;
+                const previewContainer = document.getElementById(`image-preview-${jobId}`);
+                if (!previewContainer) return;
+
+                previewContainer.innerHTML = ''; // Clear previous previews
+                const files = fileInput.files;
+
+                if (files.length > 0) {
+                    Array.from(files).forEach(file => {
+                        if (file.type.startsWith('image/')) {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                const img = document.createElement('img');
+                                img.src = e.target.result;
+                                img.className = 'image-preview';
+                                previewContainer.appendChild(img);
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            showMessage('Only image files are allowed.', 'error'); 
+                        }
+                    });
+                }
+            }
+            
+            // Generate PDF from base64 image data
+            async function generatePdfForJob(jobId, imageDataUrls) {
+                if (imageDataUrls.length === 0) {
+                    showMessage('No images available to generate PDF.', 'info'); 
+                    return;
+                }
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: "portrait",
+                    unit: "pt",
+                    format: "a4"
+                });
+
+                let yOffset = 40;
+                const margin = 20;
+                const imgWidth = 550; 
+                const pageHeight = doc.internal.pageSize.height; 
+
+                doc.setFontSize(16);
+                doc.text(`Proof Images for Job ID: ${jobId}`, margin, yOffset); 
+                yOffset += 30;
+
+                for (let i = 0; i < imageDataUrls.length; i++) {
+                    const imgData = imageDataUrls[i];
+                    const img = new Image();
+                    img.src = imgData;
+                    
+                    await new Promise(resolve => {
+                        img.onload = () => resolve(); 
+                        img.onerror = () => { 
+                            console.error(`Error loading image for PDF generation: ${imgData.substring(0, 50)}...`);
+                            showMessage('Some images could not be loaded for PDF.', 'error'); 
+                            resolve(); 
+                        };
+                    });
+
+                    if (!img.complete || img.naturalWidth === 0 || img.naturalHeight === 0) {
+                        continue;
+                    }
+
+                    const imgHeight = (img.height * imgWidth) / img.width; 
+                    
+                    if (yOffset + imgHeight + margin > pageHeight) {
+                        doc.addPage();
+                        yOffset = margin;
+                    }
+                    
+                    doc.addImage(imgData, 'JPEG', margin, yOffset, imgWidth, imgHeight);
+                    yOffset += imgHeight + 20; 
+                }
+
+                doc.save(`job_${jobId}_proofs.pdf`);
+                showMessage('PDF generated successfully!', 'success'); 
+            }
+
+            async function handleViewPdf(event) {
+                const button = event.target;
+                const jobId = button.dataset.jobId;
+
+                const job = currentJobs.find(j => j.jobId === jobId);
+                if (job && job.proofImages && job.proofImages.length > 0) {
+                    button.disabled = true;
+                    button.textContent = 'Generating PDF...';
+                    try {
+                        await generatePdfForJob(jobId, job.proofImages);
+                    } catch (error) {
+                        console.error('Error generating proof PDF:', error);
+                        showMessage('Failed to generate proof PDF.', 'error');
+                    } finally {
+                        button.disabled = false;
+                        button.textContent = 'View Proof PDF';
+                    }
+                } else {
+                    showMessage('No proof images available for this job to generate PDF.', 'error'); 
+                }
+            }
+
 
             // --- Handler for Job Action Buttons ---
             async function handleJobAction(event) {
                 const button = event.target;
                 const jobId = button.dataset.jobId;
-                const action = button.textContent.trim().toLowerCase(); // 'accept', 'start repair', 'diagnose & quote', 'mark as complete'
+                const action = button.textContent.trim().toLowerCase(); 
 
                 if (!jobId) {
-                    showMessage('Job ID not found for this action.', 'error');
+                    showMessage('Job ID not found for this action.', 'error'); 
                     return;
                 }
 
@@ -879,57 +1280,85 @@
                 let method = 'POST';
                 let successMessage = '';
                 let errorMessage = '';
-                let redirectAfterSuccess = false; // Only diagnose redirects to another page
+                let bodyData = { jobId: jobId };
 
                 switch (action) {
                     case 'accept':
                         endpoint = '/api/technician/jobs/accept';
-                        successMessage = `Job ${jobId} accepted.`;
-                        errorMessage = `Failed to accept job ${jobId}.`;
+                        successMessage = `Job ${jobId} accepted.`; 
+                        errorMessage = `Failed to accept job ${jobId}.`; 
                         break;
                     case 'start repair':
                         endpoint = '/api/technician/jobs/start';
-                        successMessage = `Job ${jobId} marked as In Progress.`;
-                        errorMessage = `Failed to start job ${jobId}.`;
+                        successMessage = `Job ${jobId} marked as In Progress.`; 
+                        errorMessage = `Failed to start job ${jobId}.`; 
                         break;
                     case 'diagnose & quote':
-                        // This action redirects to the diagnosis page
-                        window.location.href = `/diagnosis.html?jobId=${jobId}`;
-                        return; // Exit function early as no fetch call needed here
+                        window.location.href = `/diagnosis?jobId=${jobId}`;
+                        return; 
                     case 'mark as complete':
-                        endpoint = '/api/technician/jobs/complete';
-                        successMessage = `Job ${jobId} marked as complete.`;
-                        errorMessage = `Failed to complete job ${jobId}.`;
-                        // Note: For actual file upload, you'd need to gather the file here
-                        // For now, the file input is disabled.
+                        endpoint = '/api/technician/jobs/complete'; 
+                        successMessage = `Job ${jobId} marked as complete and proof images saved.`; 
+                        errorMessage = `Failed to complete job ${jobId} or upload proof.`; 
+                        
+                        const fileInput = document.getElementById(`proof-photo-${jobId}`);
+                        const files = fileInput ? fileInput.files : null;
+
+                        const base64Images = [];
+
+                        if (files && files.length > 0) {
+                            const fileReadPromises = Array.from(files).map(file => {
+                                return new Promise((resolve, reject) => {
+                                    const reader = new FileReader();
+                                    reader.onload = (e) => {
+                                        base64Images.push(e.target.result);
+                                        resolve();
+                                    };
+                                    reader.onerror = (e) => {
+                                        console.error("Error reading file:", e);
+                                        reject(new Error("Failed to read file."));
+                                    };
+                                    reader.readAsDataURL(file);
+                                });
+                            });
+                            await Promise.all(fileReadPromises);
+                        } else {
+                            showMessage('Please upload at least one proof photo before marking as complete.', 'error'); 
+                            return; 
+                        }
+                        
+                        bodyData = { jobId: jobId, proofImages: base64Images }; 
                         break;
                     default:
-                        showMessage('Unknown job action.', 'error');
+                        showMessage('Unknown job action.', 'error'); 
                         return;
                 }
+
+                button.disabled = true;
+                const originalText = button.textContent;
+                button.textContent = 'Processing...'; 
 
                 try {
                     const response = await fetch(endpoint, {
                         method: method,
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ jobId: jobId })
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify(bodyData)
                     });
-
                     const result = await response.json();
 
                     if (response.ok && result.success) {
                         showMessage(result.message || successMessage, 'success');
-                        // Re-fetch data to update the dashboard immediately
-                        await fetchTechnicianData();
+                        await fetchTechnicianData(); // Re-fetch all data to update the UI
                     } else {
                         showMessage(result.message || errorMessage, 'error');
                         console.error(`Error performing action '${action}' for job ${jobId}:`, result.message || 'Server error');
                     }
                 } catch (error) {
-                    showMessage(`Network error during job action '${action}'. Please check your connection.`, 'error');
+                    showMessage(`Network error during job action '${action}'. Please check your connection.`, 'error'); 
                     console.error(`Network error for job action '${action}':`, error);
+                } finally {
+                    button.disabled = false;
+                    button.textContent = originalText;
                 }
             }
 
@@ -941,34 +1370,115 @@
                         const response = await fetch('/logout', { method: 'POST' });
                         const result = await response.json();
                         if (response.ok && result.success) {
-                            showMessage('Logged out successfully.', 'success');
+                            showMessage('Logged out successfully.', 'success'); 
                             setTimeout(() => {
-                                window.location.href = '/'; // Redirect to login page
+                                window.location.href = '/'; 
                             }, 1000);
                         } else {
-                            showMessage(result.message || 'Logout failed.', 'error');
+                            showMessage(result.message || 'Logout failed.', 'error'); 
                         }
                     } catch (error) {
-                        showMessage('Network error during logout.', 'error');
+                        showMessage('Network error during logout.', 'error'); 
                         console.error('Logout error:', error);
                     }
                 });
             }
 
-            // --- Withdraw Button Functionality (Placeholder) ---
+            // --- Refresh Balance Button Functionality ---
+            if (refreshBalanceBtn) {
+                refreshBalanceBtn.addEventListener('click', async () => {
+                    refreshBalanceBtn.disabled = true;
+                    const originalRefreshText = refreshBalanceBtn.textContent;
+                    refreshBalanceBtn.textContent = 'Refreshing...';
+                    try {
+                        await fetchTechnicianData(); // Re-fetch all data, including balance
+                        showMessage('Balance refreshed!', 'success');
+                    } catch (error) {
+                        showMessage('Failed to refresh balance.', 'error');
+                        console.error('Refresh balance error:', error);
+                    } finally {
+                        refreshBalanceBtn.disabled = false;
+                        refreshBalanceBtn.textContent = originalRefreshText;
+                    }
+                });
+            }
+
+
+            // --- Withdraw Button Functionality ---
             if (withdrawButton) {
-                withdrawButton.addEventListener('click', () => {
-                    // In a real application, this would trigger a backend API call
-                    // to initiate a withdrawal process.
-                    showMessage('Withdrawal feature is under development. Funds will be transferred soon!', 'info');
-                    console.log('Withdraw button clicked. Implement backend withdrawal logic.');
+                withdrawButton.addEventListener('click', async () => {
+                    console.log("[WITHDRAWAL] Withdraw button clicked.");
+                    
+                    // Re-fetch current user data right before withdrawal to ensure latest balance and details
+                    await fetchTechnicianData(); // This updates `currentUser` object
+
+                    if ((currentUser.balance || 0) <= 0) {
+                        showMessage('No available balance for withdrawal.', 'info'); 
+                        console.log("[WITHDRAWAL] Insufficient balance.");
+                        return;
+                    }
+                    
+                    // Frontend validation for payment details before withdrawal
+                    const hasBankDetails = currentUser.bankDetails && currentUser.bankDetails.accountNumber && currentUser.bankDetails.bankName && currentUser.bankDetails.ifscCode;
+                    const hasUpiId = currentUser.bankDetails && currentUser.bankDetails.upiId;
+
+                    if (!hasBankDetails && !hasUpiId) {
+                        showMessage('Please provide either complete bank account details (Bank Name, Account No, IFSC Code) or a UPI ID in the "Payment Details for Withdrawal" section before withdrawing.', 'error');
+                        console.log("[WITHDRAWAL] Missing payment details: No bank details or UPI ID.");
+                        return;
+                    }
+                    
+                    // If account number is provided, ensure bank name and IFSC code are also there
+                    if (currentUser.bankDetails.accountNumber && (!currentUser.bankDetails.bankName || !currentUser.bankDetails.ifscCode)) {
+                        showMessage('If providing an Account Number, Bank Name and IFSC Code are required for bank withdrawal.', 'error');
+                        console.log("[WITHDRAWAL] Incomplete bank details for withdrawal.");
+                        return;
+                    }
+
+
+                    const withdrawalAmount = currentUser.balance; 
+                    
+                    withdrawButton.disabled = true; 
+                    const originalWithdrawText = withdrawButton.textContent;
+                    withdrawButton.textContent = 'Processing Withdrawal...';
+
+                    console.log("[WITHDRAWAL] Attempting withdrawal with amount:", withdrawalAmount);
+                    console.log("[WITHDRAWAL] Current user bankDetails (from frontend state):", currentUser.bankDetails);
+
+
+                    try {
+                        const response = await fetch('/api/technician/withdraw', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ amount: withdrawalAmount })
+                        });
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            showMessage(result.message, 'success');
+                            console.log("[WITHDRAWAL SUCCESS] Response:", result.message);
+                            await fetchTechnicianData(); // Re-fetch to update UI with new balance
+
+                        } else {
+                            showMessage(result.message || 'Withdrawal failed.', 'error'); 
+                            console.error("[WITHDRAWAL ERROR] Server response failure:", result.message || 'Unknown error');
+                        }
+                    } catch (error) {
+                        showMessage('Network error during withdrawal. Please check your connection.', 'error'); 
+                        console.error('[WITHDRAWAL ERROR] Network error during withdrawal:', error);
+                    } finally {
+                        withdrawButton.disabled = false;
+                        withdrawButton.textContent = originalWithdrawText;
+                    }
                 });
             }
 
             // --- Update Availability Functionality ---
             if (availabilityForm) {
                 availabilityForm.addEventListener('submit', async (event) => {
-                    event.preventDefault(); // Prevent default form submission
+                    event.preventDefault(); 
 
                     const selectedDays = Array.from(availableDaysSelect.selectedOptions).map(option => option.value);
                     const availabilityData = {
@@ -978,8 +1488,12 @@
                         emergencyCalls: emergencyCallsCheckbox.checked
                     };
 
+                    const updateBtn = document.getElementById('update-availability-btn');
+                    updateBtn.disabled = true;
+                    const originalUpdateText = updateBtn.textContent;
+                    updateBtn.textContent = 'Updating...'; 
+
                     try {
-                        // Assuming a new API endpoint for updating technician availability
                         const response = await fetch('/api/technician/update-availability', {
                             method: 'POST',
                             headers: {
@@ -991,16 +1505,135 @@
                         const result = await response.json();
 
                         if (response.ok && result.success) {
-                            showMessage(result.message || 'Availability updated successfully!', 'success');
-                            // Optionally re-fetch technician data if availability changes impact profile display
+                            showMessage(result.message || 'Availability updated successfully!', 'success'); 
                             await fetchTechnicianData();
                         } else {
-                            showMessage(result.message || 'Failed to update availability.', 'error');
+                            showMessage(result.message || 'Failed to update availability.', 'error'); 
                             console.error('Availability update error:', result.message);
                         }
                     } catch (error) {
-                        showMessage('Network error during availability update.', 'error');
+                        showMessage('Network error during availability update.', 'error'); 
                         console.error('Availability update network error:', error);
+                    } finally {
+                        updateBtn.disabled = false;
+                        updateBtn.textContent = originalUpdateText;
+                    }
+                });
+            }
+
+            // --- Update Location Settings Functionality ---
+            if (locationSettingsForm) {
+                locationSettingsForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    const workingLocation = workingLocationInput.value.trim();
+                    const serviceRadius = parseFloat(serviceRadiusInput.value);
+
+                    if (!workingLocation) {
+                        showMessage('Please enter your primary working location.', 'error');
+                        return;
+                    }
+                    if (isNaN(serviceRadius) || serviceRadius <= 0) {
+                        showMessage('Please enter a valid service radius (e.g., 10).', 'error');
+                        return;
+                    }
+
+                    const updateLocationBtn = document.getElementById('update-location-btn');
+                    updateLocationBtn.disabled = true;
+                    const originalUpdateLocationText = updateLocationBtn.textContent;
+                    updateLocationBtn.textContent = 'Updating Location...';
+
+                    try {
+                        const response = await fetch('/api/technician/update-location', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                workingLocation: {
+                                    address: workingLocation,
+                                    radiusKm: serviceRadius,
+                                }
+                            })
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            showMessage(result.message || 'Location settings updated successfully!', 'success');
+                            await fetchTechnicianData();
+                        } else {
+                            showMessage(result.message || 'Failed to update location settings.', 'error');
+                            console.error('Location update error:', result.message);
+                        }
+                    } catch (error) {
+                        showMessage('Network error during location update.', 'error'); 
+                        console.error('Location update network error:', error);
+                    } finally {
+                        updateLocationBtn.disabled = false;
+                        updateLocationBtn.textContent = originalUpdateLocationText;
+                    }
+                });
+            }
+
+            // --- Update Payment Details Functionality (New) ---
+            if (paymentDetailsForm) {
+                paymentDetailsForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+
+                    const bankName = bankNameInput.value.trim();
+                    const accountNumber = accountNumberInput.value.trim();
+                    const ifscCode = ifscCodeInput.value.trim();
+                    const upiId = upiIdInput.value.trim();
+
+                    console.log("[UPDATE PAYMENT DETAILS] Form submit initiated.");
+                    console.log("[UPDATE PAYMENT DETAILS] Inputs: ", { bankName, accountNumber, ifscCode, upiId });
+
+                    // Basic validation: At least one of bank account details or UPI ID must be provided
+                    if (!accountNumber && !upiId) {
+                        showMessage('Please provide either bank account details (Account Number) or a UPI ID.', 'error');
+                        console.log("[UPDATE PAYMENT DETAILS] Validation failed: No account number or UPI ID provided.");
+                        return;
+                    }
+                    
+                    // If account number is provided, bank name and IFSC code are required
+                    if (accountNumber && (!bankName || !ifscCode)) {
+                        showMessage('If providing an Account Number, Bank Name and IFSC Code are required.', 'error');
+                        console.log("[UPDATE PAYMENT DETAILS] Validation failed: Incomplete bank details.");
+                        return;
+                    }
+
+                    const paymentDetails = { bankName, accountNumber, ifscCode, upiId };
+
+                    updatePaymentDetailsBtn.disabled = true;
+                    const originalUpdatePaymentText = updatePaymentDetailsBtn.textContent;
+                    updatePaymentDetailsBtn.textContent = 'Saving...';
+
+                    try {
+                        const response = await fetch('/api/technician/update-payment-details', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(paymentDetails)
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            showMessage(result.message || 'Payment details updated successfully!', 'success');
+                            console.log("[UPDATE PAYMENT DETAILS SUCCESS] Response:", result.message);
+                            await fetchTechnicianData(); // Re-fetch to update UI with new details
+                        } else {
+                            showMessage(result.message || 'Failed to update payment details.', 'error');
+                            console.error("[UPDATE PAYMENT DETAILS ERROR] Server response failure:", result.message || 'Unknown error');
+                        }
+                    } catch (error) {
+                        showMessage('Network error during payment details update. Please check your connection.', 'error');
+                        console.error('[UPDATE PAYMENT DETAILS ERROR] Network error:', error);
+                    } finally {
+                        updatePaymentDetailsBtn.disabled = false;
+                        updatePaymentDetailsBtn.textContent = originalUpdatePaymentText;
                     }
                 });
             }
