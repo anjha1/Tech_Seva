@@ -1,0 +1,65 @@
+# Node modules
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# VSCode settings
+.vscode/
+
+# Dependency lock files (optional, if using only one)
+package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Build/compiled output (if any)
+dist/
+build/
+public/bundle.js
+public/bundle.js.map
+
+# Uploaded files or temporary uploads
+uploads/
+tmp/
+temp/
+*.tmp
+
+# Coverage reports (if using test coverage tools)
+coverage/
+
+# Auth/session/cache/temp
+.session
+.cache
+.next
+out/
+
+# React dev server artifacts
+*.local
+
+# CSV/Excel exports (optional)
+*.csv
+*.xlsx
+
+# Test snapshots
+__snapshots__/
+
+# IDE specific
+.idea/
+
+# Vim swap files
+*.swp
+
+# Mac folder attributes
+.Spotlight-V100
+.Trashes

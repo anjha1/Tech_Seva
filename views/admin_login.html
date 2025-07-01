@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva Admin Login</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        /* Custom styles for the message box */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: fadeOut 0.5s forwards 4.5s; /* Fade out after 4.5s */
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Admin Login</h2>
+        <form id="admin-login-form" class="space-y-5">
+            <div>
+                <label for="email" class="block text-gray-700 text-sm font-medium mb-2">Email Address</label>
+                <input type="email" id="email" name="email" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="password" class="block text-gray-700 text-sm font-medium mb-2">Password</label>
+                <input type="password" id="password" name="password" required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label for="role" class="block text-gray-700 text-sm font-medium mb-2">Login As</label>
+                <select id="role" name="role" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="" disabled selected>-- Select Admin Role --</option>
+                    <!-- Changed value attributes to match case in DB (e.g., "Superadmin") -->
+                    <option value="Superadmin">Superadmin</option>
+                    <option value="Citymanager">Citymanager</option>
+                    <option value="Serviceadmin">Service Admin</option>
+                    <option value="Financeofficer">Finance Officer</option>
+                    <option value="Supportagent">Support Agent</option>
+                </select>
+            </div>
+            <button type="submit" id="login-button"
+                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 ease-in-out">
+                Login
+            </button>
+        </form>
+        <p class="text-center text-gray-600 text-sm mt-6">
+            Go back to <a href="/" class="text-blue-600 hover:underline">Homepage</a>
+        </p>
+    </div>
+
+    <!-- Message Box Container -->
+    <div id="message-container"></div>
+
+    <script>
+        // Utility for displaying messages
+        const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            // Remove any existing messages to only show the latest
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+            setTimeout(() => {
+                // Fade out and remove the message box
+                messageBox.style.opacity = '0';
+                setTimeout(() => messageBox.remove(), 500); // Wait for fadeOut animation
+            }, 4500); // Message visible for 4.5 seconds before fading out
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('admin-login-form');
+            const loginButton = document.getElementById('login-button');
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                loginButton.disabled = true;
+                loginButton.textContent = 'Logging in...';
+
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                const role = document.getElementById('role').value; // Get selected role
+
+                if (!email || !password || !role) {
+                    showMessage('Please fill in all fields and select a role.', 'error');
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Login';
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password, role }) // Send role to backend
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        showMessage(result.message, 'success');
+                        setTimeout(() => {
+                            window.location.href = result.redirect; // Redirect to the specific admin dashboard
+                        }, 500);
+                    } else {
+                        showMessage(result.message || 'Login failed. Please check your credentials.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showMessage('Network error. Please try again later.', 'error');
+                } finally {
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Login';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

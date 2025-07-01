@@ -1,0 +1,2563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva User Dashboard</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Tailwind CSS (optional, if you want to use Tailwind classes directly, otherwise your custom CSS is detailed) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF library for client-side PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- html2canvas for capturing DOM elements for PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Google Maps API with Places library - Remember to replace YOUR_GOOGLE_MAPS_API_KEY -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initMap"></script>
+    <style>
+        /* General Body and Layout */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif; /* Using Inter as specified */
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header Styling */
+        header {
+            background-color: #2c3e50; /* Dark blue/grey */
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap;
+        }
+
+        .logo-text {
+            font-size: 1.8em;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .menu-toggle {
+            display: none; /* Hidden on desktop */
+            font-size: 1.8em;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .menu-toggle:hover {
+            background-color: #34495e;
+        }
+
+        .navbar-nav {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-item {
+            margin: 0 10px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px; /* Rounded corners */
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background-color: #34495e; /* Slightly lighter dark blue */
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            background-color: #3498db; /* Blue for active */
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
+        }
+
+        /* Main Content Container */
+        .container {
+            flex: 1;
+            max-width: 1000px; /* Increased max-width for better content display */
+            margin: 20px auto;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px; /* Increased gap between sections */
+        }
+
+        /* Card Styling for Sections */
+        section.card {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px; /* More rounded */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        section.card.active-section {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Headings */
+        h1, h2 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 700;
+        }
+        h1 { font-size: 2.5em; }
+        h2 { font-size: 2em; border-bottom: 2px solid #ecf0f1; padding-bottom: 15px; }
+        h3 {
+            color: #34495e;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="datetime-local"],
+        textarea,
+        select,
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px; /* Rounded */
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="datetime-local"]:focus,
+        textarea:focus,
+        select:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="number"]:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .use-my-location-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+            padding: 10px 18px;
+            background-color: #2ecc71; /* Green for action */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .use-my-location-btn:hover {
+            background-color: #27ae60;
+            transform: translateY(-1px);
+        }
+
+        /* Button Styling */
+        .btn {
+            padding: 14px 25px;
+            border: none;
+            border-radius: 8px; /* Rounded */
+            font-size: 1.05em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            display: inline-flex; /* Use flex for icon alignment */
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+            width: 100%;
+            margin-top: 15px;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: #333;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .btn-info:hover {
+            background-color: #138496;
+        }
+
+        .btn-disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+            transform: none !important; /* Override hover transform */
+            box-shadow: none !important;
+        }
+
+        /* Booking Item Cards */
+        .booking-item {
+            border: 1px solid #eee;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background-color: #fcfcfc;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease;
+        }
+        .booking-item:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Dynamic Border Colors based on Status */
+        .booking-item.pending { border-left: 6px solid #ffc107; } /* Warning yellow */
+        .booking-item.accepted { border-left: 6px solid #007bff; } /* Info blue */
+        .booking-item.in-progress { border-left: 6px solid #3498db; } /* Primary blue */
+        .booking-item.diagnosed { border-left: 6px solid #6f42c1; } /* Purple */
+        .booking-item.quotation-provided { border-left: 6px solid #ff8c00; } /* Darker Orange */
+        .booking-item.quotation-approved { border-left: 6px solid #20c997; } /* Teal */
+        .booking-item.completed { border-left: 6px solid #28a745; } /* Success green */
+        .booking-item.paid { border-left: 6px solid #28a745; } /* Success green */
+        .booking-item.cancelled { border-left: 6px solid #dc3545; opacity: 0.8; } /* Danger red */
+        .booking-item.rejected { border-left: 6px solid #dc3545; opacity: 0.8; } /* Danger red */
+
+        .booking-item p {
+            margin: 8px 0;
+            font-size: 0.95em;
+            color: #555;
+        }
+        .booking-item p strong {
+            color: #333;
+        }
+        .booking-actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: flex-end; /* Align actions to the right */
+        }
+        .booking-actions .btn {
+            flex-grow: 1; 
+            min-width: 140px; /* Ensure minimum width for action buttons */
+        }
+        .status-text {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 5px;
+            display: inline-block;
+            background-color: #f0f0f0; /* Default background */
+            color: #333; /* Default text color */
+        }
+
+        /* Specific Status Text Colors */
+        .status-text.pending { background-color: #ffeeba; color: #856404; }
+        .status-text.accepted { background-color: #cce5ff; color: #004085; }
+        .status-text.in-progress { background-color: #d1ecf1; color: #0c5460; }
+        .status-text.diagnosed { background-color: #e2eafc; color: #4b0082; } /* A light purple */
+        .status-text.quotation-provided { background-color: #ffe0b2; color: #b36b00; } /* Light orange */
+        .status-text.quotation-approved { background-color: #d4edda; color: #155724; }
+        .status-text.completed { background-color: #d4edda; color: #155724; }
+        .status-text.paid { background-color: #d4edda; color: #155724; }
+        .status-text.cancelled { background-color: #f8d7da; color: #721c24; }
+        .status-text.rejected { background-color: #f8d7da; color: #721c24; }
+
+
+        /* Table styles for History */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #e0e0e0;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #ecf0f1;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #fcfcfc;
+        }
+
+        .rating-stars span {
+            color: #f1c40f; /* Yellow stars */
+            font-size: 1.2em;
+        }
+
+        /* Star Rating for Review Form */
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+        .star-rating .star {
+            font-size: 2.5em;
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.2s ease, transform 0.1s ease;
+        }
+        .star-rating .star.filled {
+            color: #f1c40f;
+        }
+        .star-rating .star:hover {
+            transform: scale(1.1);
+        }
+
+        /* Footer */
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: auto;
+            font-size: 0.9em;
+        }
+
+        .footer-links a {
+            color: #3498db;
+            text-decoration: none;
+            margin: 0 12px;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            text-decoration: underline;
+            color: #2980b9;
+        }
+
+        /* Message Box for Alerts */
+        .message-box {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            animation: slideInFromRight 0.5s ease-out forwards, fadeOut 0.5s forwards 4.5s;
+            opacity: 0; /* Starts hidden, visible via animation */
+            min-width: 250px;
+            text-align: center;
+        }
+        .message-box.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .message-box.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .message-box.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+        @keyframes slideInFromRight {
+            from { right: -300px; opacity: 0; }
+            to { right: 25px; opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Status Badge for History Table - specific for Past Due/Cancelled */
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            line-height: 1;
+            margin-top: 5px; /* Spacing below other status info if any */
+        }
+        .status-badge.status-rejected { background-color: #dc3545; }
+
+
+        /* Top Technicians Section */
+        .top-technicians-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .technician-card {
+            background-color: #eaf6ff; /* Light blue/grey */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid #d0e7ff;
+        }
+
+        .technician-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+
+        .technician-card h3 {
+            color: #3498db;
+            font-size: 1.3em;
+            margin-bottom: 8px;
+        }
+
+        .technician-card .rating-stars {
+            font-size: 1.1em;
+            margin-bottom: 12px;
+        }
+
+        .technician-card p {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        /* Booking Filters */
+        .booking-filters {
+            display: flex;
+            justify-content: center;
+            gap: 15px; /* Increased gap */
+            margin-bottom: 30px; /* More space below filters */
+            flex-wrap: wrap;
+        }
+
+        .booking-filters .btn {
+            flex: 1;
+            min-width: 120px;
+            max-width: 180px;
+            padding: 10px 15px; /* Slightly smaller padding for filter buttons */
+            font-size: 0.95em;
+            border: 1px solid #cccccc; /* Subtle border */
+            color: #555;
+            background-color: #eceff1; /* Light background */
+        }
+
+        .booking-filters .btn:hover:not(.active-filter) {
+            background-color: #dae0e3;
+            transform: translateY(-1px);
+        }
+
+        .booking-filters .btn.active-filter {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+            box-shadow: 0 3px 8px rgba(52, 152, 219, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .booking-list-container {
+            display: none;
+        }
+        .booking-list-container.active-list {
+            display: block;
+        }
+
+        .info-block {
+            background-color: #e8f0fe;
+            border: 1px solid #cce5ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .info-block h3 {
+            color: #0056b3;
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 1.3em;
+        }
+        .info-block p {
+            margin-bottom: 10px;
+            color: #444;
+        }
+        .info-block .btn {
+            margin-top: 10px;
+            width: auto; /* Buttons within info-block can be smaller */
+            padding: 10px 15px;
+            font-size: 0.9em;
+        }
+
+        /* Notifications and FAQs */
+        .notification-item, .faq-item {
+            background-color: #f8fcfd;
+            border-left: 6px solid #a7d9f7; /* Light blue border */
+            padding: 18px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: transform 0.2s;
+        }
+        .notification-item.read {
+            background-color: #f0f0f0;
+            border-left-color: #c9c9c9;
+            opacity: 0.8;
+        }
+        .notification-item:hover, .faq-item:hover {
+            transform: translateY(-3px);
+        }
+        .notification-item h4, .faq-item summary {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        .notification-item p, .faq-item .faq-answer {
+            font-size: 0.95em;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        .notification-item .timestamp {
+            font-size: 0.8em;
+            color: #777;
+            text-align: right;
+            display: block;
+            margin-top: 10px;
+        }
+        .faq-item summary {
+            cursor: pointer;
+            outline: none;
+        }
+        .faq-item details[open] summary {
+            background-color: #eef7fc;
+            border-bottom: 1px solid #dcebf2;
+            border-radius: 10px 10px 0 0;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px;
+            }
+            .header-left {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            .logo-text {
+                font-size: 1.5em;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .navbar-nav {
+                display: none; /* Hidden by default */
+                flex-direction: column;
+                width: 100%;
+                text-align: center;
+                margin-top: 10px;
+            }
+            .navbar-nav.menu-open {
+                display: flex; /* Show when toggled */
+            }
+            .nav-item {
+                margin: 5px 0;
+                width: 100%;
+            }
+            .nav-link {
+                display: block;
+                width: calc(100% - 30px); /* Adjust for padding */
+            }
+            .container {
+                margin: 15px auto;
+                padding: 0 15px;
+                gap: 20px;
+            }
+            section.card {
+                padding: 20px;
+            }
+            h1 { font-size: 2em; }
+            h2 { font-size: 1.7em; }
+            h3 { font-size: 1.3em; }
+
+            input[type="text"], input[type="datetime-local"], textarea, select {
+                width: 100%;
+            }
+            .booking-actions .btn {
+                width: 100%;
+                flex-grow: unset; /* Remove flex-grow on small screens for better stacking */
+            }
+            .data-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap; /* Prevent wrapping inside cells */
+                -webkit-overflow-scrolling: touch;
+            }
+            .data-table thead, .data-table tbody, .data-table th, .data-table td, .data-table tr {
+                display: block; /* Make table elements stack */
+            }
+            .data-table th, .data-table td {
+                width: auto !important; /* Override specific widths */
+                padding: 10px;
+                text-align: left;
+            }
+            .data-table tr {
+                margin-bottom: 15px;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                overflow: hidden; /* For rounded corners to apply */
+            }
+            .data-table td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                display: inline-block;
+                width: 120px; /* Label width */
+                margin-right: 10px;
+                color: #444;
+            }
+            .booking-filters {
+                flex-direction: column; /* Stack filter buttons */
+            }
+            .booking-filters .btn {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <span class="logo-text">🔧 TechSeva</span>
+        </div>
+        <div class="menu-toggle" id="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+        <ul class="navbar-nav" id="main-navbar">
+            <li class="nav-item"><a href="#home" class="nav-link active">Home</a></li>
+            <li class="nav-item"><a href="#my-bookings" class="nav-link">My Bookings</a></li>
+            <li class="nav-item"><a href="#my-profile" class="nav-link">My Profile</a></li>
+            <li class="nav-item"><a href="#payments-offers" class="nav-link">Payments & Offers</a></li>
+            <li class="nav-item"><a href="#support-help" class="nav-link">Support & Help</a></li>
+            <li class="nav-item"><a href="#notifications" class="nav-link">Notifications</a></li>
+            <li class="nav-item"><a href="#leave-review" class="nav-link">Leave a Review</a></li>
+            <li class="nav-item"><a href="#" id="logout-btn" class="nav-link">Logout</a></li>
+        </ul>
+    </header>
+
+    <div class="container">
+        <!-- Home Section -->
+        <section id="home" class="welcome-section card active-section">
+            <div class="welcome-content">
+                <h3 id="welcome-greeting">Welcome, User!</h3>
+                <div class="form-group" style="display: inline-block;">
+                    <label for="language-select">Select Language:</label>
+                    <select id="language-select" class="language-select">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="bh">Bhojpuri</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Book a Service Section -->
+            <div class="booking-section-integrated" style="margin-top: 30px;">
+                <h2>Book a Service</h2>
+                <form id="booking-form">
+                    <div class="form-group">
+                        <label for="appliance-type">Select Appliance Type:</label>
+                        <select id="appliance-type" name="applianceType" required>
+                            <option value="">-- Select --</option>
+                            <option value="AC">AC Repair/Service</option>
+                            <option value="Refrigerator">Refrigerator Repair</option>
+                            <option value="Washing Machine">Washing Machine Repair</option>
+                            <option value="TV">TV Repair</option>
+                            <option value="Fan">Fan Repair</option>
+                            <option value="Geyser">Geyser Repair</option>
+                            <option value="Microwave">Microwave Repair</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location-input">Your Location:</label>
+                        <input type="text" id="location-input" name="location" placeholder="Enter your address" required>
+                        <input type="hidden" id="latitude-input" name="latitude">
+                        <input type="hidden" id="longitude-input" name="longitude">
+                        <button type="button" id="use-my-location-btn" class="use-my-location-btn">
+                            <i class="fas fa-map-marker-alt"></i> Use My Location
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="scheduled-datetime">Preferred Date & Time:</label>
+                        <input type="datetime-local" id="scheduled-datetime" name="scheduledDateTime" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Additional Notes:</label>
+                        <textarea id="notes" name="notes" placeholder="e.g., Appliance is very old, make sure technician has XYZ tools..."></textarea>
+                    </div>
+
+                    <button type="submit" id="book-service-btn" class="btn btn-primary">Book Service</button>
+                </form>
+            </div>
+
+            <!-- Top 5 Technicians Section -->
+            <div class="top-technicians-section-integrated" style="margin-top: 30px;">
+                <h2>✨ Top Rated Technicians ✨</h2>
+                <div id="top-technicians-list" class="top-technicians-grid">
+                    <p style="grid-column: 1 / -1; text-align: center; color: #777;">Loading top technicians...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Bookings Section (Consolidated with filters) -->
+        <section id="my-bookings" class="my-bookings-parent-section card">
+            <h2>My Bookings</h2>
+            <div class="booking-filters">
+                <button class="btn btn-secondary filter-booking-btn active-filter" data-filter="booked">Booked</button>
+                <button class="btn btn-secondary filter-booking-btn" data-filter="upcoming">Upcoming</button>
+                <button class="btn btn-secondary filter-booking-btn" data-filter="ongoing">Ongoing</button>
+                <button class="btn btn-secondary filter-booking-btn" data-filter="history">History</button>
+            </div>
+
+            <div id="booked-bookings-list" class="booking-list-container active-list">
+                <h3>Newly Booked Services (Pending Assignment)</h3>
+                <p style="text-align: center; color: #777;">No new bookings.</p>
+            </div>
+
+            <div id="upcoming-bookings-list" class="booking-list-container">
+                <h3>Upcoming Services (Accepted & Scheduled)</h3>
+                <p style="text-align: center; color: #777;">No upcoming bookings.</p>
+            </div>
+
+            <div id="ongoing-bookings-list" class="booking-list-container">
+                <h3>Ongoing Services (In Progress, Quoted)</h3>
+                <p style="text-align: center; color: #777;">No ongoing bookings.</p>
+            </div>
+
+            <div id="history-bookings-list" class="booking-list-container">
+                <h3>Service History (Completed, Cancelled, Paid, or Past Due)</h3>
+                <div style="overflow-x:auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Job ID</th>
+                                <th>Appliance</th>
+                                <th>Technician</th>
+                                <th>Date & Time</th>
+                                <th>Amount Paid</th>
+                                <th>Rating</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="past-services-table-body">
+                            <tr><td colspan="7" style="text-align: center; color: #777;">No service history.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Profile Section -->
+        <section id="my-profile" class="my-profile-section card">
+            <h2>My Profile</h2>
+            <form id="profile-update-form">
+                <div class="form-group">
+                    <label for="profile-full-name">Full Name:</label>
+                    <input type="text" id="profile-full-name" name="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label for="profile-email">Email:</label>
+                    <input type="email" id="profile-email" name="email" readonly disabled>
+                </div>
+                <div class="form-group">
+                    <label for="profile-phone-number">Phone Number:</label>
+                    <input type="tel" id="profile-phone-number" name="phoneNumber" required>
+                </div>
+                <div class="form-group">
+                    <label for="profile-address">Address:</label>
+                    <input type="text" id="profile-address" name="address" placeholder="Your primary address">
+                    <input type="hidden" id="profile-latitude" name="latitude">
+                    <input type="hidden" id="profile-longitude" name="longitude">
+                    <button type="button" id="use-my-location-profile-btn" class="use-my-location-btn">
+                        <i class="fas fa-map-marker-alt"></i> Use My Location
+                    </button>
+                </div>
+                <button type="submit" id="update-profile-btn" class="btn btn-primary">Update Profile</button>
+            </form>
+        </section>
+
+        <!-- Payments & Offers Section -->
+        <section id="payments-offers" class="payments-offers-section card">
+            <h2>Payments & Offers</h2>
+            <p>Manage your payment methods and view available offers here.</p>
+            <div class="info-block">
+                <h3>Your Wallet Balance: ₹<span id="wallet-balance">0.00</span></h3>
+                <p>This balance reflects the money in your TechSeva wallet, which can be used for services.</p>
+                <button class="btn btn-primary">Add Money</button>
+                <button class="btn btn-secondary">View Offers</button>
+            </div>
+            <div class="info-block" style="margin-top: 20px;">
+                <h3>Payment Methods</h3>
+                <p>Link or manage your preferred payment methods (e.g., UPI, Net Banking).</p>
+                <button class="btn btn-success">Manage Methods</button>
+            </div>
+        </section>
+
+        <!-- Support & Help Section -->
+        <section id="support-help" class="support-help-section card">
+            <h2>Support & Help</h2>
+            <p>Need assistance? Contact our support team or find answers to common questions.</p>
+            
+            <div class="info-block" style="margin-top: 20px;">
+                <h3>Submit a New Support Ticket</h3>
+                <form id="submit-ticket-form">
+                    <div class="form-group">
+                        <label for="ticket-subject">Subject:</label>
+                        <input type="text" id="ticket-subject" placeholder="e.g., Issue with recent AC repair" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ticket-description">Description:</label>
+                        <textarea id="ticket-description" placeholder="Provide details about your issue..." required></textarea>
+                    </div>
+                    <button type="submit" id="submit-ticket-btn" class="btn btn-primary">Submit Ticket</button>
+                </form>
+            </div>
+
+            <div class="info-block" style="margin-top: 20px;">
+                <h3>FAQs (Frequently Asked Questions)</h3>
+                <p>Browse our frequently asked questions for quick answers.</p>
+                <button class="btn btn-primary" id="view-faqs-btn">View FAQs</button>
+                <div id="faqs-list" style="margin-top: 15px;">
+                    <p style="text-align: center; color: #777;">Click "View FAQs" to load.</p>
+                </div>
+            </div>
+
+            <div class="info-block" style="margin-top: 20px;">
+                <h3>Contact Support Directly</h3>
+                <p>If you can't find your answer, reach out to our support team directly.</p>
+                <p>Email: <a href="mailto: achhutanandjha1@gmail.com" class="text-blue-500 hover:underline"> achhutanandjha1@gmail.com</a></p>
+                <p>Phone:  +91 84391 31459</p>
+            </div>
+        </section>
+
+        <!-- Notifications Section -->
+        <section id="notifications" class="notifications-section card">
+            <h2>Notifications</h2>
+            <div id="notifications-list">
+                <p style="text-align: center; color: #777;">Loading notifications...</p>
+            </div>
+        </section>
+
+        <!-- Leave a Review Section -->
+        <section id="leave-review" class="leave-review-section card">
+            <h2>Leave a Review</h2>
+            <p style="text-align: center; font-size: 1.1em; margin-bottom: 25px; color: #555;">Leave a review for your recent service to help us improve!</p>
+            <form id="review-form">
+                <div class="form-group">
+                    <label for="review-job-id">Job ID for Review:</label>
+                    <input type="text" id="review-job-id" placeholder="Enter Job ID (e.g., J004)">
+                </div>
+
+                <div class="form-group">
+                    <label>Your Rating:</label>
+                    <div class="star-rating" id="star-rating-container">
+                        <span class="star" data-rating="1">★</span>
+                        <span class="star" data-rating="2">★</span>
+                        <span class="star" data-rating="3">★</span>
+                        <span class="star" data-rating="4">★</span>
+                        <span class="star" data-rating="5">★</span>
+                    </div>
+                    <input type="hidden" id="selected-rating" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label for="review-text">Your Review:</label>
+                    <textarea id="review-text" placeholder="Share your experience..."></textarea>
+                </div>
+
+                <button type="submit" id="submit-review-btn" class="btn btn-primary">Submit Review</button>
+            </form>
+        </section>
+        
+    </div>
+
+    <footer>
+        <p>
+            <a href="#" class="footer-links">Contact Us</a> |
+            <a href="#" class="footer-links">About TechSeva</a> |
+            <a href="#" class="footer-links">Privacy Policy</a> |
+            <a href="#" class="footer-links">Terms of Use</a>
+        </p>
+        <p>&copy; 2025 TechSeva. All rights reserved.</p>
+    </footer>
+
+    <!-- Message Box for Alerts -->
+    <div id="message-container"></div>
+
+    <script>
+        // Google Maps API Callback function
+        // This function is called by the Google Maps API script once it's loaded.
+        function initMap() {
+            console.log('[GMaps] Google Maps API loaded. Initializing Autocomplete.');
+            
+            // Autocomplete for the booking form's location input
+            const locationInput = document.getElementById('location-input');
+            if (locationInput) {
+                const autocomplete = new google.maps.places.Autocomplete(locationInput);
+                autocomplete.addListener('place_changed', () => {
+                    const place = autocomplete.getPlace();
+                    if (place.geometry) {
+                        document.getElementById('latitude-input').value = place.geometry.location.lat();
+                        document.getElementById('longitude-input').value = place.geometry.location.lng();
+                        console.log('[GMaps] Booking form: Autocomplete selected place:', place.formatted_address, 'Lat:', place.geometry.location.lat(), 'Lng:', place.geometry.location.lng());
+                    } else {
+                        // If no geometry, clear lat/lng to prevent invalid data submission
+                        document.getElementById('latitude-input').value = '';
+                        document.getElementById('longitude-input').value = '';
+                        console.warn('[GMaps] Booking form: Autocomplete returned no geometry for place.');
+                    }
+                });
+            }
+
+            // Autocomplete for the profile update form's address input
+            const profileAddressInput = document.getElementById('profile-address');
+            if (profileAddressInput) {
+                const profileAutocomplete = new google.maps.places.Autocomplete(profileAddressInput);
+                profileAutocomplete.addListener('place_changed', () => {
+                    const place = profileAutocomplete.getPlace();
+                    if (place.geometry) {
+                        document.getElementById('profile-latitude').value = place.geometry.location.lat();
+                        document.getElementById('profile-longitude').value = place.geometry.location.lng();
+                        console.log('[GMaps] Profile form: Autocomplete selected place:', place.formatted_address, 'Lat:', place.geometry.location.lat(), 'Lng:', place.geometry.location.lng());
+                    } else {
+                        // If no geometry, clear lat/lng
+                        document.getElementById('profile-latitude').value = '';
+                        document.getElementById('profile-longitude').value = '';
+                        console.warn('[GMaps] Profile form: Autocomplete returned no geometry for place.');
+                    }
+                });
+            }
+        }
+
+        // Utility function for displaying ephemeral messages to the user
+        function showMessage(message, type = 'success') {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) {
+                // Create container if it doesn't exist
+                const newContainer = document.createElement('div');
+                newContainer.id = 'message-container';
+                document.body.appendChild(newContainer);
+                messageContainer = newContainer;
+            }
+
+            // Remove any existing message box to prevent multiple messages overlapping
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+
+            // Set timeout to remove the message after it fades out
+            setTimeout(() => {
+                messageBox.style.opacity = '0'; // Start CSS fade-out animation
+                setTimeout(() => messageBox.remove(), 500); // Remove element after CSS transition (0.5s)
+            }, 4500); // Message visible for 4.5 seconds before starting fade out
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM Content Loaded. Initializing dashboard.');
+            
+            // --- Global Constants (Ensure these match your backend logic) ---
+            const APP_COMMISSION_RATE = 0.10; // Example: 10% commission
+            const TAX_RATE_INDIA = 0.18; // Example: 18% GST
+
+            // --- Element References (Cached for efficiency) ---
+            const welcomeGreeting = document.getElementById('welcome-greeting');
+            const languageSelect = document.getElementById('language-select');
+            const bookingForm = document.getElementById('booking-form');
+            const useMyLocationBtn = document.getElementById('use-my-location-btn');
+            const locationInput = document.getElementById('location-input');
+            const latitudeInput = document.getElementById('latitude-input');
+            const longitudeInput = document.getElementById('longitude-input');
+            
+            const bookingFilterButtons = document.querySelectorAll('.filter-booking-btn');
+            const bookedBookingsList = document.getElementById('booked-bookings-list');
+            const ongoingBookingsList = document.getElementById('ongoing-bookings-list');
+            const upcomingBookingsList = document.getElementById('upcoming-bookings-list');
+            const historyBookingsList = document.getElementById('history-bookings-list');
+            const pastServicesTableBody = document.getElementById('past-services-table-body');
+
+            const reviewForm = document.getElementById('review-form');
+            const starRatingContainer = document.getElementById('star-rating-container');
+            const selectedRatingInput = document.getElementById('selected-rating');
+            const logoutButton = document.getElementById('logout-btn');
+
+            const profileUpdateForm = document.getElementById('profile-update-form');
+            const profileFullNameInput = document.getElementById('profile-full-name');
+            const profileEmailInput = document.getElementById('profile-email');
+            const profilePhoneNumberInput = document.getElementById('profile-phone-number');
+            const profileAddressInput = document.getElementById('profile-address');
+            const profileLatitudeInput = document.getElementById('profile-latitude');
+            const profileLongitudeInput = document.getElementById('profile-longitude');
+            const useMyLocationProfileBtn = document.getElementById('use-my-location-profile-btn');
+            
+            const topTechniciansList = document.getElementById('top-technicians-list');
+
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            const sections = document.querySelectorAll('.container section.card');
+            const menuToggle = document.getElementById('menu-toggle');
+            const mainNavbar = document.getElementById('main-navbar');
+
+            const submitTicketForm = document.getElementById('submit-ticket-form');
+            const ticketSubjectInput = document.getElementById('ticket-subject');
+            const ticketDescriptionInput = document.getElementById('ticket-description');
+            const viewFAQsBtn = document.getElementById('view-faqs-btn');
+            const faqsListContainer = document.getElementById('faqs-list');
+            const notificationsListContainer = document.getElementById('notifications-list');
+
+
+            let selectedRating = 0; // State for star rating in review form
+            let currentUserData = null; // Stores current user's full data
+            let allUserJobs = []; // Stores all fetched jobs for filtering
+            let allNotifications = []; // Stores fetched notifications
+            let allFAQs = []; // Stores fetched FAQs
+
+
+            // --- Navigation Logic ---
+            function showSection(targetId) {
+                console.log(`[NAVIGATION] Attempting to show section: ${targetId}`);
+                // Hide all sections
+                sections.forEach(section => {
+                    section.classList.remove('active-section');
+                });
+
+                // Show the target section
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    targetSection.classList.add('active-section');
+                } else {
+                    console.warn(`[NAVIGATION] Section with ID ${targetId} not found.`);
+                }
+
+                // Update active nav link
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === targetId) {
+                        link.classList.add('active');
+                    }
+                });
+
+                // Close the mobile menu if it's open
+                if (mainNavbar.classList.contains('menu-open')) {
+                    mainNavbar.classList.remove('menu-open');
+                }
+            }
+
+            // Add event listeners to nav links for section switching
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = e.target.getAttribute('href');
+                    if (targetId && targetId !== '#') { // Avoid handling logout link here
+                        showSection(targetId);
+                        // Trigger data fetching/rendering for specific sections when they become active
+                        if (targetId === '#my-bookings') {
+                            console.log('[NAVIGATION] Navigating to My Bookings. Fetching all jobs and rendering "Booked" by default.');
+                            fetchAndRenderUserJobs('booked'); // Default to 'booked' when My Bookings is clicked
+                        } else if (targetId === '#my-profile') {
+                            console.log('[NAVIGATION] Navigating to My Profile. Fetching current user details.');
+                            fetchCurrentUser();
+                        } else if (targetId === '#home') {
+                            console.log('[NAVIGATION] Navigating to Home. Refreshing user data, technicians.');
+                            fetchCurrentUser();
+                            fetchTopTechnicians();
+                            // Note: Jobs are not automatically re-fetched for home unless an action triggers it (like booking)
+                        } else if (targetId === '#leave-review') {
+                            // Reset review form when navigating directly to it for a fresh start
+                            document.getElementById('review-job-id').value = '';
+                            selectedRating = 0;
+                            selectedRatingInput.value = 0;
+                            starRatingContainer.querySelectorAll('.star').forEach(star => star.classList.remove('filled'));
+                            document.getElementById('review-text').value = '';
+                        } else if (targetId === '#notifications') {
+                            console.log('[NAVIGATION] Navigating to Notifications. Fetching notifications.');
+                            fetchNotifications();
+                        } else if (targetId === '#support-help') {
+                            console.log('[NAVIGATION] Navigating to Support & Help. Preparing FAQ section.');
+                            // No automatic fetch for FAQs, user clicks "View FAQs" button
+                            faqsListContainer.innerHTML = '<p style="text-align: center; color: #777;">Click "View FAQs" to load.</p>';
+                        }
+                    }
+                });
+            });
+
+            // --- Hamburger Menu Toggle for Mobile ---
+            if (menuToggle) {
+                menuToggle.addEventListener('click', () => {
+                    console.log('[MENU] Hamburger menu toggled.');
+                    mainNavbar.classList.toggle('menu-open');
+                });
+            }
+
+
+            // --- Fetch Current User Details and Update Welcome Greeting & Profile Form ---
+            async function fetchCurrentUser() {
+                try {
+                    console.log('[API CALL] Fetching current user details from /api/user/me...');
+                    const response = await fetch('/api/user/me');
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response.' }));
+                        throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
+                    }
+                    const result = await response.json();
+                    
+                    if (result.success && result.user) {
+                        console.log('[API RESPONSE] Successfully fetched user details:', result.user);
+                        currentUserData = result.user; // Store user data globally
+                        welcomeGreeting.textContent = `Welcome, ${currentUserData.fullName || currentUserData.email}!`;
+
+                        // Populate profile form fields
+                        profileFullNameInput.value = currentUserData.fullName || '';
+                        profileEmailInput.value = currentUserData.email || ''; // Email is usually non-editable
+                        profilePhoneNumberInput.value = currentUserData.phoneNumber || '';
+                        profileAddressInput.value = currentUserData.address || '';
+                        profileLatitudeInput.value = currentUserData.latitude || '';
+                        profileLongitudeInput.value = currentUserData.longitude || '';
+                        
+                        // Update wallet balance display
+                        const walletBalanceSpan = document.getElementById('wallet-balance');
+                        if (walletBalanceSpan) {
+                            walletBalanceSpan.textContent = (currentUserData.balance || 0).toFixed(2);
+                        }
+
+                    } else {
+                        console.error('[API RESPONSE] Failed to fetch user details (API response issue):', result.message || 'Unknown error', result);
+                        welcomeGreeting.textContent = 'Welcome, User!'; // Fallback greeting
+                        showMessage('Could not load user details.', 'error');
+                        // Consider redirecting to login if user session is invalid: window.location.href = '/';
+                    }
+                }
+                catch (error) {
+                    console.error('[FETCH ERROR] Error fetching user details (Network/Unhandled error):', error);
+                    welcomeGreeting.textContent = 'Welcome, User!'; // Fallback
+                    showMessage('Network error while loading user details. Please check server status.', 'error');
+                    // Consider redirecting to login on critical fetch failure: window.location.href = '/';
+                }
+            }
+
+            // --- Fetch & Render Top Technicians ---
+            async function fetchTopTechnicians() {
+                try {
+                    topTechniciansList.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #777;">Loading top technicians...</p>';
+                    console.log('[API CALL] Fetching top technicians from /api/top-technicians...');
+                    const response = await fetch('/api/top-technicians'); 
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response.' }));
+                        throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
+                    }
+                    const result = await response.json();
+
+                    if (result.success && result.technicians) {
+                        console.log('[API RESPONSE] Successfully fetched top technicians:', result.technicians);
+                        if (result.technicians.length === 0) {
+                            topTechniciansList.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #777;">No top technicians available yet.</p>';
+                        } else {
+                            topTechniciansList.innerHTML = ''; // Clear loading message
+                            result.technicians.slice(0, 5).forEach(technician => { // Display top 5 technicians
+                                const technicianCard = document.createElement('div');
+                                technicianCard.className = 'technician-card';
+                                const ratingDisplay = technician.averageRating ? `<span>${'★'.repeat(Math.round(technician.averageRating))}${'☆'.repeat(5 - Math.round(technician.averageRating))} (${technician.ratingCount || 0} reviews)</span>` : 'No reviews yet';
+                                
+                                technicianCard.innerHTML = `
+                                    <h3>${technician.fullName}</h3>
+                                    <p class="rating-stars">${ratingDisplay}</p>
+                                    <p>Skills: ${technician.skills && technician.skills.length > 0 ? technician.skills.join(', ') : 'N/A'}</p>
+                                    <p>Location: ${technician.workingLocation && technician.workingLocation.address ? technician.workingLocation.address : 'N/A'}</p>
+                                `;
+                                topTechniciansList.appendChild(technicianCard);
+                            });
+                        }
+                    } else {
+                        console.error('[API RESPONSE] Failed to fetch top technicians (API response issue):', result.message || 'Unknown error', result);
+                        topTechniciansList.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #777;">Failed to load top technicians. Please try again.</p>';
+                        showMessage('Failed to load top technicians.', 'error');
+                    }
+                }
+                catch (error) {
+                    console.error('[FETCH ERROR] Error fetching top technicians (Network/Unhandled error):', error);
+                    topTechniciansList.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #777;">Network error. Could not load top technicians.</p>';
+                    showMessage('Network error while loading top technicians. Please check server status.', 'error');
+                }
+            }
+
+
+            // --- Fetch All User Jobs and then Render based on Filter ---
+            async function fetchAndRenderUserJobs(filterType = 'booked') { // Default filter is 'booked'
+                console.log(`[FETCH JOBS] Preparing to fetch and render user jobs with initial filter: ${filterType}`);
+                // Set loading messages for all booking lists
+                bookedBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Loading new bookings...</p>';
+                ongoingBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Loading ongoing bookings...</p>';
+                upcomingBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Loading upcoming bookings...</p>';
+                pastServicesTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">Loading service history...</td></tr>';
+
+                try {
+                    console.log('[API CALL] Attempting to fetch all user jobs from /api/user/jobs...');
+                    const response = await fetch('/api/user/jobs');
+                    if (!response.ok) { // Check for HTTP errors (e.g., 404, 500)
+                        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response from API.' }));
+                        throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
+                    }
+                    const result = await response.json();
+
+                    if (result.success && result.jobs) {
+                        console.log('[API RESPONSE] Successfully fetched all user jobs. Total jobs:', result.jobs.length);
+                        allUserJobs = result.jobs; // Store all jobs in a global array
+                        renderFilteredJobs(filterType); // Now render based on the active filter
+                    } else {
+                        console.error('[API RESPONSE] Failed to fetch user jobs (API response issue):', result.message || 'Unknown error', result);
+                        // Update all lists with a specific error message if API call succeeded but data was bad
+                        bookedBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Failed to load bookings. Please try again.</p>';
+                        ongoingBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Failed to load bookings. Please try again.</p>';
+                        upcomingBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Failed to load bookings. Please try again.</p>';
+                        historyBookingsList.querySelector('.data-table tbody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">Failed to load service history.</td></tr>';
+                        showMessage('Failed to load your bookings.', 'error');
+                    }
+                }
+                catch (error) {
+                    console.error('[FETCH ERROR] Error fetching user jobs (Network/Unhandled error):', error);
+                    // Update all lists with a network error message if fetch failed
+                    bookedBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Network error. Could not load bookings.</p>';
+                    ongoingBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Network error. Could not load bookings.</p>';
+                    upcomingBookingsList.innerHTML = '<p style="text-align: center; color: #777;">Network error. Could not load bookings.</p>';
+                    historyBookingsList.querySelector('.data-table tbody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">Network error. Could not load service history.</p>';
+                    showMessage('Network error while loading bookings. Please check server status.', 'error');
+                }
+            }
+
+            // Function to filter and render jobs into the correct section based on the selected filter type
+            function renderFilteredJobs(filterType) {
+                console.groupCollapsed(`[RENDER JOBS] Rendering jobs for filter: "${filterType}". Total jobs in memory: ${allUserJobs.length}`);
+
+                // Deactivate all booking list containers and filter buttons
+                document.querySelectorAll('.booking-list-container').forEach(container => {
+                    container.classList.remove('active-list');
+                });
+                bookingFilterButtons.forEach(btn => btn.classList.remove('active-filter'));
+
+                let filteredJobs = [];
+                let targetListElement; 
+
+                const now = new Date(); // Current date/time for comparisons
+
+                allUserJobs.forEach(job => {
+                    // Ensure scheduledDateTime is a Date object for reliable comparison
+                    const jobDate = job.scheduledDateTime instanceof Date ? job.scheduledDateTime : new Date(job.scheduledDateTime);
+                    const isPastScheduledDate = jobDate < now;
+
+                    console.log(`  - Job ID: ${job.jobId} | Status: "${job.status}" | ScheduledDate: ${jobDate.toLocaleString()} (Is Past: ${isPastScheduledDate})`);
+
+                    switch (filterType) {
+                        case 'booked':
+                            // Booked: ONLY jobs with status 'Pending'. This is the simplest and most direct interpretation.
+                            if (job.status === 'Pending') {
+                                filteredJobs.push(job);
+                                console.log(`    -> Matched 'Booked' filter: Status is 'Pending'.`);
+                            }
+                            break;
+                        case 'upcoming':
+                            // Upcoming: Jobs with status 'Accepted' and scheduled for now or in the future
+                            if (job.status === 'Accepted' && !isPastScheduledDate) {
+                                filteredJobs.push(job);
+                                console.log(`    -> Matched 'Upcoming' filter: Status 'Accepted' and not past scheduled date.`);
+                            }
+                            break;
+                        case 'ongoing':
+                            // Ongoing: Jobs actively being worked on or awaiting user's quotation approval
+                            if (['In Progress', 'Diagnosed', 'Quotation Provided', 'Quotation Approved'].includes(job.status)) {
+                                filteredJobs.push(job);
+                                console.log(`    -> Matched 'Ongoing' filter: Status is one of In Progress/Diagnosed/Quoted/Approved.`);
+                            }
+                            break;
+                        case 'history':
+                            // History: Completed, Cancelled, Paid, Rejected, OR any Pending/Accepted job that is past its scheduled date
+                            if (['Completed', 'Cancelled', 'Paid', 'Rejected'].includes(job.status) || 
+                                (isPastScheduledDate && !['In Progress', 'Diagnosed', 'Quotation Provided', 'Quotation Approved'].includes(job.status))) {
+                                filteredJobs.push(job);
+                                console.log(`    -> Matched 'History' filter: Status is Completed/Cancelled/Paid/Rejected OR Past Due and not Ongoing.`);
+                            }
+                            break;
+                    }
+                });
+
+                // Sort the filtered jobs for better user experience
+                if (filterType === 'booked' || filterType === 'upcoming' || filterType === 'ongoing') {
+                    filteredJobs.sort((a, b) => new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime)); // Sort by soonest date/time first
+                } else if (filterType === 'history') {
+                    filteredJobs.sort((a, b) => new Date(b.scheduledDateTime) - new Date(a.scheduledDateTime)); // Sort by most recent completion/cancellation date first
+                }
+
+                console.log(`[RENDER JOBS] Final filtered jobs for "${filterType}" (${filteredJobs.length} jobs):`, filteredJobs);
+                console.groupEnd();
+
+                // Activate the correct list container and filter button
+                switch (filterType) {
+                    case 'booked':
+                        targetListElement = bookedBookingsList;
+                        break;
+                    case 'upcoming':
+                        targetListElement = upcomingBookingsList;
+                        break;
+                    case 'ongoing':
+                        targetListElement = ongoingBookingsList;
+                        break;
+                    case 'history':
+                        targetListElement = historyBookingsList;
+                        break;
+                }
+                targetListElement.classList.add('active-list');
+                document.querySelector(`.filter-booking-btn[data-filter="${filterType}"]`).classList.add('active-filter');
+
+
+                // Render jobs into the determined list element
+                if (filterType === 'history') {
+                    pastServicesTableBody.innerHTML = ''; // Clear table body for history
+                    if (filteredJobs.length === 0) {
+                        pastServicesTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">No service history.</td></tr>';
+                    } else {
+                        filteredJobs.forEach(service => {
+                            const row = pastServicesTableBody.insertRow();
+                            const ratingDisplay = service.rating ? `<span>${'★'.repeat(service.rating)}${'☆'.repeat(5 - service.rating)}</span>` : 'N/A';
+                            
+                            let amountDisplay = 'N/A';
+                            if (service.payment && service.payment.status === 'Paid') {
+                                const grossAmountCustomerPaid = service.payment.amount; 
+                                amountDisplay = `₹${(grossAmountCustomerPaid || 0).toFixed(2)}`;
+                            } else if (service.quotation && service.quotation.totalEstimate !== undefined) {
+                                amountDisplay = `₹${(service.quotation.totalEstimate || 0).toFixed(2)} (Unpaid)`;
+                            }
+
+                            let actionsCellHtml = '';
+                            const isPastDuePending = service.status === 'Pending' && (new Date(service.scheduledDateTime) < now);
+                            const isCancelledOrRejected = ['Cancelled', 'Rejected'].includes(service.status);
+
+                            if (service.status === 'Completed' || service.status === 'Paid') {
+                                // Actions for completed/paid services
+                                if (service.payment && service.payment.status === 'Paid') {
+                                    actionsCellHtml += `<button class="btn btn-secondary download-invoice-btn" data-job-id="${service.jobId}" data-quotation='${JSON.stringify(service.quotation || {})}' data-payment='${JSON.stringify(service.payment || {})}' data-appliance-type="${service.applianceType}" data-technician-name="${service.assignedTechnicianName || 'N/A'}" data-customer-name="${currentUserData ? currentUserData.fullName : 'Customer'}" data-job-location="${service.location ? (typeof service.location === 'string' ? service.location : service.location.address) : 'N/A'}">Download Invoice</button>`;
+                                    if (service.proofImages && service.proofImages.length > 0) {
+                                        actionsCellHtml += ` <button class="btn btn-info view-proof-pdf-btn" data-job-id="${service.jobId}" data-proof-images='${JSON.stringify(service.proofImages)}'>View Proof PDF</button>`;
+                                    }
+                                } else if (service.quotation && service.quotation.totalEstimate !== undefined && !(service.payment && service.payment.status === 'Paid')) {
+                                    // If job has quotation but not paid yet
+                                    actionsCellHtml += `<button class="btn btn-warning view-quote-btn" data-job-id="${service.jobId}" data-quotation='${JSON.stringify(service.quotation)}'>Pay Now</button>`;
+                                }
+                                if (!service.rating) {
+                                    // Option to leave review if not already rated
+                                    actionsCellHtml += ` <button class="btn btn-success leave-review-shortcut-btn" data-job-id="${service.jobId}">Leave Review</button>`;
+                                }
+                            } else if (isPastDuePending) {
+                                // Special badge for pending jobs that are past their scheduled date
+                                actionsCellHtml += `<span class="status-badge status-rejected">Past Due Pending</span>`; 
+                            } else if (isCancelledOrRejected) {
+                                // Badge for explicitly cancelled or rejected jobs
+                                actionsCellHtml += `<span class="status-badge status-rejected">${service.status}</span>`;
+                            }
+                            else {
+                                // Default display for other history states (should not be many if statuses are well-defined)
+                                actionsCellHtml += `Status: ${service.status}`; 
+                            }
+
+                            row.innerHTML = `
+                                <td data-label="Job ID">${service.jobId}</td>
+                                <td data-label="Appliance">${service.applianceType}</td>
+                                <td data-label="Technician">${service.assignedTechnicianName || 'N/A'}</td>
+                                <td data-label="Date & Time">${new Date(service.scheduledDateTime).toLocaleString()}</td>
+                                <td data-label="Amount Paid">${amountDisplay}</td>
+                                <td data-label="Rating" class="rating-stars">${ratingDisplay}</td>
+                                <td data-label="Action">${actionsCellHtml}</td>
+                            `;
+                        });
+                    }
+                } else { // For 'booked', 'upcoming', and 'ongoing' lists (card-style display)
+                    targetListElement.innerHTML = ''; // Clear previous cards
+                    if (filteredJobs.length === 0) {
+                        targetListElement.innerHTML = `<p style="text-align: center; color: #777;">No ${filterType} bookings.</p>`;
+                    } else {
+                        filteredJobs.forEach(booking => {
+                            const bookingItem = document.createElement('div');
+                            // Add class for border styling based on status
+                            bookingItem.className = `booking-item ${booking.status.toLowerCase().replace(/\s/g, '-')}`;
+                            
+                            let quoteDetailsHtml = '';
+                            let paymentButton = '';
+                            
+                            // Show quotation details and 'Pay' button if applicable
+                            if (booking.quotation && booking.quotation.totalEstimate !== undefined) {
+                                quoteDetailsHtml = `
+                                    <p><strong>Quotation Details:</strong></p>
+                                    <ul>
+                                        <li>Parts Cost: ₹${(booking.quotation.partCost || 0).toFixed(2)}</li>
+                                        <li>Labor Cost: ₹${(booking.quotation.laborCost || 0).toFixed(2)}</li>
+                                        <li>Travel Charges: ₹${(booking.quotation.travelCharges || 0).toFixed(2)}</li>
+                                        <li><strong>Total Estimate: ₹${(booking.quotation.totalEstimate || 0).toFixed(2)}</strong></li>
+                                    </ul>
+                                `;
+                                // Show 'View Quote & Pay' if not already paid
+                                if (!(booking.payment && booking.payment.status === 'Paid')) {
+                                    paymentButton = `<button class="btn btn-warning view-quote-btn" data-job-id="${booking.jobId}" data-quotation='${JSON.stringify(booking.quotation)}'>View Quote & Pay</button>`;
+                                } else {
+                                    // If payment is paid, disable button and show status
+                                    paymentButton = `<button class="btn btn-success btn-disabled"><i class="fas fa-check-circle"></i> Payment Paid</button>`;
+                                }
+                            }
+                            
+                            // Determine if cancel button should be shown
+                            // Allow cancellation ONLY for Pending or Accepted jobs that are still in the future.
+                            const showCancelButton = ['Pending', 'Accepted'].includes(booking.status) && (new Date(booking.scheduledDateTime) > now);
+
+                            bookingItem.innerHTML = `
+                                <h3>Job ID: ${booking.jobId} (${booking.applianceType})</h3>
+                                <p><strong>Technician:</strong> ${booking.assignedTechnicianName || 'Pending Assignment'} ${booking.assignedTechnicianName && booking.assignedTechnicianId ? `(ID: ${String(booking.assignedTechnicianId).slice(-4)})` : ''}</p>
+                                <p><strong>Location:</strong> ${booking.location ? (typeof booking.location === 'string' ? booking.location : booking.location.address) : 'N/A'}</p>
+                                <p><strong>Date & Time:</strong> ${new Date(booking.scheduledDateTime).toLocaleString()}</p>
+                                <p><strong>Status:</strong> <span class="status-text ${booking.status.toLowerCase().replace(/\s/g, '-')}">${booking.status}</span></p>
+                                <p><strong>Payment Status:</strong> ${booking.payment && booking.payment.status ? booking.payment.status : 'N/A'}</p>
+                                ${quoteDetailsHtml}
+                                <div class="booking-actions">
+                                    ${paymentButton}
+                                    ${showCancelButton ? `<button class="btn btn-danger cancel-booking-btn" data-job-id="${booking.jobId}"><i class="fas fa-times-circle"></i> Cancel Booking</button>` : ''}
+                                </div>
+                            `;
+                            targetListElement.appendChild(bookingItem);
+                        });
+                    }
+                }
+                // Re-attach listeners to dynamically created elements after rendering.
+                // This is crucial because innerHTML overwrites elements, removing old listeners.
+                attachBookingActionListeners(); 
+                attachPastServiceActionListeners();
+            }
+
+            // Helper function to get CSS class for status text (for dynamic styling)
+            function getStatusColorClass(status) {
+                return status.toLowerCase().replace(/\s/g, '-');
+            }
+
+
+            // Add event listeners for booking filter buttons
+            bookingFilterButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const filterType = e.target.dataset.filter;
+                    renderFilteredJobs(filterType); // Render jobs based on the clicked filter
+                });
+            });
+
+
+            // --- Attach Event Listeners for Current Bookings Actions (View Quote/Pay, Cancel) ---
+            function attachBookingActionListeners() {
+                // Iteratively remove and re-add listeners to ensure they are bound to the new DOM elements.
+                // This pattern is effective when the content is completely re-rendered (e.g., via innerHTML).
+                document.querySelectorAll('#booked-bookings-list .view-quote-btn, #upcoming-bookings-list .view-quote-btn, #ongoing-bookings-list .view-quote-btn').forEach(button => {
+                    button.removeEventListener('click', handleViewQuoteAndPay); // Remove old listener
+                    button.addEventListener('click', handleViewQuoteAndPay);    // Add new listener
+                });
+                document.querySelectorAll('#booked-bookings-list .cancel-booking-btn, #upcoming-bookings-list .cancel-booking-btn').forEach(button => {
+                    button.removeEventListener('click', handleCancelBooking); // Remove old listener
+                    button.addEventListener('click', handleCancelBooking);    // Add new listener
+                });
+            }
+
+            // Handles 'View Quote & Pay' button click, redirects to payment page
+            async function handleViewQuoteAndPay(e) {
+                const button = e.target;
+                const jobId = button.dataset.jobId;
+                console.log(`[ACTION] User clicked View Quote & Pay for Job ID: ${jobId}`);
+                // Redirect user to a payment processing page, passing the job ID
+                window.location.href = `/payment?jobId=${jobId}`;
+            }
+
+            // Handles 'Cancel Booking' button click
+            async function handleCancelBooking(e) {
+                const button = e.target;
+                const jobId = button.dataset.jobId;
+                console.log(`[ACTION] User clicked Cancel Booking for Job ID: ${jobId}`);
+                
+                // Show a custom confirmation dialog instead of browser's native confirm()
+                const confirmCancel = await new Promise(resolve => {
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                        background-color: rgba(0,0,0,0.6); display: flex;
+                        justify-content: center; align-items: center; z-index: 10001;
+                    `;
+                    modal.innerHTML = `
+                        <div style="background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); max-width: 400px; text-align: center;">
+                            <p style="font-size: 1.2em; margin-bottom: 25px; color: #333;">Are you sure you want to cancel Job ID: <strong>${jobId}</strong>?</p>
+                            <p style="color: #dc3545; font-weight: bold; margin-bottom: 30px; font-size: 1em;">यह कार्रवाई पूर्ववत नहीं की जा सकती है। (This action cannot be undone.)</p>
+                            <button id="confirm-yes" class="btn btn-danger" style="margin-right: 20px;"><i class="fas fa-check"></i> Yes, Cancel</button>
+                            <button id="confirm-no" class="btn btn-secondary"><i class="fas fa-times"></i> No, Keep It</button>
+                        </div>
+                    `;
+                    document.body.appendChild(modal);
+
+                    document.getElementById('confirm-yes').onclick = () => { modal.remove(); resolve(true); };
+                    document.getElementById('confirm-no').onclick = () => { modal.remove(); resolve(false); };
+                });
+
+                if (confirmCancel) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling...';
+                    console.log(`[CANCEL API CALL] Sending cancellation request for Job ID: ${jobId}`);
+                    try {
+                        const response = await fetch('/api/user/jobs/cancel', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jobId })
+                        });
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response.' }));
+                            throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
+                        }
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            console.log('[API RESPONSE] Booking cancelled successfully. Re-fetching and rendering jobs.');
+                            // Re-fetch all jobs and then re-render the 'booked' list. The cancelled job should now move to 'History'.
+                            fetchAndRenderUserJobs('booked'); 
+                        } else {
+                            showMessage(result.message || 'Cancellation failed.', 'error');
+                            console.error('[API RESPONSE] Booking cancellation failed (API response issue):', result.message, result);
+                        }
+                    }
+                    catch (error) {
+                        console.error('[FETCH ERROR] Cancel booking error (network/unhandled):', error);
+                        showMessage('Network error during cancellation. Please check server status.', 'error');
+                    }
+                    finally {
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-times-circle"></i> Cancel Booking'; // Restore original icon and text
+                    }
+                } else {
+                    console.log('[CANCEL ACTION] User aborted the cancellation process.');
+                    showMessage('Cancellation aborted.', 'info');
+                }
+            }
+
+
+            // --- Attach Event Listeners for Past Service Actions (History Table) ---
+            function attachPastServiceActionListeners() {
+                // Remove and re-add listeners to ensure proper binding to current DOM elements.
+                document.querySelectorAll('#past-services-table-body .download-invoice-btn, #past-services-table-body .view-proof-pdf-btn, #past-services-table-body .leave-review-shortcut-btn, #past-services-table-body .view-quote-btn').forEach(button => {
+                    button.removeEventListener('click', handleDownloadInvoice);
+                    button.removeEventListener('click', handleViewProofPdf);
+                    button.removeEventListener('click', handleLeaveReviewShortcut);
+                    button.removeEventListener('click', handleViewQuoteAndPay); 
+                });
+
+                // Add new listeners
+                document.querySelectorAll('#past-services-table-body .download-invoice-btn').forEach(button => {
+                    button.addEventListener('click', handleDownloadInvoice);
+                });
+                document.querySelectorAll('#past-services-table-body .view-proof-pdf-btn').forEach(button => {
+                    button.addEventListener('click', handleViewProofPdf);
+                });
+                document.querySelectorAll('#past-services-table-body .leave-review-shortcut-btn').forEach(button => {
+                    button.addEventListener('click', handleLeaveReviewShortcut);
+                });
+                document.querySelectorAll('#past-services-table-body .view-quote-btn').forEach(button => { 
+                    button.addEventListener('click', handleViewQuoteAndPay); 
+                });
+            }
+
+            // Handles invoice download (PDF generation)
+            async function handleDownloadInvoice(e) {
+                const button = e.target;
+                const jobId = button.dataset.jobId;
+                let quotation, payment;
+                try {
+                    quotation = JSON.parse(button.dataset.quotation);
+                    payment = JSON.parse(button.dataset.payment);
+                }
+                catch (error) {
+                    console.error('[INVOICE] Error parsing quotation or payment data from dataset:', error);
+                    showMessage('Error downloading invoice: Corrupted data.', 'error');
+                    return;
+                }
+                
+                // Get additional data from dataset attributes
+                const applianceType = button.dataset.applianceType || 'N/A';
+                const technicianName = button.dataset.technicianName || 'N/A';
+                const customerName = button.dataset.customerName || (currentUserData ? currentUserData.fullName : 'Customer'); 
+                // Handle location data which might be a string or stringified object
+                const jobLocation = button.dataset.jobLocation ? (typeof button.dataset.jobLocation === 'string' && button.dataset.jobLocation.startsWith('{') ? JSON.parse(button.dataset.jobLocation).address : button.dataset.jobLocation) : 'N/A';
+
+                console.log(`[INVOICE] Generating invoice for Job ID: ${jobId}`);
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Invoice...';
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: "portrait",
+                    unit: "pt",
+                    format: "a4"
+                });
+
+                let yOffset = 30; // Starting Y position
+                const marginX = 40; // Left/Right margin
+                const lineHeight = 14; // Standard line height for text
+                const sectionSpacing = 20; // Space between sections
+
+                // --- Invoice Header ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(26);
+                doc.setTextColor(44, 62, 80); // Dark blue for headers
+                doc.text("TechSeva Invoice", doc.internal.pageSize.getWidth() / 2, yOffset, { align: "center" });
+                yOffset += lineHeight;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100); // Gray for taglines
+                doc.text("Your Reliable Appliance Service Partner", doc.internal.pageSize.getWidth() / 2, yOffset, { align: "center" });
+                yOffset += sectionSpacing;
+
+                doc.setDrawColor(200, 200, 200); // Light gray line separator
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Invoice Details & Bill To ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(52, 73, 94); // Medium blue for sub-headers
+                doc.text("Invoice Details:", marginX, yOffset);
+                yOffset += lineHeight;
+                
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                doc.setTextColor(50, 50, 50); // Darker gray for details
+                doc.text(`Invoice No: ${jobId}`, marginX, yOffset);
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.getWidth() - marginX, yOffset, { align: "right" });
+                yOffset += lineHeight * 2; // Extra space
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.text("Bill To:", marginX, yOffset);
+                yOffset += lineHeight;
+                
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                doc.text(`${customerName}`, marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text(`${jobLocation}`, marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                doc.setDrawColor(200, 200, 200);
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Service Details ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(52, 73, 94);
+                doc.text("Service Information:", marginX, yOffset);
+                yOffset += lineHeight;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                doc.setTextColor(50, 50, 50);
+                doc.text(`Appliance Type: ${applianceType}`, marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text(`Technician: ${technicianName}`, marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text(`Service Date: ${new Date(quotation.createdAt || new Date()).toLocaleDateString()}`, marginX, yOffset); // Use quote creation date or current date
+                yOffset += sectionSpacing;
+                
+                doc.setDrawColor(200, 200, 200);
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Charges Breakdown ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(52, 73, 94);
+                doc.text("Charges Breakdown:", marginX, yOffset);
+                yOffset += lineHeight * 1.5; 
+
+                // Table headers for charges
+                const tableCol1X = marginX + 10;
+                const tableCol2X = doc.internal.pageSize.getWidth() - marginX - 50; 
+
+                doc.setFontSize(12);
+                doc.setTextColor(50, 50, 50);
+                doc.text("Description", tableCol1X, yOffset);
+                doc.text("Amount (₹)", tableCol2X, yOffset, { align: "right" });
+                yOffset += lineHeight;
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset); // Underline headers
+                yOffset += 10;
+
+                // Table rows for charges
+                doc.setFont("helvetica", "normal");
+                doc.text("Parts Cost", tableCol1X, yOffset);
+                doc.text(`₹${(quotation.partCost || 0).toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
+                yOffset += lineHeight;
+
+                doc.text("Labor Cost", tableCol1X, yOffset);
+                doc.text(`₹${(quotation.laborCost || 0).toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
+                yOffset += lineHeight;
+
+                doc.text("Travel Charges", tableCol1X, yOffset);
+                doc.text(`₹${(quotation.travelCharges || 0).toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
+                yOffset += sectionSpacing;
+
+                doc.setDrawColor(150, 150, 150); 
+                doc.line(tableCol1X, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += 10;
+
+                // --- Total Amount ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.setTextColor(39, 174, 96); // Green for total amount
+                doc.text("TOTAL AMOUNT:", tableCol1X, yOffset);
+                doc.text(`₹${(quotation.totalEstimate || 0).toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
+                yOffset += sectionSpacing + 10; 
+
+                doc.setDrawColor(200, 200, 200);
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Payment Status ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.setTextColor(52, 73, 94);
+                doc.text("Payment Information:", marginX, yOffset);
+                yOffset += lineHeight;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(11);
+                doc.setTextColor(50, 50, 50);
+                doc.text(`Status: ${payment.status || 'N/A'}`, marginX + 10, yOffset);
+                yOffset += lineHeight;
+                doc.text(`Paid On: ${payment.paidAt ? new Date(payment.paidAt).toLocaleString() : 'N/A'}`, marginX + 10, yOffset);
+                yOffset += sectionSpacing;
+
+
+                // --- Footer ---
+                doc.setFont("helvetica", "italic");
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text("Thank you for choosing TechSeva for your appliance service needs!", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 40, { align: "center" });
+                doc.text("Contact us:  achhutanandjha1@gmail.com | www.techseva.com", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 25, { align: "center" });
+
+
+                doc.save(`invoice_job_${jobId}.pdf`);
+                showMessage(`Invoice for Job ID: ${jobId} downloaded.`, 'success');
+                button.disabled = false;
+                button.textContent = 'Download Invoice';
+            }
+
+            // Shortcuts to pre-fill review form with Job ID when clicking 'Leave Review' from history
+            function handleLeaveReviewShortcut(e) {
+                const jobId = e.target.dataset.jobId;
+                document.getElementById('review-job-id').value = jobId;
+                console.log(`[ACTION] Setting review job ID to: ${jobId} and navigating to Leave a Review section.`);
+                showSection('#leave-review'); // Switch to the review section
+            }
+            
+            // Helper function to get image format from Base64 data URL for jsPDF
+            function getImageFormat(imageDataUrl) {
+                const mimeTypeMatch = imageDataUrl.match(/^data:image\/(png|jpeg|gif|webp);base64,/);
+                if (mimeTypeMatch && mimeTypeMatch[1]) {
+                    if (mimeTypeMatch[1].toLowerCase() === 'jpeg') {
+                        return 'JPG'; // jsPDF expects 'JPG' for JPEG images
+                    }
+                    return mimeTypeMatch[1].toUpperCase(); // PNG, GIF, WEBP
+                }
+                return 'JPEG'; // Default to JPEG if format cannot be determined
+            }
+
+            // Function to generate a PDF for proof images associated with a job
+            async function generateProofPdfForJob(jobId, imageDataUrls) {
+                if (!imageDataUrls || imageDataUrls.length === 0) {
+                    showMessage('No proof images available for this job.', 'info');
+                    console.warn('[PDF GENERATION] Attempted to generate proof PDF but no image data URLs provided.');
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: "portrait",
+                    unit: "pt",
+                    format: "a4"
+                });
+
+                let yOffset = 40;
+                const margin = 40;
+                const imgMaxWidth = doc.internal.pageSize.getWidth() - (2 * margin);
+                const pageHeight = doc.internal.pageSize.getHeight();
+                const textLineHeight = 12;
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(18);
+                doc.setTextColor(44, 62, 80);
+                doc.text(`Job ID: ${jobId} - Proof Images`, doc.internal.pageSize.getWidth() / 2, yOffset, { align: "center" });
+                yOffset += 30;
+
+                doc.setDrawColor(200, 200, 200);
+                doc.line(margin, yOffset, doc.internal.pageSize.getWidth() - margin, yOffset);
+                yOffset += 20;
+
+                for (let i = 0; i < imageDataUrls.length; i++) {
+                    const imgData = imageDataUrls[i];
+                    const img = new Image();
+                    img.src = imgData;
+                    
+                    // Use Promise to wait for image to load to get its dimensions reliably
+                    await new Promise(resolve => {
+                        img.onload = () => resolve();
+                        img.onerror = () => {
+                            console.error(`[PDF GENERATION] Error loading image ${i} for PDF generation.`);
+                            resolve(); // Resolve even on error to not block the loop, but log the issue
+                        };
+                    });
+
+                    // Skip if image failed to load or has invalid dimensions
+                    if (!img.complete || img.naturalWidth === 0 || img.naturalHeight === 0) {
+                        console.warn(`[PDF GENERATION] Skipping invalid or incomplete image data for PDF: ${imgData.substring(0, 50)}...`);
+                        showMessage(`Could not load image ${i+1} for PDF (invalid data).`, 'error');
+                        continue;
+                    }
+
+                    const imgHeight = (img.height * imgMaxWidth) / img.width;
+                    
+                    // Check if a new page is needed before adding the image
+                    if (yOffset + imgHeight + textLineHeight + margin + 10 > pageHeight) {
+                        doc.addPage();
+                        yOffset = margin; // Reset yOffset for new page
+                    }
+                    
+                    const imageFormat = getImageFormat(imgData);
+
+                    doc.addImage(imgData, imageFormat, margin, yOffset, imgMaxWidth, imgHeight);
+                    
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(10);
+                    doc.setTextColor(80, 80, 80);
+                    doc.text(`Image ${i + 1}`, margin, yOffset + imgHeight + 5);
+                    yOffset += imgHeight + textLineHeight + 20; // Advance yOffset for next image
+                }
+
+                doc.save(`job_${jobId}_proofs.pdf`);
+                showMessage('Proof PDF generated successfully!', 'success');
+                console.log(`[PDF GENERATION] Proof PDF for Job ID: ${jobId} generated.`);
+            }
+
+            // Handles 'View Proof PDF' button click
+            async function handleViewProofPdf(e) {
+                const button = e.target;
+                const jobId = button.dataset.jobId;
+                let proofImagesData;
+                try {
+                    proofImagesData = JSON.parse(button.dataset.proofImages);
+                }
+                catch (error) {
+                    console.error('[ACTION] Error parsing proof images data from dataset:', error);
+                    showMessage('Failed to generate proof PDF: Corrupted image data.', 'error');
+                    return;
+                }
+                
+                console.log(`[ACTION] Attempting to generate proof PDF for Job ID: ${jobId}`);
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+
+                try {
+                    await generateProofPdfForJob(jobId, proofImagesData);
+                }
+                catch (error) {
+                    console.error('[ACTION] Error in handleViewProofPdf:', error);
+                    showMessage('Failed to generate proof PDF. Please try again.', 'error');
+                }
+                finally {
+                    button.disabled = false;
+                    button.textContent = 'View Proof PDF'; // Restore original button text
+                }
+            }
+
+
+            // --- Language Select Logic (Dummy functionality for now) ---
+            if (languageSelect) {
+                languageSelect.addEventListener('change', (e) => {
+                    showMessage(`Language changed to: ${e.target.value}`);
+                    console.log(`[LANGUAGE] Language changed to: ${e.target.value}`);
+                    // Implement actual language change logic here (e.g., fetch new translations)
+                });
+            }
+
+            // --- Geolocation Function (Reusable for both booking and profile forms) ---
+            async function getGeolocationAndAddress(locationInputField, latitudeInputField, longitudeInputField, buttonElement, originalButtonText) {
+                locationInputField.placeholder = "Fetching GPS location...";
+                locationInputField.disabled = true;
+                buttonElement.disabled = true;
+                buttonElement.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Fetching...`; // Show spinner
+                console.log('[GEOLOCATION] Attempting to get geolocation...');
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(async (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        latitudeInputField.value = lat;
+                        longitudeInputField.value = lng;
+                        console.log(`[GEOLOCATION] Geolocation obtained: Lat ${lat}, Lng ${lng}`);
+                        
+                        try {
+                            console.log('[API CALL] Calling backend for reverse geocoding to /api/reverse-geocode...');
+                            const response = await fetch('/api/reverse-geocode', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ latitude: lat, longitude: lng })
+                            });
+
+                            if (!response.ok) { 
+                                const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response from geocoding API.' }));
+                                throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
+                            }
+
+                            const result = await response.json();
+
+                            if (result.success && result.address) {
+                                locationInputField.value = result.address;
+                                locationInputField.placeholder = "GPS location fetched";
+                                showMessage('GPS location fetched successfully!', 'success');
+                                console.log('[API RESPONSE] Reverse geocoding successful. Address:', result.address);
+                            } else {
+                                locationInputField.value = `Lat: ${lat.toFixed(4)}, Lon: ${lng.toFixed(4)}`; // Fallback to coordinates
+                                locationInputField.placeholder = "GPS location fetched (coordinates)";
+                                showMessage(result.message || 'Could not fetch human-readable address for GPS. Coordinates saved.', 'info');
+                                console.warn('[API RESPONSE] Reverse geocoding failed, but coordinates saved.', result.message || 'No message provided.');
+                            }
+                        }
+                        catch (error) {
+                            console.error('[FETCH ERROR] Error during reverse geocoding via backend (network/unhandled):', error);
+                            locationInputField.value = `Lat: ${lat.toFixed(4)}, Lon: ${lng.toFixed(4)}`;
+                            locationInputField.placeholder = "GPS location fetched (coordinates)";
+                            showMessage(`Error: ${error.message}. Coordinates saved.`, 'error');
+                        }
+                        finally {
+                            // Re-enable inputs and restore button text/icon
+                            locationInputField.disabled = false;
+                            buttonElement.disabled = false;
+                            buttonElement.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${originalButtonText}`;
+                        }
+                    }, (error) => {
+                        console.error("[GEOLOCATION] Error getting location (Geolocation API error):", error);
+                        locationInputField.value = ""; // Clear input
+                        locationInputField.placeholder = "Could not fetch GPS location. Enter manually.";
+                        showMessage('Could not fetch GPS location. Please enter manually.', 'error');
+                        // Re-enable inputs and restore button text/icon
+                        locationInputField.disabled = false;
+                        buttonElement.disabled = false;
+                        buttonElement.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${originalButtonText}`;
+                        latitudeInputField.value = '';
+                        longitudeInputField.value = '';
+                    });
+                } else {
+                    console.warn("[GEOLOCATION] Geolocation is not supported by your browser.");
+                    showMessage("Geolocation is not supported by your browser.", 'error');
+                    // Re-enable inputs and restore button text/icon
+                    locationInputField.disabled = false;
+                    buttonElement.disabled = false;
+                    buttonElement.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${originalButtonText}`;
+                }
+            }
+
+
+            // --- Event Listener for "Use My Location" Button (Booking Form) ---
+            if (useMyLocationBtn) {
+                const originalBtnText = useMyLocationBtn.textContent.replace('<i class="fas fa-map-marker-alt"></i> ', ''); 
+                useMyLocationBtn.addEventListener('click', () => {
+                    getGeolocationAndAddress(locationInput, latitudeInput, longitudeInput, useMyLocationBtn, originalBtnText);
+                });
+            }
+
+            // --- Event Listener for "Use My Location" Button (Profile Form) ---
+            if (useMyLocationProfileBtn) {
+                const originalBtnText = useMyLocationProfileBtn.textContent.replace('<i class="fas fa-map-marker-alt"></i> ', ''); 
+                useMyLocationProfileBtn.addEventListener('click', () => {
+                    getGeolocationAndAddress(profileAddressInput, profileLatitudeInput, profileLongitudeInput, useMyLocationProfileBtn, originalBtnText);
+                });
+            }
+
+
+            // --- Service Booking Form Submission ---
+            if (bookingForm) {
+                bookingForm.addEventListener('submit', async (e) => {
+                    e.preventDefault(); // Prevent default form submission and page reload
+
+                    // Gather form data
+                    const applianceType = document.getElementById('appliance-type').value;
+                    const locationText = document.getElementById('location-input').value; 
+                    const scheduledDateTime = document.getElementById('scheduled-datetime').value;
+                    const notes = document.getElementById('notes').value;
+                    const latitude = latitudeInput.value; 
+                    const longitude = longitudeInput.value; 
+
+                    // Basic client-side validation
+                    if (!applianceType || !locationText || !scheduledDateTime) {
+                        showMessage('Please fill all required booking fields (Appliance Type, Location, Date & Time).', 'error');
+                        console.warn('[BOOKING FORM] Submission blocked: Missing required fields.');
+                        return;
+                    }
+                    if (!latitude || !longitude) {
+                        showMessage('Please provide a valid location (address or GPS coordinates) for booking.', 'error');
+                        console.warn('[BOOKING FORM] Submission blocked: Missing latitude/longitude.');
+                        return;
+                    }
+
+                    // Attempt to extract city and pincode from the location string (can be refined or moved to backend)
+                    let address = locationText;
+                    let city = 'N/A';
+                    let pincode = 'N/A';
+                    const parts = locationText.split(',').map(s => s.trim());
+                    if (parts.length > 1) {
+                        const lastPart = parts[parts.length - 1];
+                        const potentialPincodeMatch = lastPart.match(/\b\d{6}\b/); // Look for 6-digit number as pincode
+                        if (potentialPincodeMatch) {
+                            pincode = potentialPincodeMatch[0];
+                            city = parts[parts.length - 2] || 'N/A'; 
+                        } else {
+                            city = lastPart; 
+                        }
+                        address = parts.slice(0, parts.length - (potentialPincodeMatch ? 2 : 1)).join(', ').trim() || locationText;
+                    } else {
+                        city = locationText; 
+                    }
+
+                    const payload = {
+                        applianceType,
+                        location: {
+                            address: address, 
+                            city: city, 
+                            pincode: pincode, 
+                            latitude,
+                            longitude
+                        },
+                        scheduledDateTime,
+                        notes
+                    };
+
+                    const bookBtn = document.getElementById('book-service-btn');
+                    bookBtn.disabled = true; // Disable button to prevent multiple submissions
+                    const originalBookText = bookBtn.textContent;
+                    bookBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...'; // Show spinner on button
+
+                    try {
+                        console.log('[API CALL] Submitting new booking request to /api/book-service with payload:', payload);
+                        const response = await fetch('/api/book-service', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            // If response is not OK (e.g., 400, 401, 500), parse error from JSON
+                            const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response from booking API.' }));
+                            throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
+                        }
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            console.log('[API RESPONSE] Booking successful. Backend response:', result);
+                            bookingForm.reset(); // Clear the form fields
+
+                            // Reset location-related inputs specifically
+                            locationInput.value = "";
+                            locationInput.placeholder = "Enter your address";
+                            locationInput.disabled = false;
+                            latitudeInput.value = '';
+                            longitudeInput.value = '';
+                            useMyLocationBtn.disabled = false;
+                            useMyLocationBtn.innerHTML = `<i class="fas fa-map-marker-alt"></i> Use My Location`;
+
+                            // Re-fetch all jobs and then render the 'booked' section to show the new booking
+                            console.log('[BOOKING FORM] Booking successful. Re-fetching all jobs and rendering "Booked" section.');
+                            fetchAndRenderUserJobs('booked'); 
+                        } else if (response.status === 401 && result.redirect) {
+                             // Handle unauthorized access (e.g., session expired)
+                             showMessage(result.message || 'Please log in to book a service.', 'info');
+                             console.warn('[BOOKING FORM] Booking failed: Not authorized. Redirecting.', result.redirect);
+                             setTimeout(() => {
+                                 window.location.href = result.redirect; // Redirect to login page
+                             }, 1000);
+                        } else {
+                            // General API error from backend
+                            showMessage(result.message || 'Booking failed.', 'error');
+                            console.error('[API RESPONSE] Booking failed (API response issue):', result.message || 'Unknown error', result);
+                        }
+                    }
+                    catch (error) {
+                        // Catch network errors or unhandled exceptions during fetch
+                        console.error('[FETCH ERROR] Service booking error (network/unhandled):', error);
+                        showMessage('Network error during service booking. Please check server status and your internet connection.', 'error');
+                    }
+                    finally {
+                        // Always re-enable the button
+                        bookBtn.disabled = false;
+                        bookBtn.textContent = originalBookText; // Restore original button text
+                    }
+                });
+            }
+
+            // --- Feedback System Star Rating Logic ---
+            if (starRatingContainer) {
+                starRatingContainer.addEventListener('mouseover', (e) => {
+                    if (e.target.classList.contains('star')) {
+                        const hoverRating = parseInt(e.target.dataset.rating);
+                        starRatingContainer.querySelectorAll('.star').forEach(star => {
+                            const starRating = parseInt(star.dataset.rating);
+                            if (starRating <= hoverRating) {
+                                star.classList.add('filled');
+                            } else {
+                                star.classList.remove('filled');
+                            }
+                        });
+                    }
+                });
+
+                starRatingContainer.addEventListener('mouseout', () => {
+                    // Revert to selected rating when mouse leaves the stars
+                    starRatingContainer.querySelectorAll('.star').forEach(star => {
+                        const starRating = parseInt(star.dataset.rating);
+                        if (starRating <= selectedRating) {
+                            star.classList.add('filled');
+                        } else {
+                            star.classList.remove('filled');
+                        }
+                    });
+                });
+
+                starRatingContainer.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('star')) {
+                        selectedRating = parseInt(e.target.dataset.rating);
+                        selectedRatingInput.value = selectedRating; // Update hidden input field
+                        // Visually update stars based on actual click
+                        starRatingContainer.querySelectorAll('.star').forEach(star => {
+                            const starRating = parseInt(star.dataset.rating);
+                            if (starRating <= selectedRating) {
+                                star.classList.add('filled');
+                            } else {
+                                star.classList.remove('filled');
+                            }
+                        });
+                    }
+                });
+            }
+
+            // --- Submit Review Form Logic ---
+            if (reviewForm) {
+                reviewForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const jobId = document.getElementById('review-job-id').value.trim();
+                    const rating = parseInt(selectedRatingInput.value);
+                    const reviewText = document.getElementById('review-text').value.trim();
+
+                    if (!jobId || rating === 0 || !reviewText) {
+                        showMessage('Please fill all review fields and select a rating (1-5 stars).', 'error');
+                        console.warn('[REVIEW FORM] Submission blocked: Missing required fields.');
+                        return;
+                    }
+
+                    const submitReviewBtn = document.getElementById('submit-review-btn');
+                    submitReviewBtn.disabled = true;
+                    const originalReviewText = submitReviewBtn.textContent;
+                    submitReviewBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...'; // Show spinner
+
+                    try {
+                        console.log('[API CALL] Submitting review for Job ID:', jobId, 'with rating:', rating);
+                        const response = await fetch('/api/user/submit-review', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ jobId, rating, reviewText })
+                        });
+                        
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response.' }));
+                            throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
+                        }
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            console.log('[API RESPONSE] Review submitted successfully. Backend response:', result);
+                            reviewForm.reset(); // Clear form
+                            selectedRating = 0; // Reset star rating
+                            starRatingContainer.querySelectorAll('.star').forEach(star => star.classList.remove('filled'));
+                            fetchAndRenderUserJobs('history'); // Re-fetch history to update review status
+                        } else {
+                            showMessage(result.message || 'Review submission failed.', 'error');
+                            console.error('[API RESPONSE] Review submission failed (API response issue):', result.message || 'Unknown error', result);
+                        }
+                    }
+                    catch (error) {
+                        console.error('[FETCH ERROR] Submit review error (network/unhandled):', error);
+                        showMessage('Network error during review submission. Please check server status and network.', 'error');
+                    }
+                    finally {
+                        submitReviewBtn.disabled = false;
+                        submitReviewBtn.textContent = originalReviewText;
+                    }
+                });
+            }
+
+            // --- Profile Update Form Submission Logic ---
+            if (profileUpdateForm) {
+                profileUpdateForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const fullName = profileFullNameInput.value.trim();
+                    const phoneNumber = profilePhoneNumberInput.value.trim();
+                    const address = profileAddressInput.value.trim();
+                    const latitude = profileLatitudeInput.value; 
+                    const longitude = profileLongitudeInput.value; 
+
+                    // Client-side validation for profile fields
+                    if (!fullName || !phoneNumber) {
+                        showMessage('Full Name and Phone Number are required for profile update.', 'error');
+                        console.warn('[PROFILE FORM] Submission blocked: Missing full name or phone number.');
+                        return;
+                    }
+                    if (address && (!latitude || !longitude)) {
+                        showMessage('Please ensure a valid address with latitude/longitude is set for your profile, or leave the address blank if you do not wish to set one.', 'error');
+                        console.warn('[PROFILE FORM] Submission blocked: Address present but missing lat/lng.');
+                        return;
+                    }
+
+                    const updateBtn = document.getElementById('update-profile-btn');
+                    updateBtn.disabled = true;
+                    const originalUpdateText = updateBtn.textContent;
+                    updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...'; // Show spinner
+
+                    const updateData = {
+                        fullName: fullName,
+                        phoneNumber: phoneNumber,
+                        address: address, 
+                        latitude: latitude, 
+                        longitude: longitude 
+                    };
+
+                    try {
+                        console.log('[API CALL] Submitting profile update request to /api/user/profile/update with payload:', updateData);
+                        const response = await fetch('/api/user/profile/update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(updateData)
+                        });
+                        
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response.' }));
+                            throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
+                        }
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            console.log('[API RESPONSE] Profile update successful. Backend response:', result);
+                            fetchCurrentUser(); // Re-fetch user data to update UI elements
+                        } else {
+                            showMessage(result.message || 'Profile update failed.', 'error');
+                            console.error('[API RESPONSE] Profile update failed (API response issue):', result.message || 'Unknown error', result);
+                        }
+                    }
+                    catch (error) {
+                        console.error('[FETCH ERROR] Profile update error (network/unhandled):', error);
+                        showMessage(`Network error during profile update: ${error.message}. Please try again.`, 'error');
+                    }
+                    finally {
+                        updateBtn.disabled = false;
+                        updateBtn.textContent = originalUpdateText;
+                    }
+                });
+            }
+
+
+            // --- Logout Button ---
+            if (logoutButton) {
+                logoutButton.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    console.log('[LOGOUT] Logout button clicked. Sending logout request...');
+                    try {
+                        const response = await fetch('/logout', {
+                            method: 'POST'
+                        });
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            showMessage('Logged out successfully!', 'success');
+                            console.log('[LOGOUT] Logout successful. Redirecting to home.');
+                            setTimeout(() => {
+                                window.location.href = '/'; // Redirect to homepage after a short delay
+                            }, 500);
+                        } else {
+                            showMessage(result.message || 'Logout failed.', 'error');
+                            console.error('[LOGOUT] Logout failed (API response issue):', result.message || 'Unknown error', result);
+                        }
+                    }
+                    catch (error) {
+                        console.error('[LOGOUT ERROR] Logout error (network/unhandled):', error);
+                        showMessage('Network error during logout.', 'error');
+                    }
+                });
+            }
+
+            // --- FEATURE: Fetch and Render Notifications ---
+            async function fetchNotifications() {
+                notificationsListContainer.innerHTML = '<p style="text-align: center; color: #777;">Loading notifications...</p>';
+                try {
+                    console.log('[API CALL] Fetching notifications from /api/user/announcements...');
+                    const response = await fetch('/api/user/announcements'); 
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response.' }));
+                        throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
+                    }
+                    const result = await response.json();
+
+                    if (result.success && result.announcements) {
+                        allNotifications = result.announcements;
+                        renderNotifications();
+                        console.log('[API RESPONSE] Successfully fetched notifications:', allNotifications);
+                    } else {
+                        notificationsListContainer.innerHTML = '<p style="text-align: center; color: #777;">Failed to load notifications.</p>';
+                        showMessage('Failed to load notifications.', 'error');
+                        console.error('[API RESPONSE] Failed to fetch notifications:', result.message || 'Unknown error', result);
+                    }
+                }
+                catch (error) {
+                    notificationsListContainer.innerHTML = '<p style="text-align: center; color: #777;">Network error. Could not load notifications. Make sure backend endpoint /api/user/announcements is working.</p>';
+                    showMessage('Network error while loading notifications.', 'error');
+                    console.error('[FETCH ERROR] Error fetching notifications:', error);
+                }
+            }
+
+            // Renders fetched notifications into the DOM
+            function renderNotifications() {
+                notificationsListContainer.innerHTML = ''; // Clear previous notifications
+                if (allNotifications.length === 0) {
+                    notificationsListContainer.innerHTML = '<p style="text-align: center; color: #777;">You have no new notifications.</p>';
+                } else {
+                    // Sort notifications by date (most recent first)
+                    allNotifications.sort((a,b) => new Date(b.publishedOn) - new Date(a.publishedOn)); 
+                    allNotifications.forEach(notification => {
+                        const notificationItem = document.createElement('div');
+                        notificationItem.className = `notification-item ${notification.read ? 'read' : ''}`; // Add 'read' class if read
+                        notificationItem.innerHTML = `
+                            <h4>${notification.title}</h4>
+                            <p>${notification.content}</p>
+                            <span class="timestamp">${new Date(notification.publishedOn).toLocaleString()}</span>
+                        `;
+                        notificationsListContainer.appendChild(notificationItem);
+                    });
+                }
+            }
+
+            // --- FEATURE: Submit Ticket Form Logic ---
+            if (submitTicketForm) {
+                submitTicketForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const subject = ticketSubjectInput.value.trim();
+                    const description = ticketDescriptionInput.value.trim();
+
+                    if (!subject || !description) {
+                        showMessage('Please fill both subject and description for your support ticket.', 'error');
+                        return;
+                    }
+
+                    const submitBtn = document.getElementById('submit-ticket-btn');
+                    submitBtn.disabled = true;
+                    const originalBtnText = submitBtn.textContent;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...'; // Show spinner
+
+                    try {
+                        console.log('[API CALL] Submitting new ticket to /api/user/tickets/create with subject:', subject);
+                        const response = await fetch('/api/user/tickets/create', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ subject, description })
+                        });
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response.' }));
+                            throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
+                        }
+                        const result = await response.json();
+
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            submitTicketForm.reset(); // Clear form after successful submission
+                            console.log('[API RESPONSE] Ticket submitted successfully:', result);
+                        } else {
+                            showMessage(result.message || 'Failed to submit ticket.', 'error');
+                            console.error('[API RESPONSE] Ticket submission failed:', result.message || 'Unknown error', result);
+                        }
+                    }
+                    catch (error) {
+                        showMessage('Network error during ticket submission. Make sure backend endpoint /api/user/tickets/create is working.', 'error');
+                        console.error('[FETCH ERROR] Submit ticket error:', error);
+                    }
+                    finally {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalBtnText; // Restore button text
+                    }
+                });
+            }
+
+            // --- FEATURE: Fetch and Render FAQs ---
+            async function fetchFAQs() {
+                faqsListContainer.innerHTML = '<p style="text-align: center; color: #777;">Loading FAQs...</p>';
+                try {
+                    console.log('[API CALL] Fetching FAQs from /api/faqs...');
+                    const response = await fetch('/api/faqs'); 
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response.' }));
+                        throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
+                    }
+                    const result = await response.json();
+
+                    if (result.success && result.faqs) {
+                        allFAQs = result.faqs;
+                        renderFAQs();
+                        console.log('[API RESPONSE] Successfully fetched FAQs:', allFAQs);
+                    } else {
+                        faqsListContainer.innerHTML = '<p style="text-align: center; color: #777;">Failed to load FAQs.</p>';
+                        showMessage('Failed to load FAQs.', 'error');
+                        console.error('[API RESPONSE] Failed to fetch FAQs:', result.message || 'Unknown error', result);
+                    }
+                }
+                catch (error) {
+                    faqsListContainer.innerHTML = '<p style="text-align: center; color: #777;">Network error. Could not load FAQs. Make sure backend endpoint /api/faqs is working.</p>';
+                    showMessage('Network error while loading FAQs.', 'error');
+                    console.error('[FETCH ERROR] Error fetching FAQs:', error);
+                }
+            }
+
+            // Renders fetched FAQs into the DOM
+            function renderFAQs() {
+                faqsListContainer.innerHTML = ''; // Clear previous FAQs
+                if (allFAQs.length === 0) {
+                    faqsListContainer.innerHTML = '<p style="text-align: center; color: #777;">No FAQs available at the moment.</p>';
+                } else {
+                    allFAQs.forEach(faq => {
+                        const faqItem = document.createElement('details'); // Use <details> and <summary> for collapsible FAQs
+                        faqItem.className = 'faq-item';
+                        faqItem.innerHTML = `
+                            <summary>${faq.question}</summary>
+                            <div class="faq-answer">
+                                <p>${faq.answer}</p>
+                            </div>
+                        `;
+                        faqsListContainer.appendChild(faqItem);
+                    });
+                }
+            }
+
+            // Event listener for "View FAQs" button
+            if (viewFAQsBtn) {
+                viewFAQsBtn.addEventListener('click', () => {
+                    fetchFAQs(); // Trigger fetch and display of FAQs
+                });
+            }
+
+
+            // --- Initial Data Load and Display on page load ---
+            showSection('#home'); // Show the 'Home' section by default when the page loads
+            fetchCurrentUser(); // Fetch and display the current user's profile information
+            fetchAndRenderUserJobs('booked'); // Fetch all jobs and display them in the 'Booked' tab initially
+            fetchTopTechnicians(); // Fetch and display the top-rated technicians
+
+            // Notifications and FAQs will be fetched dynamically when the user navigates to their respective sections.
+        });
+    </script>
+</body>
+</html>

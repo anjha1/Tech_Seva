@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva Job Diagnosis</title>
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif; /* Consistent font */
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center; /* Center content horizontally */
+            padding: 20px;
+            box-sizing: border-box; /* Include padding in element's total width and height */
+        }
+
+        /* Header (simplified for this standalone page) */
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 2.2em;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        /* Section Card Styling */
+        section {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 700px; /* Max width for sections */
+            box-sizing: border-box;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: calc(100% - 22px); /* Account for padding and border */
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px; /* Rounded corners */
+            font-size: 1em;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* File input and camera button container */
+        .file-camera-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        }
+        .file-camera-input-group input[type="file"] {
+            flex: 1; /* Allow file input to grow */
+            min-width: 150px; /* Ensure it doesn't get too small */
+            margin-top: 0; /* Override default margin */
+        }
+        .file-camera-input-group button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background-color 0.3s ease;
+            white-space: nowrap; /* Prevent text wrap on button */
+            margin-top: 5px; /* Align with file input's top margin if needed */
+        }
+        .file-camera-input-group button:hover {
+            background-color: #0056b3;
+        }
+
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            min-height: 120px; /* Give it some height even if empty */
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #777;
+            font-size: 0.9em;
+            border-radius: 5px;
+        }
+        .image-preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .remove-image-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background-color: rgba(220, 53, 69, 0.8); /* Red, slightly transparent */
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .remove-image-btn:hover {
+            background-color: #dc3545; /* Solid red on hover */
+        }
+
+        /* Camera Modal/Section Styling */
+        .camera-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .camera-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .camera-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .camera-container video {
+            width: 100%;
+            max-width: 600px; /* Max width for video feed */
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #333; /* Dark background for video area */
+        }
+        .camera-container button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+            transition: background-color 0.3s ease;
+        }
+        .camera-container .capture-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+        .camera-container .capture-btn:hover {
+            background-color: #218838;
+        }
+        .camera-container .close-camera-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+        }
+        .camera-container .close-camera-btn:hover {
+            background-color: #c82333;
+        }
+        /* Hidden canvas for capturing images */
+        #photo-canvas {
+            display: none;
+        }
+
+
+        /* Total Estimate Display */
+        .total-estimate-display {
+            background-color: #eaf2f8;
+            padding: 15px;
+            border-radius: 5px; /* Rounded corners */
+            margin-top: 25px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #34495e;
+            border: 1px solid #d4e3ed;
+        }
+        .total-estimate-display span {
+            color: #27ae60;
+            font-size: 1.3em;
+        }
+
+        /* Button Styling */
+        .btn-submit {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px; /* Rounded corners */
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, opacity 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .btn-submit:hover {
+            background-color: #218838;
+        }
+        .btn-submit:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* AI Suggestion Styling */
+        .ai-suggestion-container {
+            background-color: #f0f8ff; /* Light blue background */
+            border: 1px solid #a8d5ff; /* Blue border */
+            border-left: 5px solid #3498db; /* Stronger left border */
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 0.95em;
+            color: #333;
+            line-height: 1.5;
+        }
+        .ai-suggestion-container h3 {
+            color: #34495e;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .ai-suggestion-container p {
+            margin: 0;
+        }
+        .ai-suggestion-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .ai-suggestion-buttons button {
+            background-color: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+        .ai-suggestion-buttons button:hover {
+            background-color: #2980b9;
+        }
+        .ai-suggestion-buttons button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+
+        /* Message Box for Alerts */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px; /* Rounded corners */
+            font-weight: bold;
+            z-index: 10000; /* High z-index to be on top */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: fadeOut 0.5s forwards 4.5s; /* Fade out after 4.5s (total 5s display) */
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message-box.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        /* Keyframe for fadeOut animation */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Back to Dashboard Button */
+        .back-btn {
+            background-color: #6c757d;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+            text-decoration: none; /* For anchor tag styling */
+            display: inline-block;
+        }
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            section {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+            h2 {
+                font-size: 1.4em;
+            }
+            input[type="text"],
+            input[type="number"],
+            textarea {
+                width: calc(100% - 20px); /* Adjust width for smaller padding */
+            }
+            .file-camera-input-group {
+                flex-direction: column;
+            }
+            .file-camera-input-group input[type="file"],
+            .file-camera-input-group button {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Perform Diagnosis</h1>
+
+    <section>
+        <h2>Job Details</h2>
+        <p><strong>Job ID:</strong> <span id="job-id">Loading...</span></p>
+        <p><strong>Appliance Type:</strong> <span id="appliance-type">Loading...</span></p>
+        <p><strong>Location:</strong> <span id="location">Loading...</span></p>
+        <p><strong>Customer Notes:</strong> <span id="customer-notes">Loading...</span></p>
+        <p><strong>Scheduled Time:</strong> <span id="scheduled-time">Loading...</span></p>
+    </section>
+
+    <section>
+        <h2>Diagnosis Information & Quotation</h2>
+        <form id="diagnosis-form">
+            <div class="form-group">
+                <label>Appliance Photos:</label>
+                <div class="file-camera-input-group">
+                    <input type="file" id="appliance-photo-input" name="appliancePhoto" accept="image/*" multiple>
+                    <button type="button" id="open-camera-btn">Capture from Camera</button>
+                </div>
+                <div class="image-preview-container" id="image-preview-container">
+                    No images selected or captured.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="faulty-parts">Identify Faulty Parts / Problem Description:</label>
+                <textarea id="faulty-parts" name="faultyParts" placeholder="e.g., Compressor failure, PCB burnt, Leak in gas pipe. Describe the issue and required repair."></textarea>
+                <button type="button" id="get-ai-suggestion-btn" class="ai-suggestion-buttons">Get AI Suggestion</button>
+            </div>
+
+            <!-- AI Suggestion Display Area -->
+            <div id="ai-suggestion-display" class="ai-suggestion-container" style="display: none;">
+                <h3>AI Diagnosis Suggestion:</h3>
+                <p id="ai-diagnosis-text">Loading AI diagnosis...</p>
+                <div class="ai-suggestion-buttons">
+                    <button type="button" id="copy-ai-suggestion-btn">Copy to Description</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="part-cost">Estimated Parts Cost (₹):</label>
+                <input type="number" id="part-cost" name="partCost" placeholder="0.00" min="0" step="0.01" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="labor-cost">Estimated Labor Cost (₹):</label>
+                <input type="number" id="labor-cost" name="laborCost" placeholder="0.00" min="0" step="0.01" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="travel-charges">Travel Charges (₹):</label>
+                <input type="number" id="travel-charges" name="travelCharges" placeholder="0.00" min="0" step="0.01" value="0">
+            </div>
+
+            <div class="total-estimate-display">
+                Total Estimate: ₹<span id="total-estimate">0.00</span>
+            </div>
+
+            <button type="submit" id="submit-diagnosis-btn" class="btn-submit">Submit Diagnosis & Quote</button>
+        </form>
+    </section>
+    
+    <a href="/technician" class="back-btn">Back to Dashboard</a> <!-- Corrected URL -->
+
+    <!-- Camera Overlay/Modal -->
+    <div id="camera-overlay" class="camera-overlay">
+        <div class="camera-container">
+            <h2>Live Camera Feed</h2>
+            <video id="video-stream" autoplay playsinline></video>
+            <canvas id="photo-canvas"></canvas> <!-- Hidden canvas for capturing -->
+            <div>
+                <button type="button" id="capture-photo-btn" class="capture-btn">Capture Photo</button>
+                <button type="button" id="close-camera-btn" class="close-camera-btn">Close Camera</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box Container -->
+    <div id="message-container"></div>
+
+    <script>
+        // Utility for displaying messages (replaces alert/confirm)
+        const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return; // Should already be present in HTML
+
+            // Remove any existing messages to only show the latest
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+
+            setTimeout(() => {
+                messageBox.style.opacity = '0'; // Start fade out
+                setTimeout(() => messageBox.remove(), 500); // Remove after fade out
+            }, 4500); // Message visible for 4.5 seconds before fading out
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const jobId = urlParams.get('jobId');
+
+            // Elements for Job Details
+            const jobIdElement = document.getElementById('job-id');
+            const applianceTypeElement = document.getElementById('appliance-type');
+            const locationElement = document.getElementById('location');
+            const customerNotesElement = document.getElementById('customer-notes');
+            const scheduledTimeElement = document.getElementById('scheduled-time');
+
+            // Elements for Diagnosis Form
+            const diagnosisForm = document.getElementById('diagnosis-form');
+            const appliancePhotoInput = document.getElementById('appliance-photo-input');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const faultyPartsInput = document.getElementById('faulty-parts');
+            const partCostInput = document.getElementById('part-cost');
+            const laborCostInput = document.getElementById('labor-cost');
+            const travelChargesInput = document.getElementById('travel-charges');
+            const totalEstimateElement = document.getElementById('total-estimate');
+            const submitDiagnosisBtn = document.getElementById('submit-diagnosis-btn');
+
+            // Camera Elements
+            const openCameraBtn = document.getElementById('open-camera-btn');
+            const cameraOverlay = document.getElementById('camera-overlay');
+            const videoStream = document.getElementById('video-stream');
+            const photoCanvas = document.getElementById('photo-canvas');
+            const capturePhotoBtn = document.getElementById('capture-photo-btn');
+            const closeCameraBtn = document.getElementById('close-camera-btn');
+            let currentStream; // To hold the MediaStream object for camera
+
+            // AI Suggestion Elements
+            const getAiSuggestionBtn = document.getElementById('get-ai-suggestion-btn');
+            const aiSuggestionDisplay = document.getElementById('ai-suggestion-display');
+            const aiDiagnosisText = document.getElementById('ai-diagnosis-text');
+            const copyAiSuggestionBtn = document.getElementById('copy-ai-suggestion-btn');
+
+
+            // Using a Map to store files (File objects or Blob from camera) for easy management
+            // Key: unique ID for each file (e.g., file.name + file.lastModified, or a timestamp for camera photos)
+            // Value: the File or Blob object itself
+            const uploadedImages = new Map();
+
+            // --- Function to Calculate Total Estimate ---
+            const calculateTotalEstimate = () => {
+                const partCost = parseFloat(partCostInput.value) || 0;
+                const laborCost = parseFloat(laborCostInput.value) || 0;
+                const travelCharges = parseFloat(travelChargesInput.value) || 0;
+                const total = partCost + laborCost + travelCharges;
+                totalEstimateElement.textContent = total.toFixed(2);
+            };
+
+            // Add event listeners for input changes to update total estimate
+            partCostInput.addEventListener('input', calculateTotalEstimate);
+            laborCostInput.addEventListener('input', calculateTotalEstimate);
+            travelChargesInput.addEventListener('input', calculateTotalEstimate);
+
+            // Initial calculation
+            calculateTotalEstimate();
+
+            // --- Render Image Previews ---
+            const renderImagePreviews = () => {
+                imagePreviewContainer.innerHTML = uploadedImages.size === 0 ? 'No images selected or captured.' : '';
+
+                uploadedImages.forEach((fileOrBlob, key) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const previewItem = document.createElement('div');
+                        previewItem.className = 'image-preview-item';
+                        
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = 'Appliance Photo';
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'remove-image-btn';
+                        removeBtn.textContent = 'X';
+                        removeBtn.title = 'Remove image';
+                        removeBtn.addEventListener('click', () => {
+                            uploadedImages.delete(key); // Remove from Map
+                            renderImagePreviews(); // Re-render previews
+                        });
+
+                        previewItem.appendChild(img);
+                        previewItem.appendChild(removeBtn);
+                        imagePreviewContainer.appendChild(previewItem);
+                    };
+                    reader.readAsDataURL(fileOrBlob);
+                });
+            };
+
+            // --- Fetch Job Details ---
+            if (jobId) {
+                jobIdElement.textContent = jobId;
+                fetch(`/api/jobs/${jobId}`) // Assuming this endpoint exists on your backend
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        if (result.success && result.job) {
+                            const job = result.job;
+                            applianceTypeElement.textContent = job.applianceType || 'N/A';
+                            locationElement.textContent = job.location || 'N/A';
+                            customerNotesElement.textContent = job.notes || 'No additional notes.';
+                            scheduledTimeElement.textContent = job.scheduledDateTime ? new Date(job.scheduledDateTime).toLocaleString() : 'N/A';
+
+                            // Populate existing diagnosis if available (e.g., if technician returns to edit)
+                            if (job.quotation) {
+                                partCostInput.value = job.quotation.partCost || 0;
+                                laborCostInput.value = job.quotation.laborCost || 0;
+                                travelChargesInput.value = job.quotation.travelCharges || 0;
+                                faultyPartsInput.value = job.faultyParts || ''; // Assuming faultyParts stored in job
+                                calculateTotalEstimate(); // Recalculate after setting values
+                            }
+
+                            // If job has existing appliance photos (e.g., from previous incomplete diagnosis), display them
+                            if (job.appliancePhotos && job.appliancePhotos.length > 0) {
+                                // Convert Base64 data URLs back to Blob objects to add to Map
+                                job.appliancePhotos.forEach((base64Image, index) => {
+                                    const blob = dataURLtoBlob(base64Image);
+                                    // Use a unique key for each re-loaded image
+                                    uploadedImages.set(`existing-${jobId}-${index}-${Date.now()}`, blob);
+                                });
+                                renderImagePreviews();
+                            }
+
+                        } else {
+                            showMessage(result.message || 'Failed to load job details.', 'error');
+                            jobIdElement.textContent = 'Error';
+                            applianceTypeElement.textContent = 'Error';
+                            locationElement.textContent = 'Error';
+                            customerNotesElement.textContent = 'Error';
+                            scheduledTimeElement.textContent = 'Error';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching job details:', error);
+                        showMessage(`Network error fetching job details: ${error.message}`, 'error');
+                        jobIdElement.textContent = 'Error';
+                        applianceTypeElement.textContent = 'Error';
+                        locationElement.textContent = 'Error';
+                        customerNotesElement.textContent = 'Error';
+                        scheduledTimeElement.textContent = 'Error';
+                    });
+            } else {
+                jobIdElement.textContent = 'N/A';
+                showMessage('No Job ID provided in the URL.', 'error');
+                console.error('No Job ID provided in the URL');
+                renderImagePreviews(); // Render "No images..." message
+            }
+
+            // Helper function to convert data URL to Blob (needed for FormData)
+            function dataURLtoBlob(dataurl) {
+                const arr = dataurl.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], { type: mime });
+            }
+
+
+            // --- Appliance Photo File Input ---
+            appliancePhotoInput.addEventListener('change', (event) => {
+                const files = event.target.files;
+                if (files.length > 0) {
+                    Array.from(files).forEach(file => {
+                        if (file.type.startsWith('image/')) {
+                            // Use a unique key based on file name and last modified date
+                            uploadedImages.set(`${file.name}-${file.lastModified}`, file);
+                        } else {
+                            showMessage('Only image files are allowed for appliance photos.', 'error');
+                        }
+                    });
+                    renderImagePreviews();
+                }
+            });
+
+            // --- Camera Functionality ---
+            openCameraBtn.addEventListener('click', async () => {
+                try {
+                    // Request camera access
+                    currentStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    videoStream.srcObject = currentStream;
+                    cameraOverlay.classList.add('active'); // Show camera modal
+                    // Adjust canvas dimensions to match video stream's actual dimensions
+                    videoStream.onloadedmetadata = () => {
+                        photoCanvas.width = videoStream.videoWidth;
+                        photoCanvas.height = videoStream.videoHeight;
+                    };
+                } catch (err) {
+                    console.error('Error accessing camera:', err);
+                    showMessage('Failed to access camera. Please ensure permissions are granted.', 'error');
+                }
+            });
+
+            capturePhotoBtn.addEventListener('click', () => {
+                if (videoStream.srcObject) {
+                    const context = photoCanvas.getContext('2d');
+                    // Draw the current video frame onto the canvas
+                    context.drawImage(videoStream, 0, 0, photoCanvas.width, photoCanvas.height);
+                    
+                    // Get image data as Blob (more efficient than DataURL for FormData)
+                    photoCanvas.toBlob((blob) => {
+                        if (blob) {
+                            // Create a dummy File-like object for consistent handling
+                            const cameraFile = new File([blob], `camera-photo-${Date.now()}.png`, { type: 'image/png' });
+                            uploadedImages.set(`camera-${Date.now()}`, cameraFile); // Add to Map
+                            renderImagePreviews();
+                            showMessage('Photo captured successfully!', 'success');
+                            closeCamera(); // Close camera after capturing
+                        } else {
+                            showMessage('Failed to capture photo from camera.', 'error');
+                        }
+                    }, 'image/png'); // Specify image format
+                } else {
+                    showMessage('No camera stream active.', 'error');
+                }
+            });
+
+            closeCameraBtn.addEventListener('click', () => {
+                closeCamera();
+            });
+
+            const closeCamera = () => {
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop()); // Stop all tracks
+                    videoStream.srcObject = null; // Clear video source
+                    currentStream = null;
+                }
+                cameraOverlay.classList.remove('active'); // Hide camera modal
+            };
+
+            // --- AI Suggestion Functionality ---
+            getAiSuggestionBtn.addEventListener('click', async () => {
+                const problemDescription = faultyPartsInput.value.trim();
+                if (problemDescription.length < 10) {
+                    showMessage('Please provide a more detailed problem description (at least 10 characters) for AI suggestion.', 'info');
+                    return;
+                }
+
+                getAiSuggestionBtn.disabled = true;
+                const originalText = getAiSuggestionBtn.textContent;
+                getAiSuggestionBtn.textContent = 'Getting Suggestion...';
+                aiDiagnosisText.textContent = 'Loading AI diagnosis...'; // Show loading state
+                aiSuggestionDisplay.style.display = 'block'; // Ensure the display area is visible
+
+                try {
+                    const response = await fetch('/api/ai-diagnosis', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ problemDescription: problemDescription })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        aiDiagnosisText.textContent = result.diagnosis;
+                        showMessage('AI diagnosis received!', 'success');
+                        copyAiSuggestionBtn.disabled = false; // Enable copy button
+                    } else {
+                        aiDiagnosisText.textContent = result.message || 'Failed to get AI diagnosis.';
+                        showMessage(result.message || 'Failed to get AI diagnosis.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error fetching AI diagnosis:', error);
+                    aiDiagnosisText.textContent = 'Network error: Could not connect to AI service.';
+                    showMessage('Network error fetching AI diagnosis.', 'error');
+                } finally {
+                    getAiSuggestionBtn.disabled = false;
+                    getAiSuggestionBtn.textContent = originalText;
+                }
+            });
+
+            // Copy AI Suggestion to Faulty Parts Input
+            copyAiSuggestionBtn.addEventListener('click', () => {
+                const currentText = faultyPartsInput.value.trim();
+                const aiText = aiDiagnosisText.textContent;
+                
+                if (aiText && aiText !== 'Loading AI diagnosis...' && aiText !== 'Network error: Could not connect to AI service.' && aiText !== 'Failed to get AI diagnosis.') {
+                    // Append or replace? Let's append for now so technician can review
+                    if (currentText) {
+                        faultyPartsInput.value = currentText + "\n\nAI Suggestion:\n" + aiText;
+                    } else {
+                        faultyPartsInput.value = aiText;
+                    }
+                    showMessage('AI suggestion copied to description.', 'info');
+                } else {
+                    showMessage('No AI suggestion to copy.', 'info');
+                }
+            });
+
+
+            // --- Diagnosis Form Submission ---
+            diagnosisForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                if (!jobId) {
+                    showMessage('Job ID is missing. Cannot submit diagnosis.', 'error');
+                    return;
+                }
+
+                const partCost = parseFloat(partCostInput.value);
+                const laborCost = parseFloat(laborCostInput.value);
+                const travelCharges = parseFloat(travelChargesInput.value);
+                const faultyParts = faultyPartsInput.value.trim();
+
+                if (isNaN(partCost) || isNaN(laborCost) || isNaN(travelCharges) || faultyParts === '') {
+                    showMessage('Please ensure all cost fields are numbers and problem description is filled.', 'error');
+                    return;
+                }
+                if (uploadedImages.size === 0) {
+                    showMessage('Please upload or capture at least one appliance photo.', 'error');
+                    return;
+                }
+
+                submitDiagnosisBtn.disabled = true;
+                submitDiagnosisBtn.textContent = 'Submitting...';
+
+                const formData = new FormData();
+                formData.append('jobId', jobId);
+                formData.append('faultyParts', faultyParts);
+                formData.append('partCost', partCost);
+                formData.append('laborCost', laborCost);
+                formData.append('travelCharges', travelCharges);
+                formData.append('totalEstimate', partCost + laborCost + travelCharges);
+
+                // Append all collected images to FormData
+                uploadedImages.forEach((fileOrBlob, key) => {
+                    // Use a generic name for the files for the backend, or keep original name.
+                    // 'appliancePhotos' should match the multer field name on the backend.
+                    formData.append('appliancePhotos', fileOrBlob, `image-${key}.png`); 
+                });
+
+                try {
+                    const response = await fetch('/api/technician/diagnosis', {
+                        method: 'POST',
+                        body: formData // FormData handles file uploads and content type automatically
+                    });
+                    let result;
+                    try {
+                        result = await response.json();
+                    } catch (e) {
+                        const rawText = await response.text();
+                        console.error('Raw response (not JSON):', rawText);
+                        showMessage('Server returned invalid response format.', 'error');
+                        return;
+                    }
+
+
+                    if (response.ok && result.success) {
+                        showMessage(result.message || 'Diagnosis submitted successfully!', 'success');
+                        // Redirect back to technician dashboard after a short delay
+                        setTimeout(() => {
+                            window.location.href = '/technician'; // CORRECTED: Ensure this is '/technician'
+                        }, 1500);
+                    } else {
+                        showMessage(result.message || 'Failed to submit diagnosis.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error submitting diagnosis:', error);
+                    showMessage(`Network error submitting diagnosis: ${error.message}`, 'error');
+                } finally {
+                    submitDiagnosisBtn.disabled = false;
+                    submitDiagnosisBtn.textContent = 'Submit Diagnosis & Quote';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
