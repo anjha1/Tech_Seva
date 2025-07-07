@@ -3,45 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechSeva - Connecting Bharat to Trusted Local Technicians</title>
+    <title>TechSeva - Modern Service Booking</title>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Tailwind CSS (optional, if you want to use Tailwind classes directly, otherwise your custom CSS is detailed) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts - Inter (for clean, modern typography) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* Basic Reset & Body Styling */
+        /* Base Styles & Typography */
+        :root {
+            --primary-blue: #3498db;
+            --dark-blue: #2c3e50;
+            --light-grey: #f0f2f5;
+            --text-dark: #333;
+            --text-medium: #555;
+            --text-light: #777;
+            --card-bg: #ffffff;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+            --shadow-strong: rgba(0, 0, 0, 0.25);
+            --border-light: #e0e0e0;
+            --transition-speed: 0.3s;
+        }
+
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif; /* Changed font to Inter for modern look */
-            background-color: #f0f2f5; /* Lighter, subtle background */
-            color: #333;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-grey);
+            color: var(--text-dark);
             line-height: 1.6;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-rows: auto 1fr auto; /* Header, Main Content, Footer */
             min-height: 100vh;
             overflow-x: hidden; /* Prevent horizontal scroll */
         }
 
-        /* Header / Navbar */
-        header {
-            background-color: #2c3e50; /* Dark blue/grey */
-            color: white;
-            padding: 1rem 1.5rem; /* Increased padding */
-            display: flex;
-            justify-content: space-between;
+        .container {
+            max-width: 1300px; /* Wider container for more content */
+            margin: 0 auto;
+            padding: 0 1.5rem; /* Consistent padding */
+        }
+
+        h1, h2, h3 {
+            color: var(--dark-blue);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        h1 { font-size: 3.8em; line-height: 1.2; font-weight: 900; }
+        h2 { font-size: 2.8em; margin-bottom: 2rem; color: var(--primary-blue); text-align: center; }
+        h3 { font-size: 1.8em; }
+        p { font-size: 1.1em; color: var(--text-medium); }
+
+        /* Buttons - Animated & Modern */
+        .btn {
+            display: inline-flex;
             align-items: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* More prominent shadow */
+            justify-content: center;
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 1rem 2.5rem;
+            text-decoration: none;
+            border-radius: 0.75rem; /* More rounded buttons */
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: background-color var(--transition-speed) ease, transform 0.2s ease, box-shadow var(--transition-speed) ease;
+            border: none;
+            cursor: pointer;
+            margin: 0.8rem;
+            box-shadow: 0 6px 15px var(--shadow-light);
+            gap: 0.75rem; /* More space for icons */
+            position: relative;
+            overflow: hidden;
+        }
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left var(--transition-speed) ease;
+        }
+        .btn:hover::before {
+            left: 100%;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px var(--shadow-medium);
+        }
+        .btn-green { background-color: #27ae60; }
+        .btn-green:hover { background-color: #229a53; }
+        .btn-secondary { background-color: #6c757d; }
+        .btn-secondary:hover { background-color: #5a6268; }
+
+        /* Header - Flipkart Inspired */
+        header {
+            background-color: var(--dark-blue);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 15px var(--shadow-medium);
             position: sticky;
             top: 0;
             z-index: 1000;
-            flex-wrap: wrap; /* Allow wrapping for mobile */
+            border-bottom: 4px solid var(--primary-blue);
         }
-
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
         .logo {
-            font-size: 2em; /* Slightly larger logo */
-            font-weight: 800; /* Bolder font */
+            font-size: 2.8em; /* Larger, bolder logo */
+            font-weight: 900;
             text-decoration: none;
             color: white;
             display: flex;
@@ -49,1114 +126,655 @@
             gap: 0.5rem;
             transition: transform 0.3s ease;
         }
-        .logo:hover {
-            transform: scale(1.05);
-        }
+        .logo:hover { transform: scale(1.05); }
 
-        .nav-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+        .search-bar {
+            flex-grow: 1;
+            max-width: 700px; /* Wider search bar */
+            position: relative;
             display: flex;
-            gap: 1.5rem; /* Spacing between nav items */
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background-color: white; /* White background for search bar */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+        .search-bar input {
+            flex-grow: 1;
+            padding: 0.9rem 1.2rem; /* More padding */
+            border: none;
+            font-size: 1.05em;
+            outline: none;
+            color: var(--text-dark);
+        }
+        .search-bar input::placeholder {
+            color: var(--text-light);
+        }
+        .search-bar button {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 0 1.5rem; /* Larger button */
+            border: none;
+            cursor: pointer;
+            transition: background-color var(--transition-speed) ease;
+        }
+        .search-bar button:hover { background-color: #2980b9; }
 
-        .nav-item a {
+        .header-icons {
+            display: flex;
+            gap: 1.8rem; /* More space between icons */
+            align-items: center;
+        }
+        .header-icon-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             color: white;
             text-decoration: none;
-            font-weight: 500;
-            padding: 0.6rem 1rem;
-            border-radius: 0.5rem; /* Rounded corners */
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            position: relative; /* For underline effect */
-            overflow: hidden; /* For underline animation */
+            font-size: 0.95em;
+            transition: color var(--transition-speed) ease, transform 0.2s ease;
+        }
+        .header-icon-item i {
+            font-size: 1.6em; /* Larger icons */
+            margin-bottom: 0.3rem;
+        }
+        .header-icon-item:hover {
+            color: var(--primary-blue);
+            transform: translateY(-3px);
         }
 
-        .nav-item a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px; /* Underline thickness */
-            background-color: #3498db; /* Blue underline */
-            transform: scaleX(0); /* Start hidden, scale to show */
-            transform-origin: bottom left; /* Scale from left */
-            transition: transform 0.3s ease-out;
-        }
-
-        .nav-item a:hover::after {
-            transform: scaleX(1); /* Show on hover */
-        }
-
-
-        .nav-item a:hover, .nav-item a.active {
-            background-color: #34495e; /* Slightly lighter blue/grey on hover */
-            transform: translateY(-2px); /* Slight lift on hover */
-        }
-
-        /* Hamburger menu (for mobile) */
+        /* Mobile Hamburger Menu */
         .menu-toggle {
-            display: none; /* Hidden on desktop */
+            display: none; /* Hidden on desktop by default */
             background: none;
             border: none;
             color: white;
-            font-size: 2em;
+            font-size: 2.2em;
             cursor: pointer;
             transition: transform 0.3s ease;
         }
-        .menu-toggle:hover {
-            transform: scale(1.1);
+        .menu-toggle:hover { transform: scale(1.1); }
+
+        /* Mobile Navigation Menu (Sidebar toggle) */
+        .nav-menu {
+            position: fixed;
+            top: 0;
+            left: -300px; /* Hidden off-screen */
+            width: 280px; /* Width of the sidebar */
+            height: 100%;
+            background-color: var(--dark-blue);
+            padding: 2rem 1.5rem;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+            transition: left 0.4s ease-in-out;
+            z-index: 1001; /* Above main content, below modal */
+            display: none; /* Hidden by default, only flex on active mobile */
+            flex-direction: column;
+            gap: 1rem;
+            list-style: none; /* Remove list styles */
+        }
+        .nav-menu.active {
+            left: 0; /* Slide in */
+            display: flex; /* Show when active */
+        }
+        .nav-menu .close-sidebar {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2em;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            display: block; /* Always visible when sidebar is active */
+        }
+        .nav-menu .close-sidebar:hover { transform: rotate(90deg); }
+
+        .nav-menu li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.8rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .nav-menu li a:hover, .nav-menu li a.active {
+            background-color: #34495e;
+            transform: translateX(5px);
+        }
+        .nav-menu li a i {
+            font-size: 1.3em;
         }
 
-        /* Main Content Container */
-        main {
-            flex: 1; /* Allows main content to grow and push footer down */
+        /* Hero Section - Interactive Carousel */
+        .hero-section {
+            position: relative;
+            min-height: 550px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-color: var(--dark-blue); /* Dark background for letterboxing */
+            margin-top: 0; /* No margin above hero */
         }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px;
+        .hero-carousel-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
         }
-
-        /* Section Styling */
-        section {
-            padding: 4rem 1.5rem; /* Increased padding */
+        .hero-carousel-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Ensures full image visibility */
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        .hero-carousel-container img.active { opacity: 1; }
+        .hero-carousel-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6); /* Darker overlay for text contrast */
+            z-index: 2;
+        }
+        .hero-section .container {
+            position: relative;
+            z-index: 3;
+            color: white;
             text-align: center;
-            background-color: white;
-            margin-bottom: 2rem; /* Increased margin */
-            border-radius: 1rem; /* More rounded corners */
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* Softer, larger shadow */
-            animation: fadeIn 1s ease-out; /* Fade-in animation */
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 2rem;
+            text-shadow: 1px 1px 8px rgba(0,0,0,0.9);
+        }
+        .hero-section h1 { color: white; }
+        .hero-section p { color: #e0e0e0; }
+        .hero-buttons { margin-top: 2.5rem; }
+        .carousel-controls {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            transform: translateY(-50%);
+            z-index: 4;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+        .carousel-control-btn {
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            padding: 18px 22px;
+            border-radius: 50%;
+            font-size: 1.8em;
+            cursor: pointer;
+            transition: background var(--transition-speed) ease, transform 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+        .carousel-control-btn:hover { background: rgba(0, 0, 0, 0.8); transform: scale(1.1); }
+        .carousel-indicators {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 4;
+            display: flex;
+            gap: 10px;
+        }
+        .indicator-dot {
+            width: 14px;
+            height: 14px;
+            background-color: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color var(--transition-speed) ease, transform 0.2s ease, border-color var(--transition-speed) ease;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+        .indicator-dot.active {
+            background-color: var(--primary-blue);
+            transform: scale(1.2);
+            border-color: var(--primary-blue);
+        }
+
+        /* Main Content Wrapper (Sidebar + Content) */
+        .main-content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr; /* Content takes full width */
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+        /* Sidebar is hidden on all screens as per user request */
+        .sidebar {
+            display: none;
+        }
+
+        /* Content Area Sections (Product Grid Style) */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem; /* More space between sections */
+        }
+
+        section {
+            padding: 3rem 2rem;
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: 0 6px 18px var(--shadow-light);
+            transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
         }
         section:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 10px 25px var(--shadow-medium);
         }
+        section:nth-child(even) { background-color: #f8f9fa; }
 
-        section:nth-child(even) {
-            background-color: #f8f9fa; /* Alternate background for sections */
-        }
-
-        h1, h2, h3 {
-            color: #2c3e50;
-            margin-bottom: 1.5rem;
-        }
-
-        h1 {
-            font-size: 3.2em; /* Larger heading */
-            line-height: 1.2;
-            font-weight: 800;
-        }
-
-        h2 {
-            font-size: 2.6em; /* Larger subheading */
-            margin-bottom: 2rem;
-            font-weight: 700;
-            color: #3498db; /* Main accent color for headings */
-        }
-
-        p {
-            font-size: 1.15em; /* Slightly larger text */
-            color: #555;
-            margin-bottom: 1.5rem;
-        }
-
-        /* Buttons */
-        .btn {
-            display: inline-block;
-            background-color: #3498db; /* Blue */
-            color: white;
-            padding: 1rem 2.5rem; /* Larger padding */
-            text-decoration: none;
-            border-radius: 2rem; /* More rounded corners */
-            font-size: 1.2em; /* Larger font */
-            font-weight: bold;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            border: none;
-            cursor: pointer;
-            margin: 0.8rem; /* Consistent margin */
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-green {
-            background-color: #27ae60; /* Green */
-        }
-
-        .btn:hover {
-            transform: translateY(-5px); /* More pronounced lift effect */
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
-        }
-        .btn-green:hover {
-            background-color: #229a53;
-        }
-        .btn-secondary {
-            background-color: #6c757d;
-        }
-        .btn-secondary:hover {
-            background-color: #5a6268;
-        }
-
-        /* Booking Form Specifics - Enhanced Grid Layout for Alignment */
-        .booking-section {
-            padding: 3rem 1.5rem;
-            text-align: left;
-            /* Enhanced Graphic Card Design */
-            background: linear-gradient(145deg, #eaf2f8 0%, #dbe9f5 100%); /* Blue gradient background */
-            border-radius: 1.5rem; /* More rounded corners for the card */
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15), inset 0 0 15px rgba(255, 255, 255, 0.5); /* Stronger outer shadow, subtle inner glow */
-            border: 2px solid #c1dff0; /* A soft border */
-            position: relative; /* For decorative elements */
-            overflow: hidden;
-        }
-        .booking-section::before {
-            content: '';
-            position: absolute;
-            top: -20px;
-            left: -20px;
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            filter: blur(10px);
-            animation: floatCircle 6s infinite ease-in-out;
-        }
-        .booking-section::after {
-            content: '';
-            position: absolute;
-            bottom: -30px;
-            right: -30px;
-            width: 100px;
-            height: 100px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 50%;
-            filter: blur(15px);
-            animation: floatCircle 8s infinite reverse ease-in-out;
-        }
-
-        @keyframes floatCircle {
-            0% { transform: translate(0, 0); }
-            50% { transform: translate(20px, 30px); }
-            100% { transform: translate(0, 0); }
-        }
-
-        .booking-section h2 {
-            text-align: center;
-            color: #2c3e50; /* Darker heading for contrast */
-            margin-bottom: 2rem;
-        }
-        .booking-form-grid {
-            display: grid;
-            grid-template-columns: 1fr; /* Default to single column */
-            gap: 1.5rem; /* Spacing between form groups */
-            max-width: 700px; /* Max width for the form itself */
-            margin: 0 auto;
-        }
-        @media (min-width: 768px) {
-            .booking-form-grid {
-                grid-template-columns: repeat(2, 1fr); /* Two columns on larger screens */
-            }
-            .booking-form-grid .form-group:nth-child(3), /* Preferred Date & Time */
-            .booking-form-grid .form-group:nth-child(4) { /* Additional Notes */
-                grid-column: span 2; /* Span full width on 2-column layout */
-            }
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.6rem;
-            font-weight: bold;
-            color: #444;
-            font-size: 1em;
-        }
-        input[type="text"],
-        input[type="datetime-local"],
-        textarea,
-        select {
-            width: 100%; /* Full width within its grid column */
-            padding: 0.8rem 1rem;
-            border: 1px solid #cce0f0; /* Lighter border */
-            border-radius: 0.5rem;
-            font-size: 1em;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            background-color: white;
-        }
-        input[type="text"]:focus,
-        input[type="datetime-local"]:focus,
-        textarea:focus,
-        select:focus {
-            border-color: #3498db;
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2); /* More prominent focus shadow */
-        }
-        textarea {
-            resize: vertical;
-            min-height: 100px; /* Slightly taller textarea */
-        }
-        .btn-form-submit {
-            width: 100%;
-            padding: 1rem 2rem; /* Larger submit button */
-            border-radius: 0.5rem;
-            font-size: 1.1em;
-            margin-top: 1.5rem;
-            grid-column: span 1; /* Default to 1 column */
-        }
-        @media (min-width: 768px) {
-            .btn-form-submit {
-                grid-column: span 2; /* Span full width on 2-column layout */
-            }
-        }
-        /* Force parent form content to center */
-        /* Updated CSS to center the Google Sign-in button */
-        .auth-form .auth-footer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;  /* This centers items horizontally within the flex container */
-            justify-content: center;
-        }
-
-        /* This ensures the GSI button wrapper (and thus the button itself) is centered */
-        #g_id_signin_wrapper {
-            display: flex;
-            justify-content: center; /* Center the content inside the wrapper */
-            width: 100%; /* Take full width of parent */
-            max-width: 450px; /* Limit max width on larger screens */
-            margin: 1.5rem auto 0 auto; /* Center the wrapper itself using auto margins */
-        }
-
-        /* Specific styling for the actual GSI button rendered by Google's JS */
-        .g_id_signin {
-            /* Google's JS renders an iframe or div with this class. */
-            /* We can try to influence its size but direct control is limited. */
-            width: 100% !important; /* Force to fill its container, important to override Google's inline styles */
-            max-width: 450px; /* Ensures the button does not exceed a reasonable max width */
-        }
-
-
-        /* Hero Section Specifics */
-        .hero-section {
-            padding: 6rem 1.5rem; /* Increased padding */
-            background: linear-gradient(135deg, #eaf2f8 0%, #dbe9f5 100%); /* Subtle gradient */
-            overflow: hidden; /* For animations */
-        }
-
-        .hero-image-placeholder {
-            width: 100%;
-            max-width: 450px; /* Slightly larger */
-            height: 280px;
-            background: linear-gradient(45deg, #c1dff0 0%, #a7cfe8 100%); /* Blue gradient for placeholder */
-            margin: 2.5rem auto 0;
-            border-radius: 1.5rem; /* More rounded */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 4.5em; /* Larger icon */
-            color: #6a9ed4;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
-            position: relative; /* For pseudo-elements */
-            overflow: hidden;
-        }
-        .hero-image-placeholder::before, .hero-image-placeholder::after {
-            content: '';
-            position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            animation: pulse 4s infinite ease-in-out;
-        }
-        .hero-image-placeholder::before {
-            width: 80%;
-            height: 80%;
-            top: -20%;
-            left: -20%;
-        }
-        .hero-image-placeholder::after {
-            width: 60%;
-            height: 60%;
-            bottom: -15%;
-            right: -15%;
-            animation-delay: 1s;
-        }
-        @keyframes pulse {
-            0% { transform: scale(0.8); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-            100% { transform: scale(0.8); opacity: 0.5; }
-        }
-
-
-        /* Features Section */
+        /* Feature/Product Card Styling */
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Slightly larger min-width */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             margin-top: 2.5rem;
         }
-
         .feature-item {
-            background-color: #f8faff; /* Very light blue */
+            background-color: #f8faff;
             padding: 2rem;
             border-radius: 1rem;
             text-align: left;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px var(--shadow-light);
+            transition: background-color var(--transition-speed) ease, transform 0.3s ease, box-shadow var(--transition-speed) ease;
             border: 1px solid #e0f0ff;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
         }
         .feature-item:hover {
             background-color: #eaf4ff;
             transform: translateY(-8px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
-
         .feature-item h3 {
-            font-size: 1.4em;
+            font-size: 1.3em;
             margin-top: 0;
-            color: #2c3e50; /* Darker heading */
+            color: var(--dark-blue);
             display: flex;
             align-items: center;
             gap: 0.8rem;
             font-weight: 600;
         }
         .feature-icon {
-            font-size: 1.3em;
-            color: #3498db;
+            font-size: 1.2em;
+            color: var(--primary-blue);
+            background-color: #eaf2f8;
+            padding: 0.6rem;
+            border-radius: 50%;
         }
         .feature-item p {
-            font-size: 1em;
-            color: #666;
-            margin-bottom: 0; /* Remove bottom margin if last element */
+            font-size: 0.95em;
+            color: var(--text-medium);
+            margin-bottom: 0;
+            flex-grow: 1;
         }
 
-        /* User Types CTA Section */
+        /* User CTA Cards (similar to category/brand cards) */
         .user-cta-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Larger min-width */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             margin-top: 2.5rem;
         }
-
         .user-cta-card {
-            background-color: #ffffff;
+            background-color: var(--card-bg);
             padding: 2.5rem;
             border-radius: 1rem;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            text-decoration: none; /* For link */
-            color: #333;
-            border: 1px solid #eee;
+            box-shadow: 0 6px 18px var(--shadow-medium);
+            transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+            text-decoration: none;
+            color: var(--text-dark);
+            border: 1px solid var(--border-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
-
-        .user-cta-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
-        }
-
+        .user-cta-card:hover { transform: translateY(-10px); box-shadow: 0 12px 25px var(--shadow-strong); }
         .user-cta-card h3 {
-            font-size: 2em; /* Larger icon */
+            font-size: 1.8em;
             margin-top: 0;
             margin-bottom: 1rem;
-            color: #34495e;
+            color: var(--dark-blue);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.8rem;
             font-weight: 700;
         }
-
-        .user-icon {
-            font-size: 1.8em;
-            color: #3498db;
-        }
-        /* Specific colors for CTA cards */
-        .user-cta-card.customer h3 .user-icon { color: #28a745; } /* Green for customer */
-        .user-cta-card.technician h3 .user-icon { color: #ffc107; } /* Orange for technician */
-        .user-cta-card.admin h3 .user-icon { color: #dc3545; } /* Red for admin */
+        .user-icon { font-size: 1.6em; }
+        .user-cta-card.customer h3 .user-icon { color: #28a745; }
+        .user-cta-card.technician h3 .user-icon { color: #ffc107; }
+        .user-cta-card.admin h3 .user-icon { color: #dc3545; }
         .user-cta-card .btn {
-            padding: 0.8rem 2rem; /* Slightly smaller buttons within cards */
+            padding: 0.8rem 2rem;
             font-size: 1em;
             margin-top: 1.5rem;
         }
 
-
-        /* Multilingual Support Banner */
-        .multilingual-banner {
-            background: linear-gradient(90deg, #3498db 0%, #2980b9 100%); /* Blue gradient */
-            color: white;
-            padding: 3rem 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-        .multilingual-banner h2 {
-            color: white;
-            margin-bottom: 1rem;
-        }
-        .multilingual-banner p {
-            color: #e0f2f7; /* Lighter white */
-            font-size: 1.1em;
-        }
-        .language-dropdown-placeholder {
-            background-color: white;
-            color: #333;
-            padding: 0.8rem 1.2rem;
-            border-radius: 0.5rem;
-            margin-top: 1.5rem;
-            display: inline-block;
-            font-weight: 500;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .language-dropdown-placeholder:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-        }
-
-        /* Testimonials Section */
-        .testimonials-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-top: 2.5rem;
-        }
-        .testimonial-card {
-            background-color: #f0f8ff; /* Very light blue */
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            text-align: left;
-            border-left: 6px solid #3498db; /* Thicker border */
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .testimonial-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-        .testimonial-text {
-            font-style: italic;
-            margin-bottom: 1rem;
-            color: #555;
-            font-size: 1em;
-        }
-        .testimonial-author {
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 0.5rem;
-        }
-        .testimonial-rating {
-            color: #f1c40f; /* Yellow stars */
-            font-size: 1.2em; /* Slightly larger stars */
-            margin-top: 0.5rem;
-        }
-
-        /* Footer */
+        /* Footer - Multi-column */
         footer {
-            background-color: #2c3e50; /* Darker footer */
+            background-color: var(--dark-blue);
             color: white;
-            text-align: center;
-            padding: 2rem 1.5rem;
+            padding: 2.5rem 1.5rem;
             font-size: 0.9em;
-            margin-top: 2rem;
-            box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.15);
+            margin-top: 3rem;
+            box-shadow: 0 -4px 15px var(--shadow-medium);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Adjusted min-width for more columns */
+            gap: 2rem;
         }
-
-        .footer-links {
+        .footer-column {
+            text-align: left;
+        }
+        .footer-column h3 {
+            color: var(--primary-blue);
+            font-size: 1.2em;
             margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 0.5rem;
         }
-        .footer-links a {
-            color: #7fc9ff; /* Lighter blue for links */
+        .footer-column ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .footer-column ul li a {
+            color: #bbb;
             text-decoration: none;
-            margin: 0 0.8rem;
-            transition: color 0.3s ease, text-decoration 0.3s ease;
+            display: block;
+            padding: 0.4rem 0;
+            transition: color var(--transition-speed) ease;
         }
-        .footer-links a:hover {
-            color: #a4e0ff;
+        .footer-column ul li a:hover {
+            color: white;
             text-decoration: underline;
         }
-
         .social-icons {
-            margin: 1.5rem 0;
-            font-size: 1.8em; /* Larger icons */
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            font-size: 1.5em;
+            justify-content: flex-start;
         }
         .social-icons span {
-            margin: 0 0.8rem;
             cursor: pointer;
             transition: transform 0.2s ease, color 0.3s ease;
             color: #e0e0e0;
         }
         .social-icons span:hover {
-            transform: scale(1.3);
-            color: #3498db; /* Blue on hover */
+            transform: scale(1.2);
+            color: var(--primary-blue);
         }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Styles for AI Diagnosis Section */
-        .ai-diagnosis-section {
-            background-color: #f0faff; /* Lighter blue background */
-            padding: 4rem 1.5rem;
-            margin-bottom: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            text-align: center;
-        }
-        .ai-diagnosis-section h2 {
-            color: #3498db; /* Blue for the AI section header */
-            margin-bottom: 1.5rem;
-        }
-        .ai-diagnosis-section p {
-            font-size: 1.1em;
-            color: #666;
-            margin-bottom: 2rem;
-        }
-        .ai-diagnosis-section .form-group {
-            max-width: 600px;
-            margin: 0 auto 1.5rem auto;
-            text-align: left;
-        }
-        .ai-diagnosis-section label {
-            display: block;
-            margin-bottom: 0.8rem;
-            font-weight: bold;
-            color: #444;
-            font-size: 1.05em;
-        }
-        .ai-diagnosis-section textarea {
-            width: 100%;
-            min-height: 150px; /* Taller textarea */
-            padding: 1rem;
-            border: 1px solid #c0e0f0;
-            border-radius: 0.5rem;
-            font-size: 1em;
-            box-sizing: border-box;
-            resize: vertical;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-            background-color: white;
-        }
-        .ai-diagnosis-section textarea:focus {
-            border-color: #3498db;
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
-        }
-        .diagnosis-result {
-            margin-top: 2rem;
-            background-color: #e8f9f8; /* Very light green/blue */
-            padding: 1.5rem;
-            border-radius: 0.8rem;
-            text-align: left;
-            min-height: 80px; /* Ensure some height for display */
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
-            border: 1px solid #c1e0e8;
-            color: #2c3e50;
-            font-size: 1em;
-            line-height: 1.6;
-            white-space: pre-wrap; /* Preserve whitespace and breaks */
-            animation: slideInUp 0.6s ease-out forwards; /* Animation for result */
-        }
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        #loading-indicator {
-            text-align: center;
-            font-style: italic;
-            color: #3498db;
-            display: none;
-            margin-top: 1rem;
-        }
-
-        /* --- Auth Modal Specific Styles --- */
-        .auth-overlay {
-            display: none; /* Hidden by default */
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7); /* Darker overlay */
-            z-index: 1001;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(8px); /* Added back for effect */
-            -webkit-backdrop-filter: blur(8px); /* Added back for effect */
-            animation: fadeInOverlay 0.3s ease-out;
-        }
-        @keyframes fadeInOverlay {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .auth-container {
-            background: white;
-            padding: 2.5rem; /* Increased padding */
-            border-radius: 1rem; /* More rounded */
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); /* More prominent shadow */
-            max-width: 500px; /* Wider modal */
-            width: 90%; /* Responsive width for smaller screens */
-            position: relative;
-            text-align: left;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideInDown 0.5s ease-out;
-        }
-        @keyframes slideInDown {
-            from { opacity: 0; transform: translateY(-50px); }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .close-auth-modal {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            font-size: 2rem; /* Larger close button */
-            cursor: pointer;
-            color: #777;
-            transition: color 0.3s ease, transform 0.2s ease;
-        }
-        .close-auth-modal:hover {
-            color: #333;
-            transform: rotate(90deg);
-        }
-
-        .auth-header-modal {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .auth-header-modal h1 {
-            color: #2c3e50;
-            font-size: 2rem; /* Larger heading */
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
-        .auth-header-modal p {
-            color: #666;
-            font-size: 1.05rem;
-        }
-
-        .auth-tabs {
+        .app-download-links {
             display: flex;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid #eee; /* Thicker border */
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: flex-start;
         }
-        .tab-btn {
-            flex: 1;
-            padding: 1rem; /* Larger tabs */
-            background: none;
-            border: none;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #7f8c8d;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
-            outline: none;
-        }
-
-        .tab-btn.active {
-            color: #3498db;
-            border-color: #3498db;
-        }
-
-        .role-selection {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .role-selection label {
-            font-weight: bold;
-            margin-bottom: 1rem;
-            display: block;
-            color: #555;
-            font-size: 1.05rem;
-        }
-
-        .role-options {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .role-btn {
-            background-color: #f8faff; /* Light background for buttons */
-            border: 2px solid #e0f0ff;
-            padding: 0.8rem 1.5rem;
-            border-radius: 0.8rem; /* More rounded */
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #555;
-            outline: none;
-        }
-
-        .role-btn:hover {
-            border-color: #c1dff0;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .role-btn.active {
-            background-color: #eaf2f8;
-            border-color: #3498db;
-            color: #3498db;
-            box-shadow: 0 0 10px rgba(52, 152, 219, 0.4);
-        }
-
-        .role-btn i {
-            font-size: 1.2em;
-        }
-        .auth-form {
-            display: none;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        .auth-form.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 1.2rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.6rem;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .form-group input[type="email"],
-        .form-group input[type="password"],
-        .form-group input[type="text"],
-        .form-group input[type="tel"],
-        .form-group select {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            border: 1px solid #ccc;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
-        .form-group input:focus, .form-group select:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
-            outline: none;
-        }
-
-        .password-input {
-            position: relative;
-        }
-
-        .password-input input {
-            padding-right: 2.8rem; /* Space for eye icon */
-        }
-
-        .toggle-password, .toggle-confirm-password {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #7f8c8d;
-            font-size: 1.1rem;
-            transition: color 0.3s ease;
-        }
-        .toggle-password:hover, .toggle-confirm-password:hover {
-            color: #333;
-        }
-
-        .auth-btn {
-            width: 100%;
-            padding: 1rem;
-            background: #3498db;
+        .app-download-links a {
             color: white;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            margin-top: 1.5rem;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .auth-btn:hover {
-            background: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .auth-btn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            opacity: 0.7;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .auth-footer {
-            margin-top: 1.5rem;
-            text-align: center;
-        }
-
-        .forgot-password {
-            color: #3498db;
-            text-decoration: none;
-            font-size: 0.95rem;
-            cursor: pointer;
             transition: color 0.3s ease;
         }
-        .forgot-password:hover {
-            color: #2980b9;
-            text-decoration: underline;
+        .app-download-links a:hover {
+            color: var(--primary-blue);
         }
-
-        /* OTP Modal Styles */
-        .otp-modal, .forgot-password-modal { /* Combined styles for both OTP modals */
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1002; /* Higher than auth-overlay */
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            animation: fadeInOverlay 0.3s ease-out;
-        }
-
-        .otp-modal .modal-content, .forgot-password-modal .modal-content {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 1rem;
-            max-width: 450px;
-            width: 90%;
-            position: relative;
+        .footer-bottom {
+            grid-column: 1 / -1; /* Span all columns */
             text-align: center;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideInDown 0.5s ease-out;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: #aaa;
         }
 
-        .close-otp-modal, .close-forgot-password-modal {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            font-size: 2rem;
-            cursor: pointer;
-            color: #777;
-            transition: color 0.3s ease, transform 0.2s ease;
-        }
-        .close-otp-modal:hover, .close-forgot-password-modal:hover {
-            color: #333;
-            transform: rotate(90deg);
-        }
-
-        .otp-input {
+        /* Floating Action Button (FAB) */
+        .fab-container {
+            position: fixed;
+            bottom: 3rem; /* Moved further down */
+            right: 3rem; /* Moved further right */
+            z-index: 999;
             display: flex;
-            justify-content: space-between;
-            margin: 2rem auto;
-            gap: 0.5rem; /* Space between OTP digits */
-            max-width: 300px; /* Limit width for OTP inputs */
+            flex-direction: column-reverse; /* Stack items from bottom up */
+            align-items: flex-end;
+            gap: 1rem;
         }
-
-        .otp-digit {
-            width: 45px; /* Fixed width for OTP boxes */
-            height: 50px; /* Taller */
-            text-align: center;
-            font-size: 1.8rem; /* Larger font */
-            border: 1px solid #ccc;
-            border-radius: 0.5rem;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        .fab-main-btn {
+            background-color: var(--primary-blue);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            border: none;
         }
-        .otp-digit:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
-            outline: none;
+        .fab-main-btn:hover {
+            background-color: #2980b9;
+            transform: scale(1.1) rotate(15deg);
         }
-
-        .resend-otp {
-            margin-top: 1rem;
-            font-size: 0.95rem;
-            color: #7f8c8d;
+        .fab-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
         }
-
-        .resend-otp a {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-        .resend-otp a:hover {
-            color: #2980b9;
-            text-decoration: underline;
-        }
-
-        /* Message Box */
-       #message-container {
-            position: fixed;
-            top: 1.5rem;
-            right: 1.5rem;
-            z-index: 10002;
-            pointer-events: none; /* Prevents blocking clicks */
-        }
-
-        .message-box {
-            pointer-events: auto; /* Allows interaction with the message box itself */
-            /* padding: 1rem 1.5rem;
-            border-radius: 0.8rem;
-            font-weight: bold;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-            animation: fadeOut 0.5s forwards 4.5s;
+        .fab-actions.active {
             opacity: 1;
-            transition: opacity 0.5s ease-out;
-            min-width: 250px; */
-            text-align: center;
-            border: 1px solid;
-            /* Added for better mobile display */
-            box-sizing: border-box; /* Include padding and border in the element's total width and height */
-            width: auto; /* Allow width to be determined by content */
-            max-width: 90%; /* Max width for responsiveness */
-            margin-left: auto; /* Center on smaller screens if messageContainer is wide */
-            margin-right: auto;
-            left: 0; /* Align left */
-            right: 0; /* Align right */
+            visibility: visible;
+            transform: translateY(0);
         }
-        .message-box.success {
-            background-color: #d4edda;
-            color: #155724;
-            border-color: #c3e6cb;
+        .fab-action-item {
+            background-color: var(--dark-blue);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
-        .message-box.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border-color: #f5c6cb;
-        }
-        .message-box.info {
-            background-color: #d1ecf1;
-            color: #0c5460;
-            border-color: #bee5eb;
+        .fab-action-item:hover {
+            background-color: #34495e;
+            transform: translateX(-5px);
         }
 
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
-
-        /* Technician Specific Fields */
-        #technician-fields {
-            display: none; /* Hidden by default */
-        }
-        #technician-fields input {
-            margin-bottom: 1rem;
-        }
+        /* Auth Modal Specific Styles (retained IDs for existing JS) */
+        .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1001; justify-content: center; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); animation: fadeInOverlay 0.3s ease-out; }
+        @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+        .auth-container { background: white; padding: 2.5rem; border-radius: 1rem; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); max-width: 500px; width: 90%; position: relative; text-align: left; max-height: 90vh; overflow-y: auto; animation: slideInDown 0.5s ease-out; }
+        @keyframes slideInDown { from { opacity: 0; transform: translateY(-50px); } to { transform: translateY(0); opacity: 1; } }
+        .close-auth-modal { position: absolute; top: 1rem; right: 1rem; font-size: 2rem; cursor: pointer; color: var(--text-light); transition: color 0.3s ease, transform 0.2s ease; }
+        .close-auth-modal:hover { color: var(--text-dark); transform: rotate(90deg); }
+        .auth-header-modal { text-align: center; margin-bottom: 2rem; }
+        .auth-header-modal h1 { color: var(--dark-blue); font-size: 2rem; margin-bottom: 0.5rem; font-weight: 700; }
+        .auth-header-modal p { color: var(--text-medium); font-size: 1.05rem; }
+        .auth-tabs { display: flex; margin-bottom: 2rem; border-bottom: 2px solid var(--border-light); }
+        .tab-btn { flex: 1; padding: 1rem; background: none; border: none; font-size: 1.1rem; font-weight: 600; color: var(--text-light); cursor: pointer; transition: all 0.3s ease; border-bottom: 3px solid transparent; outline: none; }
+        .tab-btn.active { color: var(--primary-blue); border-color: var(--primary-blue); }
+        .role-selection { margin-bottom: 2rem; text-align: center; }
+        .role-selection label { font-weight: bold; margin-bottom: 1rem; display: block; color: var(--text-medium); font-size: 1.05rem; }
+        .role-options { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+        .role-btn { background-color: #f8faff; border: 2px solid #e0f0ff; padding: 0.8rem 1.5rem; border-radius: 0.8rem; cursor: pointer; font-size: 1rem; transition: all 0.3s ease, box-shadow 0.3s ease; display: flex; align-items: center; gap: 0.5rem; color: var(--text-medium); outline: none; }
+        .role-btn:hover { border-color: #c1dff0; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .role-btn.active { background-color: #eaf2f8; border-color: var(--primary-blue); color: var(--primary-blue); box-shadow: 0 0 10px rgba(52, 152, 219, 0.4); }
+        .role-btn i { font-size: 1.2em; }
+        .auth-form { display: none; animation: fadeIn 0.5s ease-out; }
+        .auth-form.active { display: block; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.6rem; font-weight: 600; color: var(--text-dark); }
+        .form-group input[type="email"], .form-group input[type="password"], .form-group input[type="text"], .form-group input[type="tel"], .form-group select, .form-group textarea { width: 100%; padding: 0.8rem 1rem; border: 1px solid #ccc; border-radius: 0.5rem; font-size: 1rem; box-sizing: border-box; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2); outline: none; }
+        .password-input { position: relative; }
+        .password-input input { padding-right: 2.8rem; }
+        .toggle-password, .toggle-confirm-password { position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-light); font-size: 1.1rem; transition: color 0.3s ease; }
+        .toggle-password:hover, .toggle-confirm-password:hover { color: var(--text-dark); }
+        .auth-btn { width: 100%; padding: 1rem; background: var(--primary-blue); color: white; border: none; border-radius: 0.5rem; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease; margin-top: 1.5rem; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+        .auth-btn:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2); }
+        .auth-btn:disabled { background-color: #cccccc; cursor: not-allowed; opacity: 0.7; transform: none; box-shadow: none; }
+        .auth-footer { margin-top: 1.5rem; text-align: center; }
+        .forgot-password { color: var(--primary-blue); text-decoration: none; font-size: 0.95rem; cursor: pointer; transition: color 0.3s ease; }
+        .forgot-password:hover { color: #2980b9; text-decoration: underline; }
+        .otp-modal, .forgot-password-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1002; justify-content: center; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); animation: fadeInOverlay 0.3s ease-out; }
+        .otp-modal .modal-content, .forgot-password-modal .modal-content { background: white; padding: 2.5rem; border-radius: 1rem; max-width: 450px; width: 90%; position: relative; text-align: center; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); max-height: 90vh; overflow-y: auto; animation: slideInDown 0.5s ease-out; }
+        .close-otp-modal, .close-forgot-password-modal { position: absolute; top: 1rem; right: 1rem; font-size: 2rem; cursor: pointer; color: var(--text-light); transition: color 0.3s ease, transform 0.2s ease; }
+        .close-otp-modal:hover, .close-forgot-password-modal:hover { color: var(--text-dark); transform: rotate(90deg); }
+        .otp-input { display: flex; justify-content: space-between; margin: 2rem auto; gap: 0.5rem; max-width: 300px; }
+        .otp-digit { width: 45px; height: 50px; text-align: center; font-size: 1.8rem; border: 1px solid #ccc; border-radius: 0.5rem; box-sizing: border-box; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
+        .otp-digit:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2); outline: none; }
+        .resend-otp { margin-top: 1rem; font-size: 0.95rem; color: var(--text-light); }
+        .resend-otp a { color: var(--primary-blue); text-decoration: none; font-weight: 600; transition: color 0.3s ease; }
+        .resend-otp a:hover { color: #2980b9; text-decoration: underline; }
+        #message-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 10002; pointer-events: none; }
+        /* .message-box { pointer-events: auto; text-align: center; border: 1px solid; box-sizing: border-box; width: auto; max-width: 90%; margin-left: auto; margin-right: auto; left: 0; right: 0; padding: 1rem 1.5rem; border-radius: 0.8rem; font-weight: bold; box-shadow: 0 6px 15px rgba(0,0,0,0.15); animation: fadeOut 0.5s forwards 4.5s; opacity: 1; transition: opacity 0.5s ease-out; min-width: 250px; }
+        .message-box.success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .message-box.error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .message-box.info { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } } */
+        #technician-fields { display: none; }
+        #technician-fields input { margin-bottom: 1rem; }
+        #g_id_signin_wrapper { display: flex; justify-content: center; width: 100%; max-width: 450px; margin: 1.5rem auto 0 auto; }
+        .g_id_signin { width: 100% !important; max-width: 450px; }
 
 
         /* Responsive Design */
-        @media (max-width: 768px) {
-            header {
+        @media (max-width: 991px) { /* Tablet and smaller */
+            h1 { font-size: 2.8em; }
+            h2 { font-size: 2.2em; }
+            h3 { font-size: 1.6em; }
+            p { font-size: 1em; }
+            .btn { padding: 0.8rem 1.8rem; font-size: 1em; margin: 0.5rem; }
+
+            header .container {
                 flex-direction: column;
                 align-items: flex-start;
                 padding: 1rem;
             }
-            .nav-menu {
-                flex-direction: column;
+            .search-bar {
                 width: 100%;
-                gap: 0.5rem;
+                max-width: none;
                 margin-top: 1rem;
-                display: none; /* Hidden by default on mobile */
             }
-            .nav-menu.active {
-                display: flex; /* Show when active */
+            .header-icons {
+                width: 100%;
+                justify-content: space-around;
+                margin-top: 1rem;
+                gap: 1rem;
             }
+            .header-icon-item i { font-size: 1.3em; }
+            .header-icon-item span { font-size: 0.85em; }
+
             .menu-toggle {
-                display: block; /* Show hamburger */
-                align-self: flex-end; /* Push to right in header */
-                margin-top: -2rem; /* Adjust vertical position */
+                display: block; /* Show hamburger on mobile/tablet */
+                order: -1; /* Move to start */
+                margin-right: auto; /* Push others right */
+                font-size: 1.8em;
+            }
+            .logo { margin-left: 1rem; } /* Align logo with toggle */
+
+            .nav-menu {
+                left: -300px; /* Ensure it's hidden by default */
+                width: 250px; /* Smaller sidebar for mobile */
+                padding-top: 5rem; /* Space for close button */
+            }
+            .nav-menu.active { left: 0; }
+            .nav-menu .close-sidebar { display: block; } /* Show close button */
+
+            .hero-section { min-height: 400px; }
+            .carousel-control-btn { padding: 12px 15px; font-size: 1.2em; }
+            .carousel-indicators { bottom: 15px; }
+            .indicator-dot { width: 10px; height: 10px; }
+
+            .main-content-wrapper {
+                grid-template-columns: 1fr; /* Stack sidebar and content */
+                padding: 1rem 0;
+            }
+            .sidebar {
+                position: static; /* Remove sticky on mobile */
+                top: auto;
+                margin-bottom: 1.5rem;
+            }
+            .content-area { gap: 1.5rem; }
+            section { padding: 2rem 1rem; }
+
+            .features-grid, .user-cta-grid { /* Testimonials grid is removed */
+                grid-template-columns: 1fr;
+            }
+            .feature-item, .user-cta-card { /* Testimonial card is removed */
+                margin-bottom: 1.5rem;
+                max-width: none;
             }
 
-            h1 {
-                font-size: 2.5em;
-            }
-            h2 {
-                font-size: 2em;
-            }
-            p {
-                font-size: 1em;
-            }
-            .btn {
-                padding: 0.8rem 1.8rem;
-                font-size: 1.1em;
-                width: calc(100% - 1.5rem); /* Full width minus margin */
-                box-sizing: border-box;
-            }
-            .btn-form-submit {
-                width: 100%; /* Ensure form submit button is also full width */
-            }
-
-            .features-grid,
-            .user-cta-grid,
-            .testimonials-grid {
-                grid-template-columns: 1fr; /* Stack columns vertically */
-            }
-
-            .feature-item, .user-cta-card, .testimonial-card {
-                margin-bottom: 1.5rem; /* Add margin between stacked cards */
-                max-width: none; /* Remove max-width constraint */
-            }
-
-            /* Auth modal responsive */
             .auth-container, .otp-modal .modal-content, .forgot-password-modal .modal-content {
                 margin: 1rem;
                 padding: 1.5rem;
-                width: 95%; /* Adjust width for smaller screens */
-                max-width: 95%; /* Ensure no overflow on very small screens */
+                width: 95%;
+                max-width: 95%;
             }
+            .auth-header-modal h1 { font-size: 1.8rem; }
+            .tab-btn { font-size: 0.95rem; padding: 0.8rem; }
+            .role-options { flex-direction: column; gap: 0.8rem; }
+            .role-btn { min-width: unset; width: 100%; }
+            .otp-digit { width: 40px; height: 45px; font-size: 1.5rem; }
+            .message-box { left: 10px; right: 10px; width: auto; }
 
-            .auth-header-modal h1 {
-                font-size: 1.8rem;
+            /* Footer on mobile */
+            footer {
+                grid-template-columns: 1fr; /* Stack columns vertically on smaller screens */
+                text-align: center;
+                padding: 2rem 1rem;
             }
+            .footer-column {
+                text-align: center; /* Center text in columns on mobile */
+            }
+            .social-icons, .app-download-links {
+                justify-content: center; /* Center social icons and app links on mobile */
+            }
+            
+            /* Adjust FAB position for mobile to avoid overlap with bottom nav */
+            .fab-container {
+                bottom: 1.5rem; /* Consistent bottom margin on mobile */
+                right: 1.5rem; /* Consistent right margin */
+            }
+        }
 
-            .tab-btn {
-                font-size: 0.95rem;
-                padding: 0.8rem;
+        @media (max-width: 576px) { /* Smaller mobile devices */
+            h1 { font-size: 2em; }
+            h2 { font-size: 1.8em; }
+            h3 { font-size: 1.3em; }
+            .hero-section { min-height: 300px; }
+            .hero-buttons .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9em;
+                margin: 0.3rem;
             }
-
-            .role-options {
-                flex-direction: column;
-                gap: 0.8rem;
-            }
-
-            .role-btn {
-                min-width: unset;
-                width: 100%;
-            }
-
-            .otp-digit {
-                width: 40px;
-                height: 45px;
-                font-size: 1.5rem;
-            }
-
-            /* message box responsive */
-            .message-box {
-                left: 10px;
-                right: 10px;
-                width: auto;
-            }
+            .carousel-control-btn { padding: 8px 10px; font-size: 1em; }
+            .auth-container { padding: 1rem; }
         }
     </style>
     <!-- Google Identity Services Library -->
@@ -1164,221 +782,281 @@
 </head>
 <body>
     <header>
-        <a href="#" class="logo">
-            <span class="logo-icon">🔧</span> TechSeva
-        </a>
-        <button class="menu-toggle" id="menu-toggle">☰</button>
-        <nav class="nav-menu" id="main-nav-menu">
-            <li class="nav-item"><a href="/" class="active">Home</a></li>
-            <li class="nav-item"><a href="working.html">How It Works</a></li>
-            <li class="nav-item"><a href="contact.html">Contact</a></li>
-            <!-- Updated login link to show modal -->
-            <li class="nav-item"><a href="javascript:void(0)" id="login-nav-btn">Login/Signup</a></li>
-        </nav>
+        <div class="container">
+            <button class="menu-toggle" id="menu-toggle">☰</button>
+            <a href="#" class="logo">
+                <span class="logo-icon">🔧</span> TechSeva
+            </a>
+            <div class="search-bar">
+                <input type="text" placeholder="Search for services, technicians, or locations...">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+            <div class="header-icons">
+                <a href="javascript:void(0)" id="login-nav-btn" class="header-icon-item">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Login/Profile</span>
+                </a>
+                <a href="contact.html" class="header-icon-item">
+                    <i class="fas fa-headset"></i>
+                    <span>Contact</span>
+                </a>
+                <a href="working.html" class="header-icon-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>How It Works</span>
+                </a>
+            </div>
+        </div>
     </header>
+
+    <!-- Mobile Navigation Menu (Sidebar) -->
+    <nav class="nav-menu" id="main-nav-menu">
+        <span class="close-sidebar" id="close-sidebar">&times;</span>
+        <div class="sidebar-section">
+            <h3>Quick Links</h3>
+            <ul class="quick-links-list">
+                <li><a href="javascript:void(0)" id="login-nav-btn-mobile"><i class="fas fa-user"></i> Login/Signup</a></li>
+                <li><a href="#unauthenticated-book-service"><i class="fas fa-tools"></i> Book Service</a></li>
+                <li><a href="#ai-diagnosis-section"><i class="fas fa-robot"></i> AI Diagnoser</a></li>
+                <li><a href="#features"><i class="fas fa-star"></i> Why Choose Us</a></li>
+                <li><a href="contact.html"><i class="fas fa-headset"></i> Contact Us</a></li>
+                <li><a href="#"><i class="fas fa-chart-line"></i> My Bookings</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                <!-- Optional: Theme Toggle -->
+                <li><a href="#"><i class="fas fa-moon"></i> Dark Mode (Soon)</a></li>
+            </ul>
+        </div>
+    </nav>
 
     <main>
         <section class="hero-section">
+            <!-- Hero Carousel Container -->
+            <div class="hero-carousel-container" id="hero-carousel-container">
+                <!-- Images will be dynamically loaded here by JavaScript -->
+            </div>
+            <!-- Overlay for text readability over images -->
+            <div class="hero-carousel-overlay"></div>
+
             <div class="container">
                 <h1>Connecting Bharat to Trusted Local Technicians 🚀</h1>
                 <p>Book repair services easily via App, Web, or IVR — in your own language.</p>
                 <div class="hero-buttons">
-                    <!-- This button now explicitly scrolls to the booking section -->
-                    <a href="#unauthenticated-book-service" class="btn btn-primary" id="scroll-to-book-service">Book Service Now</a>
-                    <a href="javascript:void(0)" id="join-tech-btn" class="btn btn-green">Join as Technician</a>
+                    <a href="#unauthenticated-book-service" class="btn btn-primary" id="scroll-to-book-service"><i class="fas fa-screwdriver-wrench"></i> Book Service Now</a>
+                    <a href="javascript:void(0)" id="join-tech-btn" class="btn btn-green"><i class="fas fa-user-plus"></i> Join as Technician</a>
                 </div>
-                <div class="hero-image-placeholder">
-                    ✨
-                </div>
+            </div>
+
+            <!-- Carousel Navigation Arrows -->
+            <div class="carousel-controls">
+                <button class="carousel-control-btn" id="prev-slide-btn"><i class="fas fa-chevron-left"></i></button>
+                <button class="carousel-control-btn" id="next-slide-btn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+
+            <!-- Carousel Indicators (Dots) -->
+            <div class="carousel-indicators" id="carousel-indicators">
+                <!-- Dots will be dynamically loaded here by JavaScript -->
             </div>
         </section>
 
-        <!-- Booking Service Section for Unauthenticated/Authenticated Users - REINSTATED AND MODIFIED -->
-        <section id="unauthenticated-book-service" class="booking-section card">
-            <div class="container">
-                <h2>Book a Service</h2>
-                <p>Fill out the details below to book your service. If you're not logged in, you'll be prompted to do so.</p>
-                <form id="unauthenticated-booking-form">
-                    <div class="form-group">
-                        <label for="unauth-appliance-type">Select Appliance Type:</label>
-                        <select id="unauth-appliance-type" name="applianceType" required>
-                            <option value="">-- Select --</option>
-                            <option value="AC">AC Repair/Service</option>
-                            <option value="Refrigerator">Refrigerator Repair</option>
-                            <option value="Washing Machine">Washing Machine Repair</option>
-                            <option value="TV">TV Repair</option>
-                            <option value="Fan">Fan Repair</option>
-                            <option value="Geyser">Geyser Repair</option>
-                            <option value="Microwave">Microwave Repair</option>
-                            <option value="Water Purifier">Water Purifier Repair</option>
-                            <option value="Dishwasher">Dishwasher Repair</soption>
-                            <option value="Inverter">Inverter/Battery Repair</option>
-                            <option value="Computer">Computer Repair</option>
-                            <option value="Laptop">Laptop Repair</option>
-                            <option value="Mobile">Mobile Phone Repair</option>
-                            <option value="Electrical">General Electrical Work</option>
-                            <option value="Plumbing">Plumbing Services</option>
-                            <option value="Carpentry">Carpentry Services</option>
-                            <option value="Painting">Painting Services</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
+        <!-- Main content wrapper using Grid for sidebar + main area -->
+        <div class="main-content-wrapper container">
+            <!-- The sidebar is now completely hidden on desktop as per the user's request. -->
+            <!-- Its content (Quick Links) is only available via the mobile hamburger menu. -->
+            <aside class="sidebar" style="display: none;">
+                <!-- This section is intentionally left empty and hidden on desktop -->
+            </aside>
 
-                    <div class="form-group">
-                        <label>Your Location:</label>
-                        <!-- This div will be the mount point for the React component -->
-                        <div id="react-location-search-mount-point" class="react-location-input-wrapper">
-                            <!-- React component will render here -->
+            <div class="content-area">
+                <!-- Booking Service Section -->
+                <section id="unauthenticated-book-service" class="booking-section">
+                    <h2>Book a Service</h2>
+                    <p>Fill out the details below to book your service. If you're not logged in, you'll be prompted to do so.</p>
+                    <form id="unauthenticated-booking-form">
+                        <div class="form-group">
+                            <label for="unauth-appliance-type">Select Appliance Type:</label>
+                            <select id="unauth-appliance-type" name="applianceType" required>
+                                <option value="">-- Select --</option>
+                                <option value="AC">AC Repair/Service</option>
+                                <option value="Refrigerator">Refrigerator Repair</option>
+                                <option value="Washing Machine">Washing Machine Repair</option>
+                                <option value="TV">TV Repair</option>
+                                <option value="Fan">Fan Repair</option>
+                                <option value="Geyser">Geyser Repair</option>
+                                <option value="Microwave">Microwave Repair</option>
+                                <option value="Water Purifier">Water Purifier Repair</option>
+                                <option value="Dishwasher">Dishwasher Repair</soption>
+                                <option value="Inverter">Inverter/Battery Repair</option>
+                                <option value="Computer">Computer Repair</option>
+                                <option value="Laptop">Laptop Repair</option>
+                                <option value="Mobile">Mobile Phone Repair</option>
+                                <option value="Electrical">General Electrical Work</option>
+                                <option value="Plumbing">Plumbing Services</option>
+                                <option value="Carpentry">Carpentry Services</option>
+                                <option value="Painting">Painting Services</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
-                        <!-- Hidden input to store the actual value for form submission. This should NOT be visible. -->
-                        <input type="hidden" id="unauth-location-input" name="location" required>
-                        <!-- This div is now hidden by default in CSS, as the React input itself is displaying the value.
-                             It can be used for debugging or a custom display if needed. -->
-                        <div id="react-location-display-text" style="display: none;"></div>
-                    </div>
 
+                        <div class="form-group">
+                            <label>Your Location:</label>
+                            <div id="react-location-search-mount-point" class="react-location-input-wrapper">
+                                <!-- React component will render here -->
+                            </div>
+                            <input type="hidden" id="unauth-location-input" name="location" required>
+                            <div id="react-location-display-text" style="display: none;"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unauth-scheduled-datetime">Preferred Date & Time:</label>
+                            <input type="datetime-local" id="unauth-scheduled-datetime" name="scheduledDateTime" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unauth-notes">Additional Notes:</label>
+                            <textarea id="unauth-notes" name="notes" placeholder="e.g., Appliance is very old, make sure technician has XYZ tools..."></textarea>
+                        </div>
+
+                        <button type="submit" id="unauth-book-service-btn" class="btn btn-form-submit"><i class="fas fa-calendar-check"></i> Book Service</button>
+                    </form>
+                </section>
+
+
+                <!-- AI Diagnosis Section -->
+                <section id="ai-diagnosis-section" class="ai-diagnosis-section">
+                    <h2>✨ AI Appliance Diagnoser ✨</h2>
+                    <p>Describe your appliance's problem and get an instant preliminary diagnosis from our AI. This can help you understand the issue better before booking a service.</p>
                     <div class="form-group">
-                        <label for="unauth-scheduled-datetime">Preferred Date & Time:</label>
-                        <input type="datetime-local" id="unauth-scheduled-datetime" name="scheduledDateTime" required>
+                        <label for="appliance-problem">What's wrong with your appliance?</label>
+                        <textarea id="appliance-problem" placeholder="e.g., My refrigerator is not cooling, but the light is on."></textarea>
                     </div>
-
-                    <div class="form-group">
-                        <label for="unauth-notes">Additional Notes:</label>
-                        <textarea id="unauth-notes" name="notes" placeholder="e.g., Appliance is very old, make sure technician has XYZ tools..."></textarea>
+                    <button id="get-diagnosis-btn" class="btn btn-primary"><i class="fas fa-magic"></i> Get AI Diagnosis</button>
+                    <div id="diagnosis-result" class="diagnosis-result" style="display: none;">
+                        <!-- AI Diagnosis will be displayed here -->
                     </div>
+                    <p id="loading-indicator" style="display: none;">Diagnosing problem... Please wait.</p>
+                </section>
 
-                    <button type="submit" id="unauth-book-service-btn" class="btn btn-form-submit">Book Service</button>
-                </form>
+                <section id="features" class="features-section">
+                    <h2>Why Choose TechSeva?</h2>
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <h3><span class="feature-icon">🧠</span> AI-based Technician Matching</h3>
+                            <p>Our smart algorithms connect you with the right expert for your specific repair needs, ensuring faster and more effective service.</p>
+                        </div>
+                        <div class="feature-item">
+                            <h3><span class="feature-icon">📸</span> Image-based Diagnosis</h3>
+                            <p>Upload photos of your appliance's issue for quicker preliminary diagnosis and accurate estimations, saving you time and hassle.</p>
+                        </div>
+                        <div class="feature-item">
+                            <h3><span class="feature-icon">💰</span> Auto-Quotation</h3>
+                            <p>Get transparent and instant quotations for parts, labor, and travel, eliminating guesswork and ensuring fair pricing.</p>
+                        </div >
+                        <div class="feature-item">
+                            <h3><span class="feature-icon">💳</span> UPI/COD Payments</h3>
+                            <p>Pay conveniently using popular digital payment methods like UPI (Google Pay, PhonePe, Paytm) or opt for Cash on Delivery.</p>
+                        </div>
+                        <div class="feature-item">
+                            <h3><span class="feature-icon">📄</span> Warranty & Invoice</h3>
+                            <p>Receive a digital invoice and a service warranty for every repair, ensuring accountability and long-term trust.</p>
+                        </div>
+                        <div class="feature-item">
+                            <h3><span class="feature-icon">🇮🇳</span> Works in Tier-2 & Tier-3 India</h3>
+                            <p>Our services are specifically designed to cater to the unique needs of customers and technicians in smaller cities and towns across India.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="user-types-cta-section">
+                    <h2>Who Are You?</h2>
+                    <div class="user-cta-grid">
+                        <a href="javascript:void(0)" class="user-cta-card customer" id="customer-cta-btn">
+                            <h3><span class="user-icon">👤</span> I am a Customer</h3>
+                            <p>Need a quick and reliable appliance repair? Book a service now!</p>
+                            <button class="btn btn-primary" style="margin-top: 20px;"><i class="fas fa-arrow-right"></i> Book Service</button>
+                        </a>
+                        <a href="javascript:void(0)" class="user-cta-card technician" id="technician-cta-btn">
+                            <h3><span class="user-icon">👷</span> I am a Technician</h3>
+                            <p>Grow your business, get more jobs, and earn more with TechSeva.</p>
+                            <button class="btn btn-green" style="margin-top: 20px;"><i class="fas fa-arrow-right"></i> Join Now</button>
+                        </a>
+                        <a href="https://tech-seva.onrender.com/admin-login" class="user-cta-card admin" id="admin-cta-btn">
+                            <h3><span class="user-icon">👑</span> I am an Admin</h3>
+                            <p>Manage users, jobs, and platform operations efficiently.</p>
+                            <button class="btn btn-secondary" style="margin-top: 20px;"><i class="fas fa-arrow-right"></i> Access Admin</button>
+                        </a>
+                    </div>
+                </section>
+
+                <!-- Removed Multilingual Banner Section -->
+                <!-- Removed Testimonials Section -->
             </div>
-        </section>
-
-
-        <!-- AI Diagnosis Section -->
-        <section id="ai-diagnosis-section" class="ai-diagnosis-section">
-            <div class="container">
-                <h2>✨ AI Appliance Diagnoser ✨</h2>
-                <p>Describe your appliance's problem and get an instant preliminary diagnosis from our AI. This can help you understand the issue better before booking a service.</p>
-                <div class="form-group">
-                    <label for="appliance-problem">What's wrong with your appliance?</label>
-                    <textarea id="appliance-problem" placeholder="e.g., My refrigerator is not cooling, but the light is on."></textarea>
-                </div>
-                <button id="get-diagnosis-btn" class="btn btn-primary">Get AI Diagnosis ✨</button>
-                <div id="diagnosis-result" class="diagnosis-result" style="display: none;">
-                    <!-- AI Diagnosis will be displayed here -->
-                </div>
-                <p id="loading-indicator" style="display: none;">Diagnosing problem... Please wait.</p>
-            </div>
-        </section>
-
-        <section id="features" class="features-section">
-            <div class="container">
-                <h2>Why Choose TechSeva?</h2>
-                <div class="features-grid">
-                    <div class="feature-item">
-                        <h3><span class="feature-icon">🧠</span> AI-based Technician Matching</h3>
-                        <p>Our smart algorithms connect you with the right expert for your specific repair needs, ensuring faster and more effective service.</p>
-                    </div>
-                    <div class="feature-item">
-                        <h3><span class="feature-icon">📸</span> Image-based Diagnosis</h3>
-                        <p>Upload photos of your appliance's issue for quicker preliminary diagnosis and accurate estimations, saving you time and hassle.</p>
-                    </div>
-                    <div class="feature-item">
-                        <h3><span class="feature-icon">💰</span> Auto-Quotation</h3>
-                        <p>Get transparent and instant quotations for parts, labor, and travel, eliminating guesswork and ensuring fair pricing.</p>
-                    </div>
-                    <div class="feature-item">
-                        <h3><span class="feature-icon">💳</span> UPI/COD Payments</h3>
-                        <p>Pay conveniently using popular digital payment methods like UPI (Google Pay, PhonePe, Paytm) or opt for Cash on Delivery.</p>
-                    </div>
-                    <div class="feature-item">
-                        <h3><span class="feature-icon">📄</span> Warranty & Invoice</h3>
-                        <p>Receive a digital invoice and a service warranty for every repair, ensuring accountability and long-term trust.</p>
-                    </div>
-                    <div class="feature-item">
-                        <h3><span class="feature-icon">🇮🇳</span> Works in Tier-2 & Tier-3 India</h3>
-                        <p>Our services are specifically designed to cater to the unique needs of customers and technicians in smaller cities and towns across India.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="user-types-cta-section">
-            <div class="container">
-                <h2>Who Are You?</h2>
-                <div class="user-cta-grid">
-                    <a href="javascript:void(0)" class="user-cta-card customer" id="customer-cta-btn">
-                        <h3><span class="user-icon">👤</span> I am a Customer</h3>
-                        <p>Need a quick and reliable appliance repair? Book a service now!</p>
-                        <button class="btn btn-primary" style="margin-top: 20px;">Book Service</button>
-                    </a>
-                    <a href="javascript:void(0)" class="user-cta-card technician" id="technician-cta-btn">
-                        <h3><span class="user-icon">👷</span> I am a Technician</h3>
-                        <p>Grow your business, get more jobs, and earn more with TechSeva.</p>
-                        <button class="btn btn-green" style="margin-top: 20px;">Join Now</button>
-                    </a>
-                    <a href="https://tech-seva.onrender.com/admin-login" class="user-cta-card admin" id="admin-cta-btn">
-                        <h3><span class="user-icon">👑</span> I am an Admin</h3>
-                        <p>Manage users, jobs, and platform operations efficiently.</p>
-                        <button class="btn btn-secondary" style="margin-top: 20px;">Access Admin</button>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <section class="multilingual-banner">
-            <div class="container">
-                <h2>Available in Your Language!</h2>
-                <p>Available in Hindi, Bhojpuri, Bengali, Tamil, Telugu & more!</p>
-                <div class="language-dropdown-placeholder">
-                    Select Language 🌐
-                    <!-- This is a placeholder for UI demonstration. A real dropdown would be here -->
-                </div>
-            </div>
-        </section>
-
-        <section id="testimonials" class="testimonials-section">
-            <div class="container">
-                <h2>What Our Users Say</h2>
-                <div class="testimonials-grid">
-                    <div class="testimonial-card">
-                        <p class="testimonial-text">"TechSeva fixed my AC quickly and the technician was very professional. Highly recommended!"</p>
-                        <p class="testimonial-author">- Aarti P., Delhi</p>
-                        <div class="testimonial-rating">★★★★★</div>
-                    </div>
-                    <div class="testimonial-card">
-                        <p class="testimonial-text">"As a technician, TechSeva has transformed my earnings. I get reliable jobs and payments are instant."</p>
-                        <p class="testimonial-author">- Ramesh K., Lucknow</p>
-                        <div class="testimonial-rating">★★★★★</div>
-                    </div>
-                    <div class="testimonial-card">
-                        <p class="testimonial-text">"Booking my washing machine repair was so easy. The auto-quotation was transparent, no hidden costs!"</p>
-                        <p class="testimonial-author">- Pooja S., Patna</div>
-                        <div class="testimonial-rating">★★★★☆</div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </div>
     </main>
 
     <footer>
         <div class="container">
-            <div class="footer-links">
-                <a href="#">About Us</a> |
-                <a href="#">Privacy Policy</a> |
-                <a href="#">Terms of Service</a> |
-                <a href="#">Careers</a>
+            <div class="footer-column">
+                <h3>About TechSeva</h3>
+                <ul>
+                    <li><a href="#">Our Story</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
             </div>
+            <div class="footer-column">
+                <h3>Help</h3>
+                <ul>
+                    <li><a href="#">Payments</a></li>
+                    <li><a href="#">Shipping</a></li>
+                    <li><a href="#">Cancellation & Returns</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Consumer Policy</h3>
+                <ul>
+                    <li><a href="#">Terms of Use</a></li>
+                    <li><a href="#">Security</a></li>
+                    <li><a href="#">Privacy</a></li>
+                    <li><a href="#">Sitemap</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Connect With Us</h3>
+                <div class="social-icons">
+                    <span><i class="fab fa-facebook-f"></i></span>
+                    <span><i class="fab fa-twitter"></i></span>
+                    <span><i class="fab fa-instagram"></i></span>
+                    <span><i class="fab fa-linkedin-in"></i></span>
+                </div>
+                <h3>Download App</h3>
+                <div class="app-download-links">
+                    <a href="#" aria-label="Download on Google Play"><i class="fab fa-google-play fa-2x"></i></a>
+                    <a href="#" aria-label="Download on Apple App Store"><i class="fab fa-apple fa-2x"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom container">
             <p>&copy; 2024 TechSeva. All rights reserved.</p>
-            <div class="social-icons">
-                <span><i class="fab fa-facebook-f"></i></span>
-                <span><i class="fab fa-twitter"></i></span>
-                <span><i class="fab fa-instagram"></i></span>
-                <span><i class="fab fa-linkedin-in"></i></span>
-            </div>
         </div>
     </footer>
 
-    <!-- Auth Overlay and Modals -->
+    <!-- Floating Action Button (FAB) -->
+    <div class="fab-container" id="fab-container">
+        <div class="fab-actions" id="fab-actions">
+            <a href="javascript:void(0)" class="fab-action-item"><i class="fas fa-headset"></i> Contact Support</a>
+            <a href="javascript:void(0)" class="fab-action-item"><i class="fas fa-robot"></i> Chat with AI</a>
+            <!-- Quick Book now scrolls to the booking section and pre-fills categories -->
+            <a href="#unauthenticated-book-service" class="fab-action-item" id="fab-quick-book"><i class="fas fa-calendar-alt"></i> Quick Book</a>
+        </div>
+        <button class="fab-main-btn" id="fab-main-btn">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <!-- Removed Mobile Bottom Navigation Bar -->
+
+    <!-- Auth Overlay and Modals (Retained IDs for existing JS) -->
     <div class="auth-overlay" id="auth-overlay">
         <div class="auth-container">
             <span class="close-auth-modal" id="close-auth-modal">&times;</span>
@@ -1402,7 +1080,6 @@
                     <button class="role-btn" data-role="technician">
                         <i class="fas fa-tools"></i> Technician
                     </button>
-                    <!-- Admin role button removed from here -->
                 </div>
             </div>
 
@@ -1417,11 +1094,10 @@
                     <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
                     <i class="fas fa-eye toggle-password"></i>
                 </div>
-                <input type="hidden" id="login-user-role" name="role" value="user"> <!-- Hidden input for role -->
+                <input type="hidden" id="login-user-role" name="role" value="user">
                 <button type="submit" class="auth-btn">Login</button>
                 <div class="auth-footer">
                     <p style="margin-bottom: 10px;">OR</p>
-                    <!-- Google Sign-in button for Login -->
                     <div id="g_id_signin_wrapper">
                         <div class="g_id_signin"
                              data-type="standard"
@@ -1429,7 +1105,7 @@
                              data-theme="outline"
                              data-text="signin_with"
                              data-size="large"
-                             data-context="signin"> <!-- Removed data-width for better responsiveness -->
+                             data-context="signin">
                         </div>
                     </div>
                     <a href="javascript:void(0)" class="forgot-password" id="forgot-password-link">Forgot Password?</a>
@@ -1480,8 +1156,7 @@
                 <input type="hidden" id="signup-user-role" name="role" value="user">
                 <button type="submit" class="auth-btn">Sign Up</button>
                 <div class="auth-footer">
-                    <p id="signup-or-separator" style="margin-bottom: 10px;">OR</p> <!-- Added ID to OR paragraph -->
-                    <!-- Google Sign-in button for Register -->
+                    <p id="signup-or-separator" style="margin-bottom: 10px;">OR</p>
                     <div id="g_id_signup_wrapper">
                         <div class="g_id_signin"
                              data-type="standard"
@@ -1489,7 +1164,7 @@
                              data-theme="outline"
                              data-text="signup_with"
                              data-size="large"
-                             data-context="signup"> <!-- Removed data-width for better responsiveness -->
+                             data-context="signup">
                         </div>
                     </div>
                 </div>
@@ -1566,7 +1241,6 @@
     <div id="message-container"></div>
 
     <!-- Google Identity Services Initialization - Moved to a global location -->
-    <!-- This div should be present only once on the page to initialize GSI client -->
     <div id="g_id_onload"
         data-client_id="162423995881-uvq3jdk68i8lsfkk497llfvkp0a45ovm.apps.googleusercontent.com" 
         data-callback="handleCredentialResponse"
@@ -1629,7 +1303,9 @@
             // --- General UI Elements ---
             const menuToggle = document.getElementById('menu-toggle');
             const mainNavMenu = document.getElementById('main-nav-menu');
+            const closeSidebarBtn = document.getElementById('close-sidebar'); // New close button for mobile sidebar
             const loginNavBtn = document.getElementById('login-nav-btn');
+            const loginNavBtnMobile = document.getElementById('login-nav-btn-mobile'); // For mobile menu
             const joinTechBtn = document.getElementById('join-tech-btn'); // Hero section 'Join as Technician'
             const customerCtaBtn = document.getElementById('customer-cta-btn'); // 'I am a Customer' CTA
             const technicianCtaBtn = document.getElementById('technician-cta-btn'); // 'I am a Technician' CTA
@@ -1648,7 +1324,6 @@
             const loginForm = document.getElementById('login-form'); // This is the <form> for login
             const signupForm = document.getElementById('signup-form'); // This is the <form> for signup
             const roleButtons = document.querySelectorAll('.role-btn');
-            // const adminLoginRoleBtn = document.getElementById('admin-login-role-btn'); // Admin role button removed from HTML
             const loginRoleInput = document.getElementById('login-user-role'); // Hidden input in login form
             const signupRoleInput = document.getElementById('signup-user-role'); // Hidden input in signup form
             const technicianFields = document.getElementById('technician-fields'); // Technician specific fields div
@@ -1678,7 +1353,7 @@
             const resendResetOtpBtn = document.getElementById('resend-reset-otp-btn');
             const backToLoginFromForgotPassword = document.getElementById('back-to-login-from-forgot-password');
 
-            // --- Unauthenticated Booking Form Elements (Re-introduced) ---
+            // --- Unauthenticated Booking Form Elements ---
             const unauthenticatedBookingForm = document.getElementById('unauthenticated-booking-form'); // Corrected ID
             const unauthApplianceType = document.getElementById('unauth-appliance-type');
             // IMPORTANT: This is now the hidden input that React will update
@@ -1695,10 +1370,20 @@
             const googleSignupWrapper = document.getElementById('g_id_signup_wrapper');
             const signupOrSeparator = document.getElementById('signup-or-separator'); // Get the OR paragraph
 
+            // --- FAB Elements ---
+            const fabContainer = document.getElementById('fab-container'); // Get the container for click outside logic
+            const fabMainBtn = document.getElementById('fab-main-btn');
+            const fabActions = document.getElementById('fab-actions');
+            const fabQuickBookBtn = document.getElementById('fab-quick-book'); // New FAB Quick Book button
 
             // --- Navbar Hamburger Menu Toggle ---
+            // Event listener to open the mobile navigation menu
             menuToggle.addEventListener('click', () => {
-                mainNavMenu.classList.toggle('active');
+                mainNavMenu.classList.add('active'); // Add 'active' class to slide in
+            });
+            // Event listener to close the mobile navigation menu
+            closeSidebarBtn.addEventListener('click', () => {
+                mainNavMenu.classList.remove('active'); // Remove 'active' class to slide out
             });
 
             // --- Show Auth Modal Function ---
@@ -1723,6 +1408,13 @@
 
             // --- Event Listeners to Open Auth Modal ---
             loginNavBtn.addEventListener('click', () => showAuthModal('login', 'user'));
+            // Add listener for mobile login button as well
+            if (loginNavBtnMobile) {
+                loginNavBtnMobile.addEventListener('click', () => {
+                    showAuthModal('login', 'user');
+                    mainNavMenu.classList.remove('active'); // Close mobile menu after clicking login
+                });
+            }
             joinTechBtn.addEventListener('click', () => showAuthModal('signup', 'technician'));
             customerCtaBtn.addEventListener('click', (e) => { e.preventDefault(); showAuthModal('login', 'user'); });
             technicianCtaBtn.addEventListener('click', (e) => { e.preventDefault(); showAuthModal('signup', 'technician'); });
@@ -2315,8 +2007,8 @@
                     return;
                 }
 
-                resendResetOtpBtn.disabled = true;
-                resendResetOtpBtn.textContent = 'Sending...';
+                resendOtpBtn.disabled = true;
+                resendOtpBtn.textContent = 'Sending...';
 
                 try {
                     const response = await fetch('/send-reset-otp', {
@@ -2334,7 +2026,7 @@
                     console.error('Resend Reset OTP error:', error);
                     showMessage('Network error while resending OTP.', 'error');
                 } finally {
-                    resendResetOtpBtn.disabled = false;
+                    resendOtpBtn.disabled = false;
                     resendResetOtpBtn.textContent = 'Resend';
                 }
             });
@@ -2502,6 +2194,16 @@
                 });
             }
 
+            // --- Sidebar Quick Links also close sidebar on mobile ---
+            document.querySelectorAll('.quick-links-list a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (mainNavMenu.classList.contains('active')) {
+                        mainNavMenu.classList.remove('active');
+                    }
+                });
+            });
+
+
             // --- Scroll to Book Service button logic ---
             if (scrollToBookServiceBtn) {
                 scrollToBookServiceBtn.addEventListener('click', (e) => {
@@ -2512,6 +2214,24 @@
                     }
                 });
             }
+
+            // --- FAB Quick Book button logic ---
+            if (fabQuickBookBtn) {
+                fabQuickBookBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const bookingSection = document.getElementById('unauthenticated-book-service');
+                    if (bookingSection) {
+                        bookingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    // Close FAB actions after clicking Quick Book
+                    if (fabActions.classList.contains('active')) {
+                        fabActions.classList.remove('active');
+                        fabMainBtn.querySelector('i').classList.remove('fa-times');
+                        fabMainBtn.querySelector('i').classList.add('fa-plus');
+                    }
+                });
+            }
+
 
             // --- Initial state: show login modal by default ---
             // This logic ensures that the auth modal is shown only if the user is not logged in
@@ -2581,6 +2301,124 @@
                     }
                 }
             }
+
+            // --- Hero Image Carousel Logic ---
+            const heroCarouselContainer = document.getElementById('hero-carousel-container');
+            const prevSlideBtn = document.getElementById('prev-slide-btn');
+            const nextSlideBtn = document.getElementById('next-slide-btn');
+            const carouselIndicators = document.getElementById('carousel-indicators');
+
+            if (heroCarouselContainer && prevSlideBtn && nextSlideBtn && carouselIndicators) {
+                const heroImages = [
+                    
+                    { src: '/images/ACRepair.png', alt: 'AC Repair Service' },
+                    { src: '/images/RefrigeratorRepair.png', alt: 'Refrigerator Repair Service' },
+                    { src: '/images/WashingMachineRepair.png', alt: 'Washing Machine Repair Service' },
+                    { src: '/images/ComputerRepair.png', alt: 'Computer Repair Service' },
+                    { src: '/images/GeneralElectricalWork.png', alt: 'General Electrical Work Service' }
+                ];
+
+                let currentHeroImageIndex = 0;
+                let autoSlideInterval;
+
+                // Function to show a specific slide
+                const showSlide = (index) => {
+                    const images = heroCarouselContainer.querySelectorAll('img');
+                    const dots = carouselIndicators.querySelectorAll('.indicator-dot');
+
+                    // Hide all images and deactivate all dots
+                    images.forEach(img => img.classList.remove('active'));
+                    dots.forEach(dot => dot.classList.remove('active'));
+
+                    // Show the selected image and activate the corresponding dot
+                    if (images[index]) {
+                        images[index].classList.add('active');
+                    }
+                    if (dots[index]) {
+                        dots[index].classList.add('active');
+                    }
+                    currentHeroImageIndex = index;
+                };
+
+                // Function to load and display hero carousel images and create dots
+                const loadHeroCarouselImages = () => {
+                    heroCarouselContainer.innerHTML = ''; // Clear existing content
+                    carouselIndicators.innerHTML = ''; // Clear existing dots
+
+                    heroImages.forEach((imageData, index) => {
+                        // Create image element
+                        const img = document.createElement('img');
+                        img.src = imageData.src;
+                        img.alt = imageData.alt;
+                        // No onerror here, as per request to remove fallback "Image not available"
+                        heroCarouselContainer.appendChild(img);
+
+                        // Create indicator dot
+                        const dot = document.createElement('span');
+                        dot.classList.add('indicator-dot');
+                        dot.dataset.index = index; // Store index for click event
+                        dot.addEventListener('click', () => {
+                            showSlide(index);
+                            resetAutoSlide(); // Reset timer on manual navigation
+                        });
+                        carouselIndicators.appendChild(dot);
+                    });
+
+                    // Show the first image and activate its dot
+                    showSlide(0);
+                };
+
+                // Function to show the next image in the hero carousel
+                const showNextHeroImage = () => {
+                    let nextIndex = (currentHeroImageIndex + 1) % heroImages.length;
+                    showSlide(nextIndex);
+                };
+
+                // Function to show the previous image in the hero carousel
+                const showPrevHeroImage = () => {
+                    let prevIndex = (currentHeroImageIndex - 1 + heroImages.length) % heroImages.length;
+                    showSlide(prevIndex);
+                };
+
+                // Function to reset the auto-slide timer
+                const resetAutoSlide = () => {
+                    clearInterval(autoSlideInterval);
+                    autoSlideInterval = setInterval(showNextHeroImage, 5000); // Change image every 5 seconds (5000ms)
+                };
+
+                // Load images and start auto-slide initially
+                loadHeroCarouselImages();
+                resetAutoSlide(); // Start auto-slide
+
+                // Add event listeners for navigation buttons
+                nextSlideBtn.addEventListener('click', () => {
+                    showNextHeroImage();
+                    resetAutoSlide(); // Reset timer on manual navigation
+                });
+                prevSlideBtn.addEventListener('click', () => {
+                    showPrevHeroImage();
+                    resetAutoSlide(); // Reset timer on manual navigation
+                });
+            }
+
+            // --- FAB (Floating Action Button) Logic ---
+            if (fabMainBtn && fabActions) {
+                fabMainBtn.addEventListener('click', () => {
+                    fabActions.classList.toggle('active');
+                    fabMainBtn.querySelector('i').classList.toggle('fa-plus');
+                    fabMainBtn.querySelector('i').classList.toggle('fa-times'); // Change icon to 'X'
+                });
+
+                // Close FAB actions if clicked outside
+                document.addEventListener('click', (event) => {
+                    // Check if the click was outside the FAB container AND FAB actions are active
+                    if (fabContainer && !fabContainer.contains(event.target) && fabActions.classList.contains('active')) {
+                        fabActions.classList.remove('active');
+                        fabMainBtn.querySelector('i').classList.remove('fa-times');
+                        fabMainBtn.querySelector('i').classList.add('fa-plus');
+                    }
+                });
+            }
         });
            
         // Dummy initMap function definition, required by Google Maps API script tag's 'callback' parameter
@@ -2641,7 +2479,7 @@
         
     </script>
     
-    <!-- Google Maps API script - This should only be present if you need other client-side Google Maps functionalities
+    <!-- Google Maps API script - This should only be present if you need other client-client Google Maps functionalities
          (e.g., displaying an actual map). Since our autocomplete is now backend-proxied,
          this script might not be strictly necessary for just location search, but keep it if other parts of your app use it. -->
     <!-- Make sure to replace YOUR_VITE_GOOGLE_MAPS_API_KEY with your actual key! -->
