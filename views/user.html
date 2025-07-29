@@ -10,10 +10,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF library for client-side PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF-AutoTable plugin for table generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
     <!-- html2canvas for capturing DOM elements for PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Google Maps API with Places library - Remember to replace YOUR_GOOGLE_MAPS_API_KEY -->
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initMap"></script>
+    <!-- QRCode.js for client-side QR code generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
     <style>
         /* General Body and Layout */
         body {
@@ -1336,19 +1340,23 @@
 
                 const now = new Date(); // Current date/time for comparisons
 
+                // Calculate 30 days ago for 'booked' filter
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(now.getDate() - 30);
+
                 allUserJobs.forEach(job => {
                     // Ensure scheduledDateTime is a Date object for reliable comparison
                     const jobDate = job.scheduledDateTime instanceof Date ? job.scheduledDateTime : new Date(job.scheduledDateTime);
                     const isPastScheduledDate = jobDate < now;
 
-                    console.log(`  - Job ID: ${job.jobId} | Status: "${job.status}" | ScheduledDate: ${jobDate.toLocaleString()} (Is Past: ${isPastScheduledDate})`);
+                    console.log(`  [FILTER DEBUG] Job ID: ${job.jobId}, Status: "${job.status}", Scheduled Date: ${jobDate.toLocaleString()}, Is Past Scheduled: ${isPastScheduledDate}`);
 
                     switch (filterType) {
                         case 'booked':
-                            // Booked: ONLY jobs with status 'Pending'. This is the simplest and most direct interpretation.
-                            if (job.status === 'Pending') {
+                            // Booked: ONLY jobs with status 'Pending' AND scheduled within the last 30 days.
+                            if (job.status === 'Pending' && jobDate >= thirtyDaysAgo) {
                                 filteredJobs.push(job);
-                                console.log(`    -> Matched 'Booked' filter: Status is 'Pending'.`);
+                                console.log(`    -> Matched 'Booked' filter: Status is 'Pending' and within last 30 days.`);
                             }
                             break;
                         case 'upcoming':
@@ -1376,12 +1384,8 @@
                     }
                 });
 
-                // Sort the filtered jobs for better user experience
-                if (filterType === 'booked' || filterType === 'upcoming' || filterType === 'ongoing') {
-                    filteredJobs.sort((a, b) => new Date(a.scheduledDateTime) - new Date(b.scheduledDateTime)); // Sort by soonest date/time first
-                } else if (filterType === 'history') {
-                    filteredJobs.sort((a, b) => new Date(b.scheduledDateTime) - new Date(a.scheduledDateTime)); // Sort by most recent completion/cancellation date first
-                }
+                // Sort all filtered jobs in descending order by scheduledDateTime (newest first)
+                filteredJobs.sort((a, b) => new Date(b.scheduledDateTime) - new Date(a.scheduledDateTime)); 
 
                 console.log(`[RENDER JOBS] Final filtered jobs for "${filterType}" (${filteredJobs.length} jobs):`, filteredJobs);
                 console.groupEnd();
@@ -1434,6 +1438,14 @@
                                     if (service.proofImages && service.proofImages.length > 0) {
                                         actionsCellHtml += ` <button class="btn btn-info view-proof-pdf-btn" data-job-id="${service.jobId}" data-proof-images='${JSON.stringify(service.proofImages)}'>View Proof PDF</button>`;
                                     }
+                                    // Add button for Warranty Card
+                                    actionsCellHtml += ` <button class="btn btn-primary download-warranty-btn" 
+                                        data-job-id="${service.jobId}" 
+                                        data-appliance-type="${service.applianceType}" 
+                                        data-scheduled-datetime="${service.scheduledDateTime}" 
+                                        data-technician-name="${service.assignedTechnicianName || 'N/A'}">
+                                        Download Warranty
+                                    </button>`;
                                 } else if (service.quotation && service.quotation.totalEstimate !== undefined && !(service.payment && service.payment.status === 'Paid')) {
                                     // If job has quotation but not paid yet
                                     actionsCellHtml += `<button class="btn btn-warning view-quote-btn" data-job-id="${service.jobId}" data-quotation='${JSON.stringify(service.quotation)}'>Pay Now</button>`;
@@ -1477,7 +1489,8 @@
                             
                             let quoteDetailsHtml = '';
                             let paymentButton = '';
-                            
+                            let cancelButton = ''; // Initialize cancel button HTML
+
                             // Show quotation details and 'Pay' button if applicable
                             if (booking.quotation && booking.quotation.totalEstimate !== undefined) {
                                 quoteDetailsHtml = `
@@ -1498,9 +1511,25 @@
                                 }
                             }
                             
-                            // Determine if cancel button should be shown
-                            // Allow cancellation ONLY for Pending or Accepted jobs that are still in the future.
-                            const showCancelButton = ['Pending', 'Accepted'].includes(booking.status) && (new Date(booking.scheduledDateTime) > now);
+                            // Determine if cancel button should be shown based on new criteria
+                            const bookingStatus = booking.status;
+                            const bookingScheduledDate = new Date(booking.scheduledDateTime);
+                            const currentTime = new Date();
+
+                            console.log(`[CANCEL LOGIC] Job ID: ${booking.jobId}, Status: ${bookingStatus}, Scheduled Date: ${bookingScheduledDate.toLocaleString()}, Current Time: ${currentTime.toLocaleString()}`);
+
+                            // Condition 1: For Pending jobs in the future (Booked section)
+                            if (bookingStatus === 'Pending' && bookingScheduledDate > currentTime) {
+                                cancelButton = `<button class="btn btn-danger cancel-booking-btn" data-job-id="${booking.jobId}"><i class="fas fa-times-circle"></i> Cancel Booking</button>`;
+                                console.log(`[CANCEL LOGIC]   Condition 1 met: Pending and future. Showing cancel button.`);
+                            } 
+                            // Condition 2: For Diagnosed jobs that are not yet paid (Ongoing section)
+                            else if (bookingStatus === 'Diagnosed' && !(booking.payment && booking.payment.status === 'Paid')) {
+                                cancelButton = `<button class="btn btn-danger cancel-booking-btn" data-job-id="${booking.jobId}"><i class="fas fa-times-circle"></i> Cancel Booking</button>`;
+                                console.log(`[CANCEL LOGIC]   Condition 2 met: Diagnosed and unpaid. Showing cancel button.`);
+                            } else {
+                                console.log(`[CANCEL LOGIC]   No cancel conditions met.`);
+                            }
 
                             bookingItem.innerHTML = `
                                 <h3>Job ID: ${booking.jobId} (${booking.applianceType})</h3>
@@ -1512,7 +1541,7 @@
                                 ${quoteDetailsHtml}
                                 <div class="booking-actions">
                                     ${paymentButton}
-                                    ${showCancelButton ? `<button class="btn btn-danger cancel-booking-btn" data-job-id="${booking.jobId}"><i class="fas fa-times-circle"></i> Cancel Booking</button>` : ''}
+                                    ${cancelButton}
                                 </div>
                             `;
                             targetListElement.appendChild(bookingItem);
@@ -1548,7 +1577,7 @@
                     button.removeEventListener('click', handleViewQuoteAndPay); // Remove old listener
                     button.addEventListener('click', handleViewQuoteAndPay);    // Add new listener
                 });
-                document.querySelectorAll('#booked-bookings-list .cancel-booking-btn, #upcoming-bookings-list .cancel-booking-btn').forEach(button => {
+                document.querySelectorAll('#booked-bookings-list .cancel-booking-btn, #upcoming-bookings-list .cancel-booking-btn, #ongoing-bookings-list .cancel-booking-btn').forEach(button => {
                     button.removeEventListener('click', handleCancelBooking); // Remove old listener
                     button.addEventListener('click', handleCancelBooking);    // Add new listener
                 });
@@ -1579,10 +1608,10 @@
                     `;
                     modal.innerHTML = `
                         <div style="background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.4); max-width: 400px; text-align: center;">
-                            <p style="font-size: 1.2em; margin-bottom: 25px; color: #333;">Are you sure you want to cancel Job ID: <strong>${jobId}</strong>?</p>
+                            <p style="font-size: 1.2em; margin-bottom: 25px; color: #333;">क्या आप वाकई जॉब आईडी: <strong>${jobId}</strong> को रद्द करना चाहते हैं?</p>
                             <p style="color: #dc3545; font-weight: bold; margin-bottom: 30px; font-size: 1em;">यह कार्रवाई पूर्ववत नहीं की जा सकती है। (This action cannot be undone.)</p>
-                            <button id="confirm-yes" class="btn btn-danger" style="margin-right: 20px;"><i class="fas fa-check"></i> Yes, Cancel</button>
-                            <button id="confirm-no" class="btn btn-secondary"><i class="fas fa-times"></i> No, Keep It</button>
+                            <button id="confirm-yes" class="btn btn-danger" style="margin-right: 20px;"><i class="fas fa-check"></i> हाँ, रद्द करें</button>
+                            <button id="confirm-no" class="btn btn-secondary"><i class="fas fa-times"></i> नहीं, इसे रखें</button>
                         </div>
                     `;
                     document.body.appendChild(modal);
@@ -1593,7 +1622,7 @@
 
                 if (confirmCancel) {
                     button.disabled = true;
-                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling...';
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> रद्द हो रहा है...'; // Cancelling...
                     console.log(`[CANCEL API CALL] Sending cancellation request for Job ID: ${jobId}`);
                     try {
                         const response = await fetch('/api/user/jobs/cancel', {
@@ -1612,33 +1641,35 @@
                             // Re-fetch all jobs and then re-render the 'booked' list. The cancelled job should now move to 'History'.
                             fetchAndRenderUserJobs('booked'); 
                         } else {
-                            showMessage(result.message || 'Cancellation failed.', 'error');
+                            showMessage(result.message || 'रद्द करना विफल रहा।', 'error'); // Cancellation failed.
                             console.error('[API RESPONSE] Booking cancellation failed (API response issue):', result.message, result);
                         }
                     }
                     catch (error) {
                         console.error('[FETCH ERROR] Cancel booking error (network/unhandled):', error);
-                        showMessage('Network error during cancellation. Please check server status.', 'error');
+                        showMessage('रद्द करते समय नेटवर्क त्रुटि। कृपया सर्वर स्थिति जांचें।', 'error'); // Network error during cancellation. Please check server status.
                     }
                     finally {
                         button.disabled = false;
-                        button.innerHTML = '<i class="fas fa-times-circle"></i> Cancel Booking'; // Restore original icon and text
+                        button.innerHTML = '<i class="fas fa-times-circle"></i> रद्द करें बुकिंग'; // Restore original icon and text
                     }
                 } else {
                     console.log('[CANCEL ACTION] User aborted the cancellation process.');
-                    showMessage('Cancellation aborted.', 'info');
+                    showMessage('रद्द करना निरस्त किया गया।', 'info'); // Cancellation aborted.
                 }
             }
 
 
             // --- Attach Event Listeners for Past Service Actions (History Table) ---
             function attachPastServiceActionListeners() {
-                // Remove and re-add listeners to ensure proper binding to current DOM elements.
-                document.querySelectorAll('#past-services-table-body .download-invoice-btn, #past-services-table-body .view-proof-pdf-btn, #past-services-table-body .leave-review-shortcut-btn, #past-services-table-body .view-quote-btn').forEach(button => {
+                // Iteratively remove and re-add listeners to ensure they are bound to the new DOM elements.
+                // This pattern is effective when the content is completely re-rendered (e.g., via innerHTML).
+                document.querySelectorAll('#past-services-table-body .download-invoice-btn, #past-services-table-body .view-proof-pdf-btn, #past-services-table-body .leave-review-shortcut-btn, #past-services-table-body .view-quote-btn, #past-services-table-body .download-warranty-btn').forEach(button => {
                     button.removeEventListener('click', handleDownloadInvoice);
                     button.removeEventListener('click', handleViewProofPdf);
                     button.removeEventListener('click', handleLeaveReviewShortcut);
                     button.removeEventListener('click', handleViewQuoteAndPay); 
+                    button.removeEventListener('click', handleDownloadWarrantyCard); // Remove old listener for warranty
                 });
 
                 // Add new listeners
@@ -1653,6 +1684,9 @@
                 });
                 document.querySelectorAll('#past-services-table-body .view-quote-btn').forEach(button => { 
                     button.addEventListener('click', handleViewQuoteAndPay); 
+                });
+                document.querySelectorAll('#past-services-table-body .download-warranty-btn').forEach(button => {
+                    button.addEventListener('click', handleDownloadWarrantyCard); // Add new listener for warranty
                 });
             }
 
@@ -1674,7 +1708,7 @@
                 // Get additional data from dataset attributes
                 const applianceType = button.dataset.applianceType || 'N/A';
                 const technicianName = button.dataset.technicianName || 'N/A';
-                const customerName = button.dataset.customerName || (currentUserData ? currentUserData.fullName : 'Customer'); 
+                const customerName = currentUserData ? currentUserData.fullName : 'Customer'; 
                 // Handle location data which might be a string or stringified object
                 const jobLocation = button.dataset.jobLocation ? (typeof button.dataset.jobLocation === 'string' && button.dataset.jobLocation.startsWith('{') ? JSON.parse(button.dataset.jobLocation).address : button.dataset.jobLocation) : 'N/A';
 
@@ -1768,47 +1802,63 @@
                 doc.text("Charges Breakdown:", marginX, yOffset);
                 yOffset += lineHeight * 1.5; 
 
-                // Table headers for charges
-                const tableCol1X = marginX + 10;
-                const tableCol2X = doc.internal.pageSize.getWidth() - marginX - 50; 
+                // Calculate new line items for the table
+                const partCost = quotation.partCost || 0;
+                const laborCost = quotation.laborCost || 0;
+                const travelCharges = quotation.travelCharges || 0;
+                
+                // Calculate subtotal before service fee
+                const subtotalBeforeServiceFee = partCost + laborCost + travelCharges;
 
-                doc.setFontSize(12);
-                doc.setTextColor(50, 50, 50);
-                doc.text("Description", tableCol1X, yOffset);
-                doc.text("Amount (₹)", tableCol2X, yOffset, { align: "right" });
-                yOffset += lineHeight;
-                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset); // Underline headers
-                yOffset += 10;
+                // Calculate TechSeva Service Fee (10% of (Part cost + Labor charges + Travel fee))
+                const techSevaServiceFee = parseFloat((subtotalBeforeServiceFee * APP_COMMISSION_RATE).toFixed(2));
+                
+                // Calculate GST @18% on service fee
+                const gstOnServiceFee = parseFloat((techSevaServiceFee * TAX_RATE_INDIA).toFixed(2));
+                
+                // Calculate Total Amount Payable
+                const totalAmountPayable = parseFloat((subtotalBeforeServiceFee + techSevaServiceFee + gstOnServiceFee).toFixed(2));
 
-                // Table rows for charges
-                doc.setFont("helvetica", "normal");
-                doc.text("Parts Cost", tableCol1X, yOffset);
-                doc.text(`₹${(quotation.partCost || 0).toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
-                yOffset += lineHeight;
+                // Table data for charges
+                const tableHeaders = [
+                    [{ content: "Particulars", styles: { fillColor: [236, 240, 241], textColor: 85, fontStyle: 'bold' } }, 
+                     { content: "Amount (Rs.)", styles: { fillColor: [236, 240, 241], textColor: 85, fontStyle: 'bold', halign: 'right' } }]
+                ];
+                const tableBody = [
+                    ["Part cost (incl. GST)", partCost.toFixed(2)],
+                    ["Labor charges", laborCost.toFixed(2)],
+                    ["Travel fee", travelCharges.toFixed(2)],
+                    ["TechSeva Service Fee (includes complimentary 1-month warranty covering labor charges & travel fee)", techSevaServiceFee.toFixed(2)],
+                    // ["GST @18% on service fee", gstOnServiceFee.toFixed(2)],
+                    ["GST on service fee", gstOnServiceFee.toFixed(2)],
+                    // Total Amount Payable row - styled to be bold
+                    [{ content: "Total Amount Payable", styles: { fontStyle: 'bold' } }, 
+                     { content: totalAmountPayable.toFixed(2), styles: { fontStyle: 'bold', textColor: [39, 174, 96], halign: 'right' } }]
+                ];
 
-                doc.text("Labor Cost", tableCol1X, yOffset);
-                doc.text(`₹${(quotation.laborCost || 0).toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
-                yOffset += lineHeight;
-
-                doc.text("Travel Charges", tableCol1X, yOffset);
-                doc.text(`₹${(quotation.travelCharges || 0).toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
-                yOffset += sectionSpacing;
-
-                doc.setDrawColor(150, 150, 150); 
-                doc.line(tableCol1X, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
-                yOffset += 10;
-
-                // --- Total Amount ---
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(16);
-                doc.setTextColor(39, 174, 96); // Green for total amount
-                doc.text("TOTAL AMOUNT:", tableCol1X, yOffset);
-                doc.text(`₹${(quotation.totalEstimate || 0).toFixed(2)}`, tableCol2X, yOffset, { align: "right" });
-                yOffset += sectionSpacing + 10; 
-
-                doc.setDrawColor(200, 200, 200);
-                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
-                yOffset += sectionSpacing;
+                doc.autoTable({
+                    startY: yOffset,
+                    head: tableHeaders,
+                    body: tableBody,
+                    theme: 'grid', // Use 'grid' theme for borders
+                    styles: {
+                        fontSize: 11,
+                        cellPadding: 8,
+                        textColor: 50,
+                        lineColor: 200,
+                        lineWidth: 0.5
+                    },
+                    columnStyles: {
+                        0: { cellWidth: 250 }, // Width for "Particulars" column
+                        1: { cellWidth: 'auto', halign: 'right' } // Auto width for "Amount" column, right aligned
+                    },
+                    didDrawPage: function (data) {
+                        // Reset yOffset after table drawing to continue content below
+                        yOffset = data.cursor.y;
+                    }
+                });
+                
+                yOffset += sectionSpacing; // Add space after the table
 
                 // --- Payment Status ---
                 doc.setFont("helvetica", "bold");
@@ -1831,7 +1881,7 @@
                 doc.setFontSize(10);
                 doc.setTextColor(100, 100, 100);
                 doc.text("Thank you for choosing TechSeva for your appliance service needs!", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 40, { align: "center" });
-                doc.text("Contact us:  achhutanandjha1@gmail.com | www.techseva.com", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 25, { align: "center" });
+                doc.text("Contact us:  achhutanandjha1@gmail.com | https://tech-seva.onrender.com/", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 25, { align: "center" });
 
 
                 doc.save(`invoice_job_${jobId}.pdf`);
@@ -1967,6 +2017,123 @@
                 }
             }
 
+            // --- Function to handle downloading the 1-month warranty card PDF ---
+            async function handleDownloadWarrantyCard(e) {
+                const button = e.target;
+                const jobId = button.dataset.jobId;
+                const applianceType = button.dataset.applianceType;
+                const scheduledDateTime = new Date(button.dataset.scheduledDatetime);
+                const technicianName = button.dataset.technicianName;
+
+                console.log(`[WARRANTY] Generating warranty card for Job ID: ${jobId}`);
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Warranty...';
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: "portrait",
+                    unit: "pt",
+                    format: "a4"
+                });
+
+                let yOffset = 30;
+                const marginX = 40;
+                const lineHeight = 14;
+                const sectionSpacing = 20;
+
+                // Calculate warranty end date (1 month from service date)
+                const warrantyEndDate = new Date(scheduledDateTime);
+                warrantyEndDate.setMonth(warrantyEndDate.getMonth() + 1);
+
+                // --- Warranty Card Header ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(24);
+                doc.setTextColor(39, 174, 96); // Green for warranty
+                doc.text("TechSeva Service Warranty", doc.internal.pageSize.getWidth() / 2, yOffset, { align: "center" });
+                yOffset += lineHeight * 1.5;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                doc.setTextColor(100, 100, 100);
+                doc.text("Your Peace of Mind, Guaranteed.", doc.internal.pageSize.getWidth() / 2, yOffset, { align: "center" });
+                yOffset += sectionSpacing * 1.5;
+
+                doc.setDrawColor(39, 174, 96); // Green line
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Service Details ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.setTextColor(52, 73, 94);
+                doc.text("Service Details:", marginX, yOffset);
+                yOffset += lineHeight * 1.2;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                doc.setTextColor(50, 50, 50);
+                doc.text(`Job ID: ${jobId}`, marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text(`Appliance Type: ${applianceType}`, marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text(`Service Date: ${scheduledDateTime.toLocaleDateString()}`, marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text(`Technician: ${technicianName}`, marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                doc.setDrawColor(200, 200, 200);
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Warranty Coverage ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.setTextColor(39, 174, 96);
+                doc.text("Warranty Coverage:", marginX, yOffset);
+                yOffset += lineHeight * 1.2;
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                doc.setTextColor(50, 50, 50);
+                doc.text(`Duration: 1 Month from Service Date`, marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text(`Warranty End Date: ${warrantyEndDate.toLocaleDateString()}`, marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text(`Covered: Labor Charges & Travel Fee for related issues.`, marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                doc.setDrawColor(200, 200, 200);
+                doc.line(marginX, yOffset, doc.internal.pageSize.getWidth() - marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Important Notes ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                doc.setTextColor(52, 73, 94);
+                doc.text("Important Notes:", marginX, yOffset);
+                yOffset += lineHeight;
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                doc.setTextColor(80, 80, 80);
+                doc.text("This warranty covers only the specific service performed and related issues.", marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text("Damage caused by misuse, unauthorized repairs, or external factors are not covered.", marginX, yOffset);
+                yOffset += lineHeight;
+                doc.text("Original parts replaced during service are subject to their manufacturer's warranty.", marginX, yOffset);
+                yOffset += sectionSpacing;
+
+                // --- Footer ---
+                doc.setFont("helvetica", "italic");
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text("Thank you for choosing TechSeva!", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 40, { align: "center" });
+                doc.text("For support:  achhutanandjha1@gmail.com | +91 84391 31459", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 25, { align: "center" });
+
+                doc.save(`warranty_job_${jobId}.pdf`);
+                showMessage(`Warranty card for Job ID: ${jobId} downloaded.`, 'success');
+                button.disabled = false;
+                button.textContent = 'Download Warranty';
+            }
+
 
             // --- Language Select Logic (Dummy functionality for now) ---
             if (languageSelect) {
@@ -2002,7 +2169,7 @@
                             });
 
                             if (!response.ok) { 
-                                const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response from geocoding API.' }));
+                                const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response.' }));
                                 throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
                             }
 
@@ -2135,7 +2302,7 @@
                     bookBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...'; // Show spinner on button
 
                     try {
-                        console.log('[API CALL] Submitting new booking request to /api/book-service with payload:', payload);
+                        console.log('[API CALL] Submitting new booking request to /api/book-service', payload);
                         const response = await fetch('/api/book-service', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -2144,7 +2311,7 @@
 
                         if (!response.ok) {
                             // If response is not OK (e.g., 400, 401, 500), parse error from JSON
-                            const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response from booking API.' }));
+                            const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response.' }));
                             throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
                         }
 
@@ -2330,7 +2497,7 @@
                     };
 
                     try {
-                        console.log('[API CALL] Submitting profile update request to /api/user/profile/update with payload:', updateData);
+                        console.log('[API CALL] Submitting profile update request to /api/user/profile/update', updateData);
                         const response = await fetch('/api/user/profile/update', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -2461,7 +2628,7 @@
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...'; // Show spinner
 
                     try {
-                        console.log('[API CALL] Submitting new ticket to /api/user/tickets/create with subject:', subject);
+                        console.log('[API CALL] Submitting new ticket to /api/user/tickets/create', { subject, description });
                         const response = await fetch('/api/user/tickets/create', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
