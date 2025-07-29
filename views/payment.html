@@ -42,7 +42,7 @@
             height: 30px;
             margin-right: 10px;
             vertical-align: middle;
-            fill: currentColor; /* Inherit color from parent */
+            fill: currentColor;
         }
 
         .platform-name {
@@ -121,6 +121,11 @@
             justify-content: space-between;
             margin: 8px 0;
         }
+        .quote-breakdown .subtotal {
+            font-weight: bold;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
         .quote-breakdown .total-amount {
             font-size: 1.2em;
             font-weight: bold;
@@ -130,7 +135,7 @@
             border-top: 1px solid #ddd;
         }
         .quote-breakdown .total-amount span {
-            color: #27ae60; /* Green for total */
+            color: #27ae60;
         }
 
         /* Payment Approval Section */
@@ -156,12 +161,12 @@
 
         input[type="text"],
         input[type="number"] {
-            width: calc(100% - 20px); /* Account for padding */
+            width: calc(100% - 20px);
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 1em;
-            box-sizing: border-box; /* Include padding in width */
+            box-sizing: border-box;
             transition: border-color 0.3s ease;
         }
 
@@ -206,7 +211,7 @@
         }
 
         .payment-details-fields > div {
-            display: none; /* Hidden by default */
+            display: none;
             margin-top: 20px;
             padding: 15px;
             background-color: #f9f9f9;
@@ -223,7 +228,7 @@
             display: block;
             width: 100%;
             padding: 12px 20px;
-            background-color: #27ae60; /* Green for primary action */
+            background-color: #27ae60;
             color: white;
             border: none;
             border-radius: 5px;
@@ -249,7 +254,7 @@
             color: white;
             text-align: center;
             padding: 15px;
-            margin-top: auto; /* Pushes footer to the bottom */
+            margin-top: auto;
             font-size: 0.8em;
             line-height: 1.4;
         }
@@ -306,8 +311,8 @@
             animation: fadeOut 0.5s forwards 4.5s;
             opacity: 1;
             transition: opacity 0.5s ease-out;
-            min-width: 200px; /* Ensure message box is readable */
-            text-align: center; /* Center text in message box */
+            min-width: 200px;
+            text-align: center;
         }
         .message-box.success {
             background-color: #d4edda;
@@ -354,6 +359,9 @@
                 <p>Part Cost: ₹<span id="summary-part-cost">0.00</span></p>
                 <p>Labor Cost: ₹<span id="summary-labor-cost">0.00</span></p>
                 <p>Travel Charges: ₹<span id="summary-travel-charges">0.00</span></p>
+                
+                <p>TechSeva Service Fee : ₹<span id="summary-service-fee">0.00</span></p>
+                <p>GST on Service Fee: ₹<span id="summary-gst">0.00</span></p>
                 <p class="total-amount">Total Amount: ₹<span id="summary-total-amount">0.00</span></p>
             </div>
         </section>
@@ -428,8 +436,8 @@
             setTimeout(() => {
                 // Fade out and remove the message box
                 messageBox.style.opacity = '0';
-                setTimeout(() => messageBox.remove(), 500); // Wait for fadeOut animation
-            }, 4500); // Message visible for 4.5 seconds before fading out
+                setTimeout(() => messageBox.remove(), 500);
+            }, 4500);
         };
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -442,7 +450,7 @@
             const paymentStatusMessage = document.getElementById('payment-status-message');
 
             let selectedPaymentMethod = null;
-            let currentJobData = null; // To store fetched job data
+            let currentJobData = null;
 
             // --- Get Job ID from URL ---
             const urlParams = new URLSearchParams(window.location.search);
@@ -450,7 +458,6 @@
 
             if (!jobId) {
                 showMessage('Error: Job ID not found in URL. Please navigate from your dashboard.', 'error');
-                // Hide payment sections if no jobId
                 approvePayNowBtn.style.display = 'none';
                 paymentMethodsSection.style.display = 'none';
                 return;
@@ -463,53 +470,65 @@
                     const data = await response.json();
 
                     if (data.success) {
-                        currentJobData = data.job; // Store fetched data
+                        currentJobData = data.job;
                         document.getElementById('summary-job-id').textContent = currentJobData.jobId;
                         document.getElementById('summary-technician-name').textContent = currentJobData.assignedTechnicianName || 'Pending Assignment';
                         document.getElementById('summary-appliance-type').textContent = currentJobData.applianceType;
                         
-                        // Format date and time
                         const scheduledDate = new Date(currentJobData.scheduledDateTime);
-                        document.getElementById('summary-service-datetime').textContent = scheduledDate.toLocaleString(); // Adjust formatting as needed
+                        document.getElementById('summary-service-datetime').textContent = scheduledDate.toLocaleString();
 
-                        // Populate quote breakdown
                         if (currentJobData.quotation) {
-                            document.getElementById('summary-part-cost').textContent = currentJobData.quotation.partCost.toFixed(2);
-                            document.getElementById('summary-labor-cost').textContent = currentJobData.quotation.laborCost.toFixed(2);
-                            document.getElementById('summary-travel-charges').textContent = currentJobData.quotation.travelCharges.toFixed(2);
-                            document.getElementById('summary-total-amount').textContent = currentJobData.quotation.totalEstimate.toFixed(2);
+                            const partCost = currentJobData.quotation.partCost;
+                            const laborCost = currentJobData.quotation.laborCost;
+                            const travelCharges = currentJobData.quotation.travelCharges;
+                            
+                            // Calculate fees and totals
+                            const subtotal = partCost + laborCost + travelCharges;
+                            const serviceFee = subtotal * 0.10;
+                            const gst = serviceFee * 0.18;
+                            const totalAmount = subtotal + serviceFee + gst;
+
+                            // Update DOM with calculated values
+                            document.getElementById('summary-part-cost').textContent = partCost.toFixed(2);
+                            document.getElementById('summary-labor-cost').textContent = laborCost.toFixed(2);
+                            document.getElementById('summary-travel-charges').textContent = travelCharges.toFixed(2);
+                            document.getElementById('summary-service-fee').textContent = serviceFee.toFixed(2);
+                            document.getElementById('summary-gst').textContent = gst.toFixed(2);
+                            document.getElementById('summary-total-amount').textContent = totalAmount.toFixed(2);
+
+                            // Store calculated total for payment processing
+                            currentJobData.calculatedTotal = totalAmount;
                         } else {
-                            // If no quotation, display appropriate messages and disable payment
                             document.getElementById('summary-part-cost').textContent = 'N/A';
                             document.getElementById('summary-labor-cost').textContent = 'N/A';
                             document.getElementById('summary-travel-charges').textContent = 'N/A';
+                            document.getElementById('summary-service-fee').textContent = 'N/A';
+                            document.getElementById('summary-gst').textContent = 'N/A';
                             document.getElementById('summary-total-amount').textContent = 'N/A';
                             paymentStatusMessage.textContent = 'Quotation not yet provided by technician.';
                             approvePayNowBtn.classList.add('button-disabled');
                             approvePayNowBtn.disabled = true;
                             showMessage('Quotation not yet available for this job.', 'error');
-                            return; // Stop further processing if no quote
+                            return;
                         }
 
-                        // Check if job is already paid or cancelled
                         if (currentJobData.status === 'Paid') {
                             paymentStatusMessage.textContent = 'This job has already been paid.';
                             approvePayNowBtn.style.display = 'none';
-                            paymentMethodsSection.style.display = 'none'; // Hide payment options
+                            paymentMethodsSection.style.display = 'none';
                             showMessage('This job has already been paid.', 'success');
                         } else if (currentJobData.status === 'Cancelled') {
                             paymentStatusMessage.textContent = 'This job has been cancelled.';
                             approvePayNowBtn.style.display = 'none';
-                            paymentMethodsSection.style.display = 'none'; // Hide payment options
+                            paymentMethodsSection.style.display = 'none';
                             showMessage('This job has been cancelled.', 'error');
                         } else if (currentJobData.status !== 'Diagnosed' && currentJobData.status !== 'Completed') {
-                            // Only allow payment for 'Diagnosed' or 'Completed' jobs
                             paymentStatusMessage.textContent = `Payment can only be processed for jobs that are 'Diagnosed' or 'Completed'. Current status: ${currentJobData.status}.`;
                             approvePayNowBtn.classList.add('button-disabled');
                             approvePayNowBtn.disabled = true;
                             showMessage('Payment cannot be processed for current job status.', 'error');
                         } else {
-                            // Job is ready for payment
                             approvePayNowBtn.classList.remove('button-disabled');
                             approvePayNowBtn.disabled = false;
                         }
@@ -527,16 +546,13 @@
                 }
             };
 
-            // Call fetch job details on page load
             await fetchJobDetails();
-
 
             // --- "Approve and Pay Now" Button Logic ---
             approvePayNowBtn.addEventListener('click', () => {
-                // Ensure there is a valid quote and status before showing payment options
                 if (currentJobData && currentJobData.quotation && (currentJobData.status === 'Diagnosed' || currentJobData.status === 'Completed')) {
-                    paymentMethodsSection.style.display = 'block'; // Show payment options
-                    approvePayNowBtn.style.display = 'none'; // Hide the approval button
+                    paymentMethodsSection.style.display = 'block';
+                    approvePayNowBtn.style.display = 'none';
                 } else {
                     showMessage('Cannot proceed with payment. Quotation missing or job status is not ready.', 'error');
                 }
@@ -545,18 +561,14 @@
             // --- Payment Method Selection Logic ---
             paymentOptions.forEach(option => {
                 option.addEventListener('click', () => {
-                    // Remove 'selected' class from all options
                     paymentOptions.forEach(opt => opt.classList.remove('selected'));
-                    // Add 'selected' class to the clicked option
                     option.classList.add('selected');
 
                     selectedPaymentMethod = option.dataset.method;
 
-                    // Hide all payment detail fields
                     upiFields.classList.remove('active');
                     cardFields.classList.remove('active');
 
-                    // Show fields relevant to the selected method
                     if (selectedPaymentMethod === 'upi') {
                         upiFields.classList.add('active');
                         completePaymentBtn.classList.remove('button-disabled');
@@ -581,14 +593,14 @@
                     showMessage('Please select a payment method.', 'error');
                     return;
                 }
-                if (!currentJobData || !currentJobData.quotation || !currentJobData.quotation.totalEstimate) {
+                if (!currentJobData || !currentJobData.calculatedTotal) {
                     showMessage('Error: Job quotation not available.', 'error');
                     return;
                 }
 
                 let paymentDetails = {};
                 let isValid = true;
-                const totalAmount = currentJobData.quotation.totalEstimate; // Use actual total amount from fetched data
+                const totalAmount = currentJobData.calculatedTotal;
 
                 if (selectedPaymentMethod === 'upi') {
                     const upiId = document.getElementById('upi-id').value.trim();
@@ -608,50 +620,45 @@
                     } else if (!expiryDate || !/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiryDate)) {
                         showMessage('Please enter a valid Expiry Date (MM/YY).', 'error');
                         isValid = false;
-                    } else if (!cvv || cvv.length < 3 || cvv.length > 4) { // CVV can be 3 or 4 digits
+                    } else if (!cvv || cvv.length < 3 || cvv.length > 4) {
                         showMessage('Please enter a valid CVV (3 or 4 digits).', 'error');
                         isValid = false;
                     }
                     paymentDetails = { cardNumber, expiryDate, cvv };
                 } else if (selectedPaymentMethod === 'cod') {
-                    // No specific input for COD, just confirmation
-                    paymentDetails.method = 'Cash on Delivery'; // This will be duplicated in backend, but good for client log
+                    paymentDetails.method = 'Cash on Delivery';
                 }
 
                 if (!isValid) return;
 
-                // Show loading state
                 completePaymentBtn.textContent = 'Processing...';
                 completePaymentBtn.classList.add('button-disabled');
                 completePaymentBtn.disabled = true;
 
                 try {
                     const response = await fetch('/api/process-payment', {
-    method: 'POST',
-    credentials: 'include', // <-- IMPORTANT!
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        jobId: currentJobData.jobId,
-        totalAmount: totalAmount,
-        paymentMethod: selectedPaymentMethod,
-        paymentDetails: paymentDetails
-    })
-});
-
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            jobId: currentJobData.jobId,
+                            totalAmount: totalAmount,
+                            paymentMethod: selectedPaymentMethod,
+                            paymentDetails: paymentDetails
+                        })
+                    });
 
                     const data = await response.json();
 
                     if (data.success) {
                         showMessage(data.message, 'success');
-                        // Redirect to user dashboard after successful payment
                         setTimeout(() => {
-                            window.location.href = '/user'; // Changed to /user as per server.js route
+                            window.location.href = '/user';
                         }, 2000);
                     } else {
                         showMessage(data.message || 'Payment failed. Please try again.', 'error');
-                        // Re-enable button on failure
                         completePaymentBtn.textContent = 'Complete Payment';
                         completePaymentBtn.classList.remove('button-disabled');
                         completePaymentBtn.disabled = false;
@@ -659,7 +666,6 @@
                 } catch (error) {
                     console.error('Payment processing error:', error);
                     showMessage('An unexpected error occurred during payment. Please try again.', 'error');
-                    // Re-enable button on error
                     completePaymentBtn.textContent = 'Complete Payment';
                     completePaymentBtn.classList.remove('button-disabled');
                     completePaymentBtn.disabled = false;
@@ -670,8 +676,8 @@
             const cardNumberInput = document.getElementById('card-number');
             if (cardNumberInput) {
                 cardNumberInput.addEventListener('input', (e) => {
-                    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-                    value = value.replace(/(\d{4})(?=\d)/g, '$1 '); // Add spaces every 4 digits
+                    let value = e.target.value.replace(/\D/g, '');
+                    value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
                     e.target.value = value;
                 });
             }
@@ -679,7 +685,7 @@
             const expiryDateInput = document.getElementById('expiry-date');
             if (expiryDateInput) {
                 expiryDateInput.addEventListener('input', (e) => {
-                    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                    let value = e.target.value.replace(/\D/g, '');
                     if (value.length > 2) {
                         value = value.substring(0, 2) + '/' + value.substring(2, 4);
                     }
