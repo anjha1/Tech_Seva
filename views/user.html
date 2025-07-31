@@ -208,12 +208,12 @@
             transform: translateY(-1px);
         }
 
-        /* Button Styling */
+        /* Button Styling - Adjusted for smaller size */
         .btn {
-            padding: 14px 25px;
+            padding: 10px 18px; /* Reduced padding */
             border: none;
             border-radius: 8px; /* Rounded */
-            font-size: 1.05em;
+            font-size: 0.95em; /* Reduced font size */
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
@@ -320,13 +320,18 @@
         .booking-actions {
             margin-top: 18px;
             display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            justify-content: flex-end; /* Align actions to the right */
+            gap: 5px; /* Reduced gap between buttons even further */
+            flex-wrap: wrap; /* Allow buttons to wrap to next line */
+            justify-content: flex-start; /* Align actions to the start to make them stack better */
         }
         .booking-actions .btn {
-            flex-grow: 1; 
-            min-width: 140px; /* Ensure minimum width for action buttons */
+            flex-grow: 0; /* Prevent buttons from growing */
+            flex-shrink: 1; /* Allow buttons to shrink */
+            min-width: unset; /* Remove min-width to allow extreme shrinking */
+            max-width: unset; /* Remove max-width */
+            padding: 6px 10px; /* Further reduced padding for action buttons */
+            font-size: 0.8em; /* Further reduced font size for action buttons */
+            white-space: nowrap; /* Prevent text wrapping inside buttons */
         }
         .status-text {
             font-weight: bold;
@@ -670,8 +675,14 @@
                 width: 100%;
             }
             .booking-actions .btn {
-                width: 100%;
-                flex-grow: unset; /* Remove flex-grow on small screens for better stacking */
+                width: auto; /* Allow buttons to take natural width */
+                flex-grow: 0; /* Prevent buttons from growing */
+                flex-shrink: 1; /* Allow buttons to shrink */
+                min-width: unset; /* Remove min-width to allow extreme shrinking */
+                max-width: unset; /* Remove max-width */
+                padding: 5px 8px; /* Even smaller padding for action buttons on mobile */
+                font-size: 0.75em; /* Even smaller font size for action buttons on mobile */
+                white-space: nowrap; /* Prevent text wrapping inside buttons */
             }
             .data-table {
                 display: block;
@@ -738,6 +749,7 @@
                 <div class="form-group" style="display: inline-block;">
                     <label for="language-select">Select Language:</label>
                     <select id="language-select" class="language-select">
+                        <option value="">-- Select --</option>
                         <option value="en">English</option>
                         <option value="hi">Hindi</option>
                         <option value="bh">Bhojpuri</option>
@@ -1473,7 +1485,7 @@
                                 <td data-label="Date & Time">${new Date(service.scheduledDateTime).toLocaleString()}</td>
                                 <td data-label="Amount Paid">${amountDisplay}</td>
                                 <td data-label="Rating" class="rating-stars">${ratingDisplay}</td>
-                                <td data-label="Action">${actionsCellHtml}</td>
+                                <td data-label="Action"><div class="booking-actions">${actionsCellHtml}</div></td>
                             `;
                         });
                     }
