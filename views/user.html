@@ -2,12 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>TechSeva User Dashboard</title>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Tailwind CSS (optional, if you want to use Tailwind classes directly, otherwise your custom CSS is detailed) -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <!-- jsPDF library for client-side PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- jsPDF-AutoTable plugin for table generation -->
@@ -16,143 +14,303 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Google Maps API with Places library - Remember to replace YOUR_GOOGLE_MAPS_API_KEY -->
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initMap"></script>
-    <!-- QRCode.js for client-side QR code generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.js/1.0.0/qrcode.min.js"></script>
     <style>
-        /* General Body and Layout */
+        /* Modern Mobile App Design System */
+        :root {
+            /* Light Mode Color Scheme */
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --danger: #f72585;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --info: #560bad;
+            
+            /* Light Mode Surface Colors */
+            --surface-1: #ffffff;
+            --surface-2: #f8f9fa;
+            --surface-3: #e9ecef;
+            
+            /* Light Mode Text Colors */
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-on-primary: #ffffff;
+
+            /* Dark Mode Color Scheme */
+            --dark-primary: #8d9eff;
+            --dark-primary-hover: #7b8de0;
+            --dark-secondary: #7f78d9;
+            --dark-accent: #8fbdf9;
+            --dark-danger: #ff6b9e;
+            --dark-success: #79dfff;
+            --dark-warning: #ffb75e;
+            --dark-info: #a06cd5;
+
+            /* Dark Mode Surface Colors */
+            --dark-surface-1: #1a1a2e;
+            --dark-surface-2: #16213e;
+            --dark-surface-3: #0f3460;
+            
+            /* Dark Mode Text Colors */
+            --dark-text-primary: #e0e0e0;
+            --dark-text-secondary: #b0b0b0;
+            --dark-text-on-primary: #ffffff;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+            
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            
+            /* Typography */
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.25rem;
+            --text-2xl: 1.5rem;
+            --text-3xl: 1.875rem;
+        }
+
+        /* Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif; /* Using Inter as specified */
-            background-color: #f4f7f6;
-            color: #333;
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--surface-2);
+            color: var(--text-primary);
+            line-height: 1.5;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            font-size: var(--text-base);
+            padding-bottom: 72px; /* Space for bottom tab bar */
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for dark mode */
         }
 
-        /* Header Styling */
-        header {
-            background-color: #2c3e50; /* Dark blue/grey */
-            color: white;
-            padding: 15px 20px;
+        /* Dark Mode overrides */
+        body.dark-mode {
+            background-color: var(--dark-surface-2);
+            color: var(--dark-text-primary);
+
+            --primary: var(--dark-primary);
+            --primary-hover: var(--dark-primary-hover);
+            --secondary: var(--dark-secondary);
+            --accent: var(--dark-accent);
+            --danger: var(--dark-danger);
+            --success: var(--dark-success);
+            --warning: var(--dark-warning);
+            --info: var(--dark-info);
+
+            --surface-1: var(--dark-surface-1);
+            --surface-2: var(--dark-surface-2);
+            --surface-3: var(--dark-surface-3);
+            
+            --text-primary: var(--dark-text-primary);
+            --text-secondary: var(--dark-text-secondary);
+            --text-on-primary: var(--dark-text-on-primary);
+        }
+
+        /* App Header */
+        #app-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: var(--surface-1);
+            color: var(--text-primary);
+            padding: var(--space-md);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            flex-wrap: wrap;
+            box-shadow: var(--shadow-sm);
+            height: 60px;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .logo-text {
-            font-size: 1.8em;
+        .app-logo {
+            font-size: var(--text-xl);
             font-weight: 700;
-            letter-spacing: 0.05em;
+            color: var(--primary);
         }
 
-        .menu-toggle {
-            display: none; /* Hidden on desktop */
-            font-size: 1.8em;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .menu-toggle:hover {
-            background-color: #34495e;
+        /* Bottom Tab Bar */
+        #app-tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--surface-1);
+            display: flex;
+            justify-content: space-around;
+            padding: var(--space-sm) 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.9); /* Light mode semi-transparent */
+            border-top: 1px solid rgba(0,0,0,0.05);
+            transition: background-color 0.3s ease, border-top-color 0.3s ease;
         }
 
-        .navbar-nav {
-            list-style: none;
-            padding: 0;
-            margin: 0;
+        body.dark-mode #app-tab-bar {
+            background-color: rgba(26, 26, 46, 0.9); /* Dark mode semi-transparent */
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: var(--text-xs);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+            position: relative;
+            opacity: 0.7;
+        }
+
+        .tab-item.active {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        .tab-item i {
+            font-size: var(--text-lg);
+            margin-bottom: var(--space-xs);
+        }
+
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background-color: var(--primary);
+            border-radius: var(--radius-full);
+        }
+
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 80px;
+            right: var(--space-md);
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-full);
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+            border: none;
             display: flex;
             align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            z-index: 90;
+            cursor: pointer;
+            transition: all 0.2s ease, background-color 0.3s ease;
         }
 
-        .nav-item {
-            margin: 0 10px;
-        }
-
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 8px; /* Rounded corners */
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            font-weight: 500;
-        }
-
-        .nav-link:hover {
-            background-color: #34495e; /* Slightly lighter dark blue */
+        .fab:hover, .fab:focus {
+            background-color: var(--primary-hover);
             transform: translateY(-2px);
-        }
-
-        .nav-link.active {
-            background-color: #3498db; /* Blue for active */
-            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
+            box-shadow: 0 6px 12px rgba(67, 97, 238, 0.3);
         }
 
         /* Main Content Container */
         .container {
             flex: 1;
-            max-width: 1000px; /* Increased max-width for better content display */
-            margin: 20px auto;
-            padding: 0 20px;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: var(--space-md);
             display: flex;
             flex-direction: column;
-            gap: 25px; /* Increased gap between sections */
+            gap: var(--space-lg);
         }
 
-        /* Card Styling for Sections */
+        /* Sections */
         section.card {
-            background-color: white;
-            padding: 30px;
-            border-radius: 12px; /* More rounded */
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            display: none; /* Hidden by default */
-            animation: fadeIn 0.5s ease-out;
+            background-color: var(--surface-1);
+            padding: var(--space-lg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            display: none;
+            animation: fadeSlideIn 0.3s ease-out forwards;
+            width: 100%;
+            margin-bottom: var(--space-lg);
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
         }
 
         section.card.active-section {
             display: block;
         }
 
-        @keyframes fadeIn {
+        @keyframes fadeSlideIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         /* Headings */
-        h1, h2 {
-            color: #2c3e50;
-            text-align: center;
-            margin-bottom: 25px;
-            font-weight: 700;
-        }
-        h1 { font-size: 2.5em; }
-        h2 { font-size: 2em; border-bottom: 2px solid #ecf0f1; padding-bottom: 15px; }
-        h3 {
-            color: #34495e;
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.5em;
+        h1, h2, h3 {
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
             font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        h1 { 
+            font-size: var(--text-2xl);
+            text-align: center;
+        }
+        
+        h2 { 
+            font-size: var(--text-xl);
+            border-bottom: 1px solid var(--surface-3);
+            padding-bottom: var(--space-sm);
+            transition: border-color 0.3s ease;
+        }
+        
+        h3 { 
+            font-size: var(--text-lg);
+            margin-top: 0;
         }
 
         /* Form Styling */
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: var(--space-md);
+            position: relative;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-            font-size: 0.95em;
+            margin-bottom: var(--space-xs);
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            transition: color 0.3s ease;
         }
 
         input[type="text"],
@@ -163,12 +321,13 @@
         input[type="tel"],
         input[type="number"] {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px; /* Rounded */
-            font-size: 1em;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            padding: var(--space-md);
+            border: 1px solid var(--surface-3);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-base);
+            transition: all 0.2s ease;
+            background-color: var(--surface-1);
+            color: var(--text-primary);
         }
 
         input[type="text"]:focus,
@@ -178,281 +337,431 @@
         input[type="email"]:focus,
         input[type="tel"]:focus,
         input[type="number"]:focus {
-            border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
             outline: none;
         }
 
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .use-my-location-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 12px;
-            padding: 10px 18px;
-            background-color: #2ecc71; /* Green for action */
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95em;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        .use-my-location-btn:hover {
-            background-color: #27ae60;
-            transform: translateY(-1px);
-        }
-
-        /* Button Styling - Adjusted for smaller size */
+        /* Buttons */
         .btn {
-            padding: 10px 18px; /* Reduced padding */
+            padding: var(--space-md) var(--space-lg);
             border: none;
-            border-radius: 8px; /* Rounded */
-            font-size: 0.95em; /* Reduced font size */
-            font-weight: 600;
+            border-radius: var(--radius-sm);
+            font-size: var(--text-base);
+            font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            display: inline-flex; /* Use flex for icon alignment */
+            transition: all 0.2s ease;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: var(--space-xs);
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
         }
 
         .btn-primary {
-            background-color: #3498db;
-            color: white;
+            background-color: var(--primary);
+            color: var(--text-on-primary);
             width: 100%;
-            margin-top: 15px;
         }
+
         .btn-primary:hover {
-            background-color: #2980b9;
-            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+            background-color: var(--primary-hover);
         }
 
         .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        .btn-secondary:hover {
-            background-color: #5a6268;
+            background-color: var(--secondary);
+            color: var(--text-on-primary);
         }
 
         .btn-success {
-            background-color: #28a745;
-            color: white;
-        }
-        .btn-success:hover {
-            background-color: #218838;
+            background-color: var(--success);
+            color: var(--text-on-primary);
         }
 
         .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
-        .btn-danger:hover {
-            background-color: #c82333;
+            background-color: var(--danger);
+            color: var(--text-on-primary);
         }
 
         .btn-warning {
-            background-color: #ffc107;
-            color: #333;
-        }
-        .btn-warning:hover {
-            background-color: #e0a800;
+            background-color: var(--warning);
+            color: var(--text-primary);
         }
 
         .btn-info {
-            background-color: #17a2b8;
-            color: white;
-        }
-        .btn-info:hover {
-            background-color: #138496;
+            background-color: var(--info);
+            color: var(--text-on-primary);
         }
 
         .btn-disabled {
             background-color: #cccccc;
             cursor: not-allowed;
             opacity: 0.7;
-            transform: none !important; /* Override hover transform */
-            box-shadow: none !important;
         }
 
-        /* Booking Item Cards */
+        /* Ripple Effect for Buttons */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.7);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Booking Cards */
+        .booking-card {
+            background-color: var(--surface-1);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
+            border-left: 4px solid var(--primary);
+        }
+
+        .booking-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            gap: var(--space-xs);
+        }
+
+        .badge.success {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success);
+        }
+
+        .badge.warning {
+            background-color: rgba(248, 150, 30, 0.1);
+            color: var(--warning);
+        }
+
+        .badge.danger {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger);
+        }
+
+        .booking-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .booking-detail {
+            font-size: var(--text-sm);
+        }
+
+        .booking-detail strong {
+            display: block;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: var(--space-xs);
+            transition: color 0.3s ease;
+        }
+
+        /* Booking Actions within History Table */
+        .data-table .booking-actions {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping if space is constrained */
+            gap: var(--space-xs); /* Smaller gap for compactness in table */
+            justify-content: flex-start; /* Align to start */
+            align-items: center;
+        }
+
+        .data-table .booking-actions .btn {
+            padding: var(--space-xs) var(--space-sm); /* Slightly larger padding for readability */
+            font-size: var(--text-xs); /* Keep small font size for table cells */
+            white-space: nowrap; /* Prevent text wrap inside button */
+            flex-shrink: 0; /* Prevent shrinking too much */
+            flex-grow: 0; /* Prevent growing too much */
+            min-width: fit-content; /* Ensure content fits */
+            height: auto; /* Allow height to adjust */
+        }
+
+        /* Adjustments for desktop table buttons */
+        @media (min-width: 769px) { /* Apply these styles for desktop screens */
+            .data-table .booking-actions .btn {
+                padding: var(--space-sm) var(--space-md); /* More padding on desktop */
+                font-size: var(--text-sm); /* Larger font on desktop */
+                min-width: 120px; /* Give them a minimum width for better shape */
+            }
+        }
+
+        /* Ensure .status-badge in table actions also looks good */
+        .data-table .booking-actions .status-badge {
+            padding: var(--space-xs) var(--space-sm);
+            font-size: var(--text-xs);
+            flex-shrink: 0;
+        }
+        @media (min-width: 769px) {
+            .data-table .booking-actions .status-badge {
+                padding: var(--space-sm) var(--space-md);
+                font-size: var(--text-sm);
+            }
+        }
+
+        /* Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            font-weight: 600;
+            margin-top: var(--space-xs);
+        }
+
+        .status-badge.status-rejected {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger);
+        }
+
+        /* Star Rating */
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+        }
+
+        .star-rating .star {
+            font-size: var(--text-2xl);
+            color: #ccc;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .star-rating .star.filled {
+            color: #f1c40f;
+        }
+
+        /* Message Box for Alerts */
+        .message-box {
+            position: fixed;
+            top: var(--space-md);
+            right: var(--space-md);
+            padding: var(--space-md) var(--space-lg);
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: var(--shadow-lg);
+            animation: slideInFromRight 0.3s ease-out forwards, fadeOut 0.3s forwards 2.7s;
+            opacity: 0;
+            max-width: calc(100% - 32px);
+        }
+
+        .message-box.success { 
+            background-color: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb; 
+        }
+        .message-box.error { 
+            background-color: #f8d7da; 
+            color: #721c24; 
+            border: 1px solid #f5c6cb; 
+        }
+        .message-box.info { 
+            background-color: #d1ecf1; 
+            color: #0c5460; 
+            border: 1px solid #bee5eb; 
+        }
+
+        @keyframes slideInFromRight {
+            from { right: -300px; opacity: 0; }
+            to { right: var(--space-md); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Loading Skeletons */
+        .skeleton {
+            background-color: var(--surface-3);
+            border-radius: var(--radius-sm);
+            animation: pulse 1.5s infinite ease-in-out;
+            transition: background-color 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 480px) {
+            :root {
+                --space-md: 12px;
+                --space-lg: 16px;
+            }
+            
+            .booking-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .booking-actions {
+                flex-direction: column;
+            }
+        }
+
+        /* Landscape Orientation */
+        @media (orientation: landscape) and (max-height: 500px) {
+            #app-tab-bar {
+                position: static;
+                padding-bottom: 0;
+            }
+            
+            body {
+                padding-bottom: 0;
+            }
+            
+            .fab {
+                bottom: var(--space-md);
+            }
+        }
+
+        /* Custom styles for the specific elements from user.html that need to be preserved */
         .booking-item {
             border: 1px solid #eee;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 15px;
-            background-color: #fcfcfc;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            transition: transform 0.2s ease;
+            background-color: var(--surface-1); /* Use surface-1 from new design */
+            box-shadow: var(--shadow-sm); /* Use shadow-sm from new design */
+            transition: transform 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
         }
         .booking-item:hover {
             transform: translateY(-3px);
         }
 
         /* Dynamic Border Colors based on Status */
-        .booking-item.pending { border-left: 6px solid #ffc107; } /* Warning yellow */
-        .booking-item.accepted { border-left: 6px solid #007bff; } /* Info blue */
-        .booking-item.in-progress { border-left: 6px solid #3498db; } /* Primary blue */
-        .booking-item.diagnosed { border-left: 6px solid #6f42c1; } /* Purple */
-        .booking-item.quotation-provided { border-left: 6px solid #ff8c00; } /* Darker Orange */
-        .booking-item.quotation-approved { border-left: 6px solid #20c997; } /* Teal */
-        .booking-item.completed { border-left: 6px solid #28a745; } /* Success green */
-        .booking-item.paid { border-left: 6px solid #28a745; } /* Success green */
-        .booking-item.cancelled { border-left: 6px solid #dc3545; opacity: 0.8; } /* Danger red */
-        .booking-item.rejected { border-left: 6px solid #dc3545; opacity: 0.8; } /* Danger red */
+        .booking-item.pending { border-left: 6px solid var(--warning); }
+        .booking-item.accepted { border-left: 6px solid var(--info); }
+        .booking-item.in-progress { border-left: 6px solid var(--primary); }
+        .booking-item.diagnosed { border-left: 6px solid #6f42c1; } /* Keep specific color if not in new palette */
+        .booking-item.quotation-provided { border-left: 6px solid #ff8c00; } /* Keep specific color */
+        .booking-item.quotation-approved { border-left: 6px solid var(--success); }
+        .booking-item.completed { border-left: 6px solid var(--success); }
+        .booking-item.paid { border-left: 6px solid var(--success); }
+        .booking-item.cancelled { border-left: 6px solid var(--danger); opacity: 0.8; }
+        .booking-item.rejected { border-left: 6px solid var(--danger); opacity: 0.8; }
 
         .booking-item p {
             margin: 8px 0;
-            font-size: 0.95em;
-            color: #555;
+            font-size: var(--text-sm); /* Use new text-sm */
+            color: var(--text-secondary); /* Use new text-secondary */
         }
         .booking-item p strong {
-            color: #333;
+            color: var(--text-primary); /* Use new text-primary */
         }
-        .booking-actions {
-            margin-top: 18px;
-            display: flex;
-            gap: 5px; /* Reduced gap between buttons even further */
-            flex-wrap: wrap; /* Allow buttons to wrap to next line */
-            justify-content: flex-start; /* Align actions to the start to make them stack better */
-        }
-        .booking-actions .btn {
-            flex-grow: 0; /* Prevent buttons from growing */
-            flex-shrink: 1; /* Allow buttons to shrink */
-            min-width: unset; /* Remove min-width to allow extreme shrinking */
-            max-width: unset; /* Remove max-width */
-            padding: 6px 10px; /* Further reduced padding for action buttons */
-            font-size: 0.8em; /* Further reduced font size for action buttons */
-            white-space: nowrap; /* Prevent text wrapping inside buttons */
-        }
+        /* Removed .booking-actions .btn specific styles here as they are now handled by .data-table .booking-actions .btn */
         .status-text {
             font-weight: bold;
             padding: 4px 8px;
             border-radius: 5px;
             display: inline-block;
-            background-color: #f0f0f0; /* Default background */
-            color: #333; /* Default text color */
+            background-color: var(--surface-3); /* Use surface-3 */
+            color: var(--text-primary); /* Use text-primary */
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Specific Status Text Colors */
-        .status-text.pending { background-color: #ffeeba; color: #856404; }
-        .status-text.accepted { background-color: #cce5ff; color: #004085; }
-        .status-text.in-progress { background-color: #d1ecf1; color: #0c5460; }
-        .status-text.diagnosed { background-color: #e2eafc; color: #4b0082; } /* A light purple */
-        .status-text.quotation-provided { background-color: #ffe0b2; color: #b36b00; } /* Light orange */
-        .status-text.quotation-approved { background-color: #d4edda; color: #155724; }
-        .status-text.completed { background-color: #d4edda; color: #155724; }
-        .status-text.paid { background-color: #d4edda; color: #155724; }
-        .status-text.cancelled { background-color: #f8d7da; color: #721c24; }
-        .status-text.rejected { background-color: #f8d7da; color: #721c24; }
-
+        .status-text.pending { background-color: rgba(248, 150, 30, 0.1); color: var(--warning); }
+        .status-text.accepted { background-color: rgba(86, 11, 173, 0.1); color: var(--info); }
+        .status-text.in-progress { background-color: rgba(67, 97, 238, 0.1); color: var(--primary); }
+        .status-text.diagnosed { background-color: rgba(111, 66, 193, 0.1); color: #6f42c1; }
+        .status-text.quotation-provided { background-color: rgba(255, 140, 0, 0.1); color: #ff8c00; }
+        .status-text.quotation-approved { background-color: rgba(76, 201, 240, 0.1); color: var(--success); }
+        .status-text.completed { background-color: rgba(76, 201, 240, 0.1); color: var(--success); }
+        .status-text.paid { background-color: rgba(76, 201, 240, 0.1); color: var(--success); }
+        /* Corrected for better visibility */
+        .status-text.cancelled, .status-text.rejected { 
+            background-color: var(--danger); /* Solid danger color */
+            color: var(--text-on-primary); /* White text */
+        }
 
         /* Table styles for History */
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 0.9em;
+            margin-top: var(--space-md);
+            font-size: var(--text-sm);
         }
 
         .data-table th,
         .data-table td {
-            border: 1px solid #e0e0e0;
-            padding: 12px;
+            border: 1px solid var(--surface-3);
+            padding: var(--space-sm);
             text-align: left;
+            transition: border-color 0.3s ease;
         }
 
         .data-table th {
-            background-color: #ecf0f1;
+            background-color: var(--surface-3);
             font-weight: 600;
-            color: #555;
+            color: var(--text-secondary);
             text-transform: uppercase;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .data-table tbody tr:nth-child(even) {
-            background-color: #fcfcfc;
+            background-color: var(--surface-2);
+            transition: background-color 0.3s ease;
         }
 
         .rating-stars span {
-            color: #f1c40f; /* Yellow stars */
-            font-size: 1.2em;
+            color: #f1c40f;
+            font-size: var(--text-base);
         }
 
         /* Star Rating for Review Form */
         .star-rating {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin-bottom: 25px;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
         }
         .star-rating .star {
-            font-size: 2.5em;
+            font-size: var(--text-2xl);
             color: #ccc;
             cursor: pointer;
-            transition: color 0.2s ease, transform 0.1s ease;
+            transition: color 0.2s ease;
         }
         .star-rating .star.filled {
             color: #f1c40f;
         }
         .star-rating .star:hover {
             transform: scale(1.1);
-        }
-
-        /* Footer */
-        footer {
-            background-color: #333;
-            color: white;
-            text-align: center;
-            padding: 20px;
-            margin-top: auto;
-            font-size: 0.9em;
-        }
-
-        .footer-links a {
-            color: #3498db;
-            text-decoration: none;
-            margin: 0 12px;
-            transition: color 0.3s;
-        }
-        .footer-links a:hover {
-            text-decoration: underline;
-            color: #2980b9;
-        }
-
-        /* Message Box for Alerts */
-        .message-box {
-            position: fixed;
-            top: 25px;
-            right: 25px;
-            padding: 15px 25px;
-            border-radius: 10px;
-            font-weight: bold;
-            z-index: 10000;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-            animation: slideInFromRight 0.5s ease-out forwards, fadeOut 0.5s forwards 4.5s;
-            opacity: 0; /* Starts hidden, visible via animation */
-            min-width: 250px;
-            text-align: center;
-        }
-        .message-box.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .message-box.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .message-box.info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-
-        @keyframes slideInFromRight {
-            from { right: -300px; opacity: 0; }
-            to { right: 25px; opacity: 1; }
-        }
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
         }
 
         /* Status Badge for History Table - specific for Past Due/Cancelled */
@@ -465,81 +774,82 @@
             color: white;
             text-align: center;
             line-height: 1;
-            margin-top: 5px; /* Spacing below other status info if any */
+            margin-top: 5px;
         }
-        .status-badge.status-rejected { background-color: #dc3545; }
+        .status-badge.status-rejected { background-color: var(--danger); }
 
 
         /* Top Technicians Section */
         .top-technicians-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
-            margin-top: 25px;
+            gap: var(--space-lg);
+            margin-top: var(--space-lg);
         }
 
         .technician-card {
-            background-color: #eaf6ff; /* Light blue/grey */
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            background-color: var(--surface-2); /* Use surface-2 */
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
             text-align: center;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border: 1px solid #d0e7ff;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
+            border: 1px solid var(--surface-3); /* Use surface-3 */
         }
 
         .technician-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+            box-shadow: var(--shadow-md);
         }
 
         .technician-card h3 {
-            color: #3498db;
-            font-size: 1.3em;
-            margin-bottom: 8px;
+            color: var(--primary); /* Use primary color */
+            font-size: var(--text-lg);
+            margin-bottom: var(--space-xs);
         }
 
         .technician-card .rating-stars {
-            font-size: 1.1em;
-            margin-bottom: 12px;
+            font-size: var(--text-base);
+            margin-bottom: var(--space-sm);
         }
 
         .technician-card p {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 5px;
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xs);
         }
 
         /* Booking Filters */
         .booking-filters {
             display: flex;
             justify-content: center;
-            gap: 15px; /* Increased gap */
-            margin-bottom: 30px; /* More space below filters */
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
             flex-wrap: wrap;
         }
 
         .booking-filters .btn {
             flex: 1;
-            min-width: 120px;
-            max-width: 180px;
-            padding: 10px 15px; /* Slightly smaller padding for filter buttons */
-            font-size: 0.95em;
-            border: 1px solid #cccccc; /* Subtle border */
-            color: #555;
-            background-color: #eceff1; /* Light background */
+            min-width: 100px; /* Adjusted min-width for mobile */
+            max-width: 150px; /* Adjusted max-width for mobile */
+            padding: var(--space-sm) var(--space-md);
+            font-size: var(--text-sm);
+            border: 1px solid var(--surface-3);
+            color: var(--text-secondary);
+            background-color: var(--surface-2);
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
         }
 
         .booking-filters .btn:hover:not(.active-filter) {
-            background-color: #dae0e3;
+            background-color: var(--surface-3);
             transform: translateY(-1px);
         }
 
         .booking-filters .btn.active-filter {
-            background-color: #3498db;
-            color: white;
-            border-color: #2980b9;
-            box-shadow: 0 3px 8px rgba(52, 152, 219, 0.3);
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+            border-color: var(--primary-hover);
+            box-shadow: 0 3px 8px rgba(67, 97, 238, 0.3);
             transform: translateY(-1px);
         }
 
@@ -551,42 +861,43 @@
         }
 
         .info-block {
-            background-color: #e8f0fe;
-            border: 1px solid #cce5ff;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            background-color: var(--surface-2); /* Use surface-2 */
+            border: 1px solid var(--surface-3); /* Use surface-3 */
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-md);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
         .info-block h3 {
-            color: #0056b3;
+            color: var(--primary);
             margin-top: 0;
-            margin-bottom: 12px;
-            font-size: 1.3em;
+            margin-bottom: var(--space-sm);
+            font-size: var(--text-lg);
         }
         .info-block p {
-            margin-bottom: 10px;
-            color: #444;
+            margin-bottom: var(--space-xs);
+            color: var(--text-secondary);
         }
         .info-block .btn {
-            margin-top: 10px;
-            width: auto; /* Buttons within info-block can be smaller */
-            padding: 10px 15px;
-            font-size: 0.9em;
+            margin-top: var(--space-sm);
+            width: auto;
+            padding: var(--space-sm) var(--space-md);
+            font-size: var(--text-sm);
         }
 
         /* Notifications and FAQs */
         .notification-item, .faq-item {
-            background-color: #f8fcfd;
-            border-left: 6px solid #a7d9f7; /* Light blue border */
-            padding: 18px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            transition: transform 0.2s;
+            background-color: var(--surface-1);
+            border-left: 6px solid var(--accent); /* Use accent color */
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s, background-color 0.3s ease, border-color 0.3s ease;
         }
         .notification-item.read {
-            background-color: #f0f0f0;
-            border-left-color: #c9c9c9;
+            background-color: var(--surface-2);
+            border-left-color: var(--surface-3);
             opacity: 0.8;
         }
         .notification-item:hover, .faq-item:hover {
@@ -594,126 +905,202 @@
         }
         .notification-item h4, .faq-item summary {
             margin-top: 0;
-            margin-bottom: 8px;
-            color: #2c3e50;
-            font-size: 1.2em;
+            margin-bottom: var(--space-xs);
+            color: var(--text-primary);
+            font-size: var(--text-base);
             font-weight: 600;
+            transition: color 0.3s ease;
         }
         .notification-item p, .faq-item .faq-answer {
-            font-size: 0.95em;
-            color: #555;
-            margin-bottom: 5px;
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xs);
         }
         .notification-item .timestamp {
-            font-size: 0.8em;
-            color: #777;
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
             text-align: right;
             display: block;
-            margin-top: 10px;
+            margin-top: var(--space-sm);
         }
         .faq-item summary {
             cursor: pointer;
             outline: none;
         }
         .faq-item details[open] summary {
-            background-color: #eef7fc;
-            border-bottom: 1px solid #dcebf2;
-            border-radius: 10px 10px 0 0;
+            background-color: var(--surface-2);
+            border-bottom: 1px solid var(--surface-3);
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
         }
 
-        /* Responsive Adjustments */
+        /* Styles for the new More section */
+        .more-option {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background-color: var(--surface-1);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--space-md);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: background-color 0.2s ease, transform 0.2s ease, color 0.3s ease;
+        }
+
+        .more-option:hover {
+            background-color: var(--surface-2);
+            transform: translateY(-2px);
+        }
+
+        .more-option i {
+            font-size: var(--text-xl);
+            color: var(--primary);
+        }
+
+        .more-option span {
+            font-size: var(--text-lg);
+            font-weight: 500;
+        }
+
+        .more-option.danger-option i, .more-option.danger-option span {
+            color: var(--danger);
+        }
+
+        /* Dark Mode Toggle Specific Styles */
+        .dark-mode-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background-color: var(--surface-1);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--space-md);
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease, color 0.3s ease;
+        }
+        .dark-mode-toggle:hover {
+            background-color: var(--surface-2);
+            transform: translateY(-2px);
+        }
+        .dark-mode-toggle i {
+            font-size: var(--text-xl);
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+        .dark-mode-toggle span {
+            font-size: var(--text-lg);
+            font-weight: 500;
+            color: var(--text-primary);
+            flex-grow: 1;
+            transition: color 0.3s ease;
+        }
+        .dark-mode-toggle .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+        .dark-mode-toggle .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .dark-mode-toggle .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--surface-3);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .dark-mode-toggle .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        .dark-mode-toggle input:checked + .slider {
+            background-color: var(--primary);
+        }
+        .dark-mode-toggle input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+
+        /* Responsive Adjustments for smaller screens */
         @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 10px;
-            }
-            .header-left {
-                width: 100%;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 10px;
-            }
-            .logo-text {
-                font-size: 1.5em;
-            }
-            .menu-toggle {
-                display: block;
-            }
-            .navbar-nav {
-                display: none; /* Hidden by default */
-                flex-direction: column;
-                width: 100%;
-                text-align: center;
-                margin-top: 10px;
-            }
-            .navbar-nav.menu-open {
-                display: flex; /* Show when toggled */
-            }
-            .nav-item {
-                margin: 5px 0;
-                width: 100%;
-            }
-            .nav-link {
-                display: block;
-                width: calc(100% - 30px); /* Adjust for padding */
-            }
+            /* Adjust padding and spacing for smaller screens */
             .container {
-                margin: 15px auto;
-                padding: 0 15px;
-                gap: 20px;
+                padding: var(--space-sm);
+                gap: var(--space-md);
             }
             section.card {
-                padding: 20px;
+                padding: var(--space-md);
             }
-            h1 { font-size: 2em; }
-            h2 { font-size: 1.7em; }
-            h3 { font-size: 1.3em; }
+            h1 { font-size: var(--text-xl); }
+            h2 { font-size: var(--text-lg); }
+            h3 { font-size: var(--text-base); }
 
+            /* Adjust form elements */
             input[type="text"], input[type="datetime-local"], textarea, select {
-                width: 100%;
+                padding: var(--space-sm);
+                font-size: var(--text-sm);
             }
-            .booking-actions .btn {
-                width: auto; /* Allow buttons to take natural width */
-                flex-grow: 0; /* Prevent buttons from growing */
-                flex-shrink: 1; /* Allow buttons to shrink */
-                min-width: unset; /* Remove min-width to allow extreme shrinking */
-                max-width: unset; /* Remove max-width */
-                padding: 5px 8px; /* Even smaller padding for action buttons on mobile */
-                font-size: 0.75em; /* Even smaller font size for action buttons on mobile */
-                white-space: nowrap; /* Prevent text wrapping inside buttons */
+            .form-group label {
+                font-size: var(--text-xs);
             }
+
+            /* Adjust buttons */
+            .btn {
+                padding: var(--space-sm) var(--space-md);
+                font-size: var(--text-sm);
+            }
+            /* booking-actions .btn is now handled by .data-table .booking-actions .btn for mobile */
+
+            /* Table responsiveness */
             .data-table {
                 display: block;
                 overflow-x: auto;
-                white-space: nowrap; /* Prevent wrapping inside cells */
+                white-space: nowrap;
                 -webkit-overflow-scrolling: touch;
             }
             .data-table thead, .data-table tbody, .data-table th, .data-table td, .data-table tr {
-                display: block; /* Make table elements stack */
+                display: block;
             }
             .data-table th, .data-table td {
-                width: auto !important; /* Override specific widths */
-                padding: 10px;
+                width: auto !important;
+                padding: var(--space-sm);
                 text-align: left;
             }
             .data-table tr {
-                margin-bottom: 15px;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                overflow: hidden; /* For rounded corners to apply */
+                margin-bottom: var(--space-md);
+                border: 1px solid var(--surface-3);
+                border-radius: var(--radius-md);
+                overflow: hidden;
             }
             .data-table td::before {
                 content: attr(data-label);
                 font-weight: bold;
                 display: inline-block;
-                width: 120px; /* Label width */
-                margin-right: 10px;
-                color: #444;
+                width: 100px;
+                margin-right: var(--space-xs);
+                color: var(--text-secondary);
+                font-size: var(--text-sm);
             }
             .booking-filters {
-                flex-direction: column; /* Stack filter buttons */
+                flex-direction: column;
+                gap: var(--space-sm);
             }
             .booking-filters .btn {
                 max-width: 100%;
@@ -722,39 +1109,17 @@
     </style>
 </head>
 <body>
-    <header>
-        <div class="header-left">
-            <span class="logo-text">🔧 TechSeva</span>
-        </div>
-        <div class="menu-toggle" id="menu-toggle">
-            <i class="fas fa-bars"></i>
-        </div>
-        <ul class="navbar-nav" id="main-navbar">
-            <li class="nav-item"><a href="#home" class="nav-link active">Home</a></li>
-            <li class="nav-item"><a href="#my-bookings" class="nav-link">My Bookings</a></li>
-            <li class="nav-item"><a href="#my-profile" class="nav-link">My Profile</a></li>
-            <li class="nav-item"><a href="#payments-offers" class="nav-link">Payments & Offers</a></li>
-            <li class="nav-item"><a href="#support-help" class="nav-link">Support & Help</a></li>
-            <li class="nav-item"><a href="#notifications" class="nav-link">Notifications</a></li>
-            <li class="nav-item"><a href="#leave-review" class="nav-link">Leave a Review</a></li>
-            <li class="nav-item"><a href="#" id="logout-btn" class="nav-link">Logout</a></li>
-        </ul>
+    <!-- Modern Mobile App Header -->
+    <header id="app-header">
+        <h1 class="app-logo">TechSeva</h1>
     </header>
 
+    <!-- Main Content -->
     <div class="container">
         <!-- Home Section -->
         <section id="home" class="welcome-section card active-section">
             <div class="welcome-content">
                 <h3 id="welcome-greeting">Welcome, User!</h3>
-                <div class="form-group" style="display: inline-block;">
-                    <label for="language-select">Select Language:</label>
-                    <select id="language-select" class="language-select">
-                        <option value="">-- Select --</option>
-                        <option value="en">English</option>
-                        <option value="hi">Hindi</option>
-                        <option value="bh">Bhojpuri</option>
-                    </select>
-                </div>
             </div>
 
             <!-- Book a Service Section -->
@@ -780,7 +1145,7 @@
                         <input type="text" id="location-input" name="location" placeholder="Enter your address" required>
                         <input type="hidden" id="latitude-input" name="latitude">
                         <input type="hidden" id="longitude-input" name="longitude">
-                        <button type="button" id="use-my-location-btn" class="use-my-location-btn">
+                        <button type="button" id="use-my-location-btn" class="btn btn-secondary">
                             <i class="fas fa-map-marker-alt"></i> Use My Location
                         </button>
                     </div>
@@ -798,17 +1163,9 @@
                     <button type="submit" id="book-service-btn" class="btn btn-primary">Book Service</button>
                 </form>
             </div>
-
-            <!-- Top 5 Technicians Section -->
-            <div class="top-technicians-section-integrated" style="margin-top: 30px;">
-                <h2>✨ Top Rated Technicians ✨</h2>
-                <div id="top-technicians-list" class="top-technicians-grid">
-                    <p style="grid-column: 1 / -1; text-align: center; color: #777;">Loading top technicians...</p>
-                </div>
-            </div>
         </section>
 
-        <!-- My Bookings Section (Consolidated with filters) -->
+        <!-- My Bookings Section -->
         <section id="my-bookings" class="my-bookings-parent-section card">
             <h2>My Bookings</h2>
             <div class="booking-filters">
@@ -819,18 +1176,15 @@
             </div>
 
             <div id="booked-bookings-list" class="booking-list-container active-list">
-                <h3>Newly Booked Services (Pending Assignment)</h3>
-                <p style="text-align: center; color: #777;">No new bookings.</p>
+                <div class="skeleton" style="height: 200px; width: 100%;"></div>
             </div>
 
             <div id="upcoming-bookings-list" class="booking-list-container">
-                <h3>Upcoming Services (Accepted & Scheduled)</h3>
-                <p style="text-align: center; color: #777;">No upcoming bookings.</p>
+                <div class="skeleton" style="height: 200px; width: 100%;"></div>
             </div>
 
             <div id="ongoing-bookings-list" class="booking-list-container">
-                <h3>Ongoing Services (In Progress, Quoted)</h3>
-                <p style="text-align: center; color: #777;">No ongoing bookings.</p>
+                <div class="skeleton" style="height: 200px; width: 100%;"></div>
             </div>
 
             <div id="history-bookings-list" class="booking-list-container">
@@ -849,7 +1203,7 @@
                             </tr>
                         </thead>
                         <tbody id="past-services-table-body">
-                            <tr><td colspan="7" style="text-align: center; color: #777;">No service history.</td></tr>
+                            <tr><td colspan="7" style="text-align: center; color: #777;">Loading service history...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -877,7 +1231,7 @@
                     <input type="text" id="profile-address" name="address" placeholder="Your primary address">
                     <input type="hidden" id="profile-latitude" name="latitude">
                     <input type="hidden" id="profile-longitude" name="longitude">
-                    <button type="button" id="use-my-location-profile-btn" class="use-my-location-btn">
+                    <button type="button" id="use-my-location-profile-btn" class="btn btn-secondary">
                         <i class="fas fa-map-marker-alt"></i> Use My Location
                     </button>
                 </div>
@@ -888,26 +1242,29 @@
         <!-- Payments & Offers Section -->
         <section id="payments-offers" class="payments-offers-section card">
             <h2>Payments & Offers</h2>
-            <p>Manage your payment methods and view available offers here.</p>
-            <div class="info-block">
-                <h3>Your Wallet Balance: ₹<span id="wallet-balance">0.00</span></h3>
-                <p>This balance reflects the money in your TechSeva wallet, which can be used for services.</p>
-                <button class="btn btn-primary">Add Money</button>
-                <button class="btn btn-secondary">View Offers</button>
+            <div class="booking-card">
+                <h3>Your Wallet Balance</h3>
+                <p>₹<span id="wallet-balance">0.00</span></p>
+                <div class="booking-actions">
+                    <button class="btn btn-primary">Add Money</button>
+                    <button class="btn btn-secondary">View Offers</button>
+                </div>
             </div>
-            <div class="info-block" style="margin-top: 20px;">
+            
+            <div class="booking-card">
                 <h3>Payment Methods</h3>
-                <p>Link or manage your preferred payment methods (e.g., UPI, Net Banking).</p>
-                <button class="btn btn-success">Manage Methods</button>
+                <p>Link or manage your preferred payment methods</p>
+                <div class="booking-actions">
+                    <button class="btn btn-success">Manage Methods</button>
+                </div>
             </div>
         </section>
 
         <!-- Support & Help Section -->
         <section id="support-help" class="support-help-section card">
             <h2>Support & Help</h2>
-            <p>Need assistance? Contact our support team or find answers to common questions.</p>
             
-            <div class="info-block" style="margin-top: 20px;">
+            <div class="booking-card">
                 <h3>Submit a New Support Ticket</h3>
                 <form id="submit-ticket-form">
                     <div class="form-group">
@@ -922,20 +1279,18 @@
                 </form>
             </div>
 
-            <div class="info-block" style="margin-top: 20px;">
-                <h3>FAQs (Frequently Asked Questions)</h3>
-                <p>Browse our frequently asked questions for quick answers.</p>
+            <div class="booking-card">
+                <h3>FAQs</h3>
                 <button class="btn btn-primary" id="view-faqs-btn">View FAQs</button>
                 <div id="faqs-list" style="margin-top: 15px;">
                     <p style="text-align: center; color: #777;">Click "View FAQs" to load.</p>
                 </div>
             </div>
 
-            <div class="info-block" style="margin-top: 20px;">
-                <h3>Contact Support Directly</h3>
-                <p>If you can't find your answer, reach out to our support team directly.</p>
-                <p>Email: <a href="mailto: achhutanandjha1@gmail.com" class="text-blue-500 hover:underline"> achhutanandjha1@gmail.com</a></p>
-                <p>Phone:  +91 84391 31459</p>
+            <div class="booking-card">
+                <h3>Contact Support</h3>
+                <p>Email: <a href="mailto: achhutanandjha1@gmail.com">achhutanandjha1@gmail.com</a></p>
+                <p>Phone: +91 84391 31459</p>
             </div>
         </section>
 
@@ -943,14 +1298,14 @@
         <section id="notifications" class="notifications-section card">
             <h2>Notifications</h2>
             <div id="notifications-list">
-                <p style="text-align: center; color: #777;">Loading notifications...</p>
+                <div class="skeleton" style="height: 80px; width: 100%; margin-bottom: 10px;"></div>
+                <div class="skeleton" style="height: 80px; width: 100%; margin-bottom: 10px;"></div>
             </div>
         </section>
 
         <!-- Leave a Review Section -->
         <section id="leave-review" class="leave-review-section card">
             <h2>Leave a Review</h2>
-            <p style="text-align: center; font-size: 1.1em; margin-bottom: 25px; color: #555;">Leave a review for your recent service to help us improve!</p>
             <form id="review-form">
                 <div class="form-group">
                     <label for="review-job-id">Job ID for Review:</label>
@@ -977,18 +1332,65 @@
                 <button type="submit" id="submit-review-btn" class="btn btn-primary">Submit Review</button>
             </form>
         </section>
-        
+
+        <!-- New More Section -->
+        <section id="more-section" class="more-section card">
+            <h2>More Options</h2>
+            <div class="dark-mode-toggle" id="darkModeToggle">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeCheckbox">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <a href="#payments-offers" class="more-option">
+                <i class="fas fa-wallet"></i>
+                <span>Payments & Offers</span>
+            </a>
+            <a href="#notifications" class="more-option">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+            </a>
+            <a href="#leave-review" class="more-option">
+                <i class="fas fa-star"></i>
+                <span>Leave a Review</span>
+            </a>
+            <button id="logout-btn" class="more-option danger-option" style="width: 100%; border: none; background: none; cursor: pointer; text-align: left;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </section>
     </div>
 
-    <footer>
-        <p>
-            <a href="#" class="footer-links">Contact Us</a> |
-            <a href="#" class="footer-links">About TechSeva</a> |
-            <a href="#" class="footer-links">Privacy Policy</a> |
-            <a href="#" class="footer-links">Terms of Use</a>
-        </p>
-        <p>&copy; 2025 TechSeva. All rights reserved.</p>
-    </footer>
+    <!-- Bottom Tab Navigation -->
+    <nav id="app-tab-bar" class="glassmorphism">  
+        <a href="#home" class="tab-item active">  
+            <i class="fas fa-home"></i>  
+            <span>Home</span>  
+        </a>  
+        <a href="#my-bookings" class="tab-item">  
+            <i class="fas fa-calendar-check"></i>  
+            <span>Bookings</span>  
+        </a>  
+        <a href="#my-profile" class="tab-item">  
+            <i class="fas fa-user-cog"></i>  
+            <span>Profile</span>  
+        </a>  
+        <a href="#support-help" class="tab-item">  
+            <i class="fas fa-question-circle"></i>  
+            <span>Help</span>  
+        </a>  
+        <a href="#more-section" class="tab-item">  
+            <i class="fas fa-ellipsis-h"></i>  
+            <span>More</span>  
+        </a>  
+    </nav>
+
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="showSection('#home')">  
+        <i class="fas fa-plus"></i>  
+    </button>
 
     <!-- Message Box for Alerts -->
     <div id="message-container"></div>
@@ -1076,7 +1478,6 @@
 
             // --- Element References (Cached for efficiency) ---
             const welcomeGreeting = document.getElementById('welcome-greeting');
-            const languageSelect = document.getElementById('language-select');
             const bookingForm = document.getElementById('booking-form');
             const useMyLocationBtn = document.getElementById('use-my-location-btn');
             const locationInput = document.getElementById('location-input');
@@ -1093,7 +1494,7 @@
             const reviewForm = document.getElementById('review-form');
             const starRatingContainer = document.getElementById('star-rating-container');
             const selectedRatingInput = document.getElementById('selected-rating');
-            const logoutButton = document.getElementById('logout-btn');
+            const logoutButton = document.getElementById('logout-btn'); // Re-added logout button reference
 
             const profileUpdateForm = document.getElementById('profile-update-form');
             const profileFullNameInput = document.getElementById('profile-full-name');
@@ -1104,12 +1505,9 @@
             const profileLongitudeInput = document.getElementById('profile-longitude');
             const useMyLocationProfileBtn = document.getElementById('use-my-location-profile-btn');
             
-            const topTechniciansList = document.getElementById('top-technicians-list');
-
-            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+            // Updated selectors for new navigation to include the 'More' tab
+            const tabItems = document.querySelectorAll('#app-tab-bar .tab-item');
             const sections = document.querySelectorAll('.container section.card');
-            const menuToggle = document.getElementById('menu-toggle');
-            const mainNavbar = document.getElementById('main-navbar');
 
             const submitTicketForm = document.getElementById('submit-ticket-form');
             const ticketSubjectInput = document.getElementById('ticket-subject');
@@ -1118,12 +1516,62 @@
             const faqsListContainer = document.getElementById('faqs-list');
             const notificationsListContainer = document.getElementById('notifications-list');
 
+            // References for new 'More' section links
+            const moreOptionPaymentsOffers = document.querySelector('#more-section a[href="#payments-offers"]');
+            const moreOptionNotifications = document.querySelector('#more-section a[href="#notifications"]');
+            const moreOptionLeaveReview = document.querySelector('#more-section a[href="#leave-review"]');
+
+            // Dark Mode Elements
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeCheckbox = document.getElementById('darkModeCheckbox');
+
 
             let selectedRating = 0; // State for star rating in review form
             let currentUserData = null; // Stores current user's full data
             let allUserJobs = []; // Stores all fetched jobs for filtering
             let allNotifications = []; // Stores fetched notifications
             let allFAQs = []; // Stores fetched FAQs
+
+
+            // --- Dark Mode Logic ---
+            function applyDarkModePreference() {
+                const isDarkMode = localStorage.getItem('darkMode') === 'enabled';
+                if (isDarkMode) {
+                    document.body.classList.add('dark-mode');
+                    darkModeCheckbox.checked = true;
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    darkModeCheckbox.checked = false;
+                }
+            }
+
+            function toggleDarkMode() {
+                if (document.body.classList.contains('dark-mode')) {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'disabled');
+                    showMessage('Dark mode disabled.', 'info');
+                } else {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'enabled');
+                    showMessage('Dark mode enabled!', 'info');
+                }
+            }
+
+            // Apply dark mode preference on initial load
+            applyDarkModePreference();
+
+            // Event listener for dark mode toggle button
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('click', () => {
+                    toggleDarkMode();
+                });
+            }
+            // Also listen to the checkbox directly for accessibility
+            if (darkModeCheckbox) {
+                darkModeCheckbox.addEventListener('change', () => {
+                    toggleDarkMode();
+                });
+            }
 
 
             // --- Navigation Logic ---
@@ -1142,26 +1590,24 @@
                     console.warn(`[NAVIGATION] Section with ID ${targetId} not found.`);
                 }
 
-                // Update active nav link
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === targetId) {
-                        link.classList.add('active');
+                // Update active tab item (only for main tab bar items)
+                tabItems.forEach(item => {
+                    item.classList.remove('active');
+                    // Check if the targetId matches the href of a main tab item
+                    // Or if the targetId is one of the 'More' sub-sections, activate the 'More' tab
+                    if (item.getAttribute('href') === targetId || 
+                        (['#payments-offers', '#notifications', '#leave-review'].includes(targetId) && item.getAttribute('href') === '#more-section')) {
+                        item.classList.add('active');
                     }
                 });
-
-                // Close the mobile menu if it's open
-                if (mainNavbar.classList.contains('menu-open')) {
-                    mainNavbar.classList.remove('menu-open');
-                }
             }
 
-            // Add event listeners to nav links for section switching
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
+            // Add event listeners to tab items for section switching
+            tabItems.forEach(item => {
+                item.addEventListener('click', (e) => {
                     e.preventDefault();
-                    const targetId = e.target.getAttribute('href');
-                    if (targetId && targetId !== '#') { // Avoid handling logout link here
+                    const targetId = e.target.closest('.tab-item').getAttribute('href'); // Use closest to get the anchor tag
+                    if (targetId) {
                         showSection(targetId);
                         // Trigger data fetching/rendering for specific sections when they become active
                         if (targetId === '#my-bookings') {
@@ -1171,34 +1617,50 @@
                             console.log('[NAVIGATION] Navigating to My Profile. Fetching current user details.');
                             fetchCurrentUser();
                         } else if (targetId === '#home') {
-                            console.log('[NAVIGATION] Navigating to Home. Refreshing user data, technicians.');
+                            console.log('[NAVIGATION] Navigating to Home. Refreshing user data.');
                             fetchCurrentUser();
-                            fetchTopTechnicians();
-                            // Note: Jobs are not automatically re-fetched for home unless an action triggers it (like booking)
-                        } else if (targetId === '#leave-review') {
-                            // Reset review form when navigating directly to it for a fresh start
+                        } else if (targetId === '#notifications') { // This will be triggered if navigated directly from 'More'
+                            console.log('[NAVIGATION] Navigating to Notifications. Fetching notifications.');
+                            fetchNotifications();
+                        } else if (targetId === '#leave-review') { // This will be triggered if navigated directly from 'More'
                             document.getElementById('review-job-id').value = '';
                             selectedRating = 0;
                             selectedRatingInput.value = 0;
                             starRatingContainer.querySelectorAll('.star').forEach(star => star.classList.remove('filled'));
                             document.getElementById('review-text').value = '';
-                        } else if (targetId === '#notifications') {
-                            console.log('[NAVIGATION] Navigating to Notifications. Fetching notifications.');
-                            fetchNotifications();
                         } else if (targetId === '#support-help') {
                             console.log('[NAVIGATION] Navigating to Support & Help. Preparing FAQ section.');
-                            // No automatic fetch for FAQs, user clicks "View FAQs" button
                             faqsListContainer.innerHTML = '<p style="text-align: center; color: #777;">Click "View FAQs" to load.</p>';
                         }
+                        // No specific fetch for #payments-offers or #more-section on direct navigation, as their content is static or triggered by internal buttons.
                     }
                 });
             });
 
-            // --- Hamburger Menu Toggle for Mobile ---
-            if (menuToggle) {
-                menuToggle.addEventListener('click', () => {
-                    console.log('[MENU] Hamburger menu toggled.');
-                    mainNavbar.classList.toggle('menu-open');
+            // Add event listeners for links within the new 'More' section
+            if (moreOptionPaymentsOffers) {
+                moreOptionPaymentsOffers.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showSection('#payments-offers');
+                });
+            }
+            if (moreOptionNotifications) {
+                moreOptionNotifications.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showSection('#notifications');
+                    fetchNotifications(); // Fetch notifications when this section is accessed
+                });
+            }
+            if (moreOptionLeaveReview) {
+                moreOptionLeaveReview.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showSection('#leave-review');
+                    // Reset review form when navigating directly to it for a fresh start
+                    document.getElementById('review-job-id').value = '';
+                    selectedRating = 0;
+                    selectedRatingInput.value = 0;
+                    starRatingContainer.querySelectorAll('.star').forEach(star => star.classList.remove('filled'));
+                    document.getElementById('review-text').value = '';
                 });
             }
 
@@ -1247,52 +1709,6 @@
                     // Consider redirecting to login on critical fetch failure: window.location.href = '/';
                 }
             }
-
-            // --- Fetch & Render Top Technicians ---
-            async function fetchTopTechnicians() {
-                try {
-                    topTechniciansList.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #777;">Loading top technicians...</p>';
-                    console.log('[API CALL] Fetching top technicians from /api/top-technicians...');
-                    const response = await fetch('/api/top-technicians'); 
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response.' }));
-                        throw new Error(`HTTP error! Status: ${response.status}, Message: ${errorData.message || 'No message'}`);
-                    }
-                    const result = await response.json();
-
-                    if (result.success && result.technicians) {
-                        console.log('[API RESPONSE] Successfully fetched top technicians:', result.technicians);
-                        if (result.technicians.length === 0) {
-                            topTechniciansList.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #777;">No top technicians available yet.</p>';
-                        } else {
-                            topTechniciansList.innerHTML = ''; // Clear loading message
-                            result.technicians.slice(0, 5).forEach(technician => { // Display top 5 technicians
-                                const technicianCard = document.createElement('div');
-                                technicianCard.className = 'technician-card';
-                                const ratingDisplay = technician.averageRating ? `<span>${'★'.repeat(Math.round(technician.averageRating))}${'☆'.repeat(5 - Math.round(technician.averageRating))} (${technician.ratingCount || 0} reviews)</span>` : 'No reviews yet';
-                                
-                                technicianCard.innerHTML = `
-                                    <h3>${technician.fullName}</h3>
-                                    <p class="rating-stars">${ratingDisplay}</p>
-                                    <p>Skills: ${technician.skills && technician.skills.length > 0 ? technician.skills.join(', ') : 'N/A'}</p>
-                                    <p>Location: ${technician.workingLocation && technician.workingLocation.address ? technician.workingLocation.address : 'N/A'}</p>
-                                `;
-                                topTechniciansList.appendChild(technicianCard);
-                            });
-                        }
-                    } else {
-                        console.error('[API RESPONSE] Failed to fetch top technicians (API response issue):', result.message || 'Unknown error', result);
-                        topTechniciansList.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #777;">Failed to load top technicians. Please try again.</p>';
-                        showMessage('Failed to load top technicians.', 'error');
-                    }
-                }
-                catch (error) {
-                    console.error('[FETCH ERROR] Error fetching top technicians (Network/Unhandled error):', error);
-                    topTechniciansList.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: #777;">Network error. Could not load top technicians.</p>';
-                    showMessage('Network error while loading top technicians. Please check server status.', 'error');
-                }
-            }
-
 
             // --- Fetch All User Jobs and then Render based on Filter ---
             async function fetchAndRenderUserJobs(filterType = 'booked') { // Default filter is 'booked'
@@ -1722,7 +2138,8 @@
                 const technicianName = button.dataset.technicianName || 'N/A';
                 const customerName = currentUserData ? currentUserData.fullName : 'Customer'; 
                 // Handle location data which might be a string or stringified object
-                const jobLocation = button.dataset.jobLocation ? (typeof button.dataset.jobLocation === 'string' && button.dataset.jobLocation.startsWith('{') ? JSON.parse(button.dataset.jobLocation).address : button.dataset.jobLocation) : 'N/A';
+                const jobLocation = button.dataset.jobLocation ? (typeof button.dataset.jobLocation === 'string' ? button.dataset.jobLocation : (typeof button.dataset.jobLocation === 'object' && button.dataset.jobLocation.address ? button.dataset.jobLocation.address : 'N/A')) : 'N/A';
+
 
                 console.log(`[INVOICE] Generating invoice for Job ID: ${jobId}`);
                 button.disabled = true;
@@ -1893,7 +2310,7 @@
                 doc.setFontSize(10);
                 doc.setTextColor(100, 100, 100);
                 doc.text("Thank you for choosing TechSeva for your appliance service needs!", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 40, { align: "center" });
-                doc.text("Contact us:  achhutanandjha1@gmail.com | https://tech-seva.onrender.com/", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 25, { align: "center" });
+                doc.text("Contact us: achhutanandjha1@gmail.com | https://tech-seva.onrender.com/", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 25, { align: "center" });
 
 
                 doc.save(`invoice_job_${jobId}.pdf`);
@@ -2138,7 +2555,7 @@
                 doc.setFontSize(10);
                 doc.setTextColor(100, 100, 100);
                 doc.text("Thank you for choosing TechSeva!", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 40, { align: "center" });
-                doc.text("For support:  achhutanandjha1@gmail.com | +91 84391 31459", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 25, { align: "center" });
+                doc.text("For support: achhutanandjha1@gmail.com | +91 84391 31459", doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 25, { align: "center" });
 
                 doc.save(`warranty_job_${jobId}.pdf`);
                 showMessage(`Warranty card for Job ID: ${jobId} downloaded.`, 'success');
@@ -2146,15 +2563,6 @@
                 button.textContent = 'Download Warranty';
             }
 
-
-            // --- Language Select Logic (Dummy functionality for now) ---
-            if (languageSelect) {
-                languageSelect.addEventListener('change', (e) => {
-                    showMessage(`Language changed to: ${e.target.value}`);
-                    console.log(`[LANGUAGE] Language changed to: ${e.target.value}`);
-                    // Implement actual language change logic here (e.g., fetch new translations)
-                });
-            }
 
             // --- Geolocation Function (Reusable for both booking and profile forms) ---
             async function getGeolocationAndAddress(locationInputField, latitudeInputField, longitudeInputField, buttonElement, originalButtonText) {
@@ -2733,9 +3141,6 @@
             showSection('#home'); // Show the 'Home' section by default when the page loads
             fetchCurrentUser(); // Fetch and display the current user's profile information
             fetchAndRenderUserJobs('booked'); // Fetch all jobs and display them in the 'Booked' tab initially
-            fetchTopTechnicians(); // Fetch and display the top-rated technicians
-
-            // Notifications and FAQs will be fetched dynamically when the user navigates to their respective sections.
         });
     </script>
 </body>
