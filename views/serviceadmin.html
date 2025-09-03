@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva Service Admin Dashboard</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Lighter, subtle background */
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        /* Header / Navbar */
+        header {
+            background-color: #2c3e50; /* Dark blue/grey */
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-svg {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .platform-name {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .logout-btn {
+            background-color: #e74c3c; /* Red */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #c0392b; /* Darker red */
+        }
+
+        /* Layout Container */
+        .container {
+            display: flex;
+            flex: 1; /* Allows main content to grow */
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 250px;
+            background-color: #34495e; /* Darker blue/grey */
+            color: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0; /* Prevents sidebar from shrinking */
+        }
+
+        .sidebar-menu ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-menu li a {
+            display: block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar-menu li a:hover,
+        .sidebar-menu li a.active {
+            background-color: #2c3e50; /* Slightly darker than sidebar */
+            border-left: 5px solid #3498db; /* Blue accent */
+            padding-left: 15px;
+        }
+
+        /* Main Content */
+        main {
+            flex-grow: 1; /* Allows main content to take remaining space */
+            padding: 20px;
+            background-color: #f9f9f9; /* Light grey */
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Overview Cards */
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: #eaf2f8; /* Light blue */
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            font-size: 1.2em;
+            color: #3498db; /* Blue */
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Forms */
+        .admin-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-end; /* Align items to the bottom */
+        }
+
+        .form-group {
+            flex: 1 1 200px; /* Default flex for form groups */
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .form-group label {
+            font-size: 0.9em;
+            color: #555;
+            font-weight: bold;
+        }
+        .admin-form input[type="text"],
+        .admin-form input[type="email"],
+        .admin-form input[type="number"],
+        .admin-form input[type="date"],
+        .admin-form select,
+        .admin-form textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9em;
+            width: 100%; /* Take full width of its flex container */
+            box-sizing: border-box; /* Include padding/border in width */
+        }
+        .admin-form textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-group.full-width {
+            flex-basis: 100%;
+        }
+        .form-group.checkbox-group {
+            flex-direction: row;
+            align-items: center;
+            gap: 5px;
+        }
+        .form-group.checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .admin-form button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+            flex-shrink: 0; /* Prevents button from shrinking */
+        }
+        .admin-form button:hover {
+            background-color: #2980b9;
+        }
+        .admin-form button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        /* Tables */
+        .data-table-container {
+            overflow-x: auto; /* Allows horizontal scrolling for tables on smaller screens */
+            width: 100%;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            min-width: 700px; /* Ensure table has a minimum width for scrolling */
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #ecf0f1; /* Light grey for headers */
+            font-weight: bold;
+            color: #555;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9; /* Alternate row background */
+        }
+
+        .data-table button, .data-table select {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-right: 5px;
+            transition: background-color 0.3s ease;
+            white-space: nowrap; /* Prevents button text from wrapping */
+            vertical-align: middle;
+        }
+
+        .data-table .approve-btn {
+            background-color: #28a745; /* Green */
+            color: white;
+        }
+        .data-table .approve-btn:hover {
+            background-color: #218838;
+        }
+
+        .data-table .reject-btn, .data-table .delete-btn, .data-table .suspend-btn {
+            background-color: #dc3545; /* Red */
+            color: white;
+        }
+        .data-table .reject-btn:hover, .data-table .delete-btn:hover, .data-table .suspend-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .data-table .edit-btn, .data-table .activate-btn {
+            background-color: #ffc107; /* Orange/Yellow */
+            color: #333;
+        }
+        .data-table .edit-btn:hover, .data-table .activate-btn:hover {
+            background-color: #e0a800;
+        }
+
+        .data-table .mark-paid-btn, .data-table .resolve-ticket-btn {
+            background-color: #3498db; /* Blue */
+            color: white;
+        }
+        .data-table .mark-paid-btn:hover, .data-table .resolve-ticket-btn:hover {
+            background-color: #2980b9;
+        }
+        .data-table button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+        .status-active { background-color: #d4edda; color: #155724; } /* Greenish */
+        .status-suspended { background-color: #fff3cd; color: #856404; } /* Yellowish */
+        .status-pending { background-color: #f8d7da; color: #721c24; } /* Reddish */
+        .status-approved { background-color: #d1ecf1; color: #0c5460; } /* Light blue */
+        .status-rejected { background-color: #f8d7da; color: #721c24; }
+        .status-paid { background-color: #d4edda; color: #155724; }
+        .status-completed { background-color: #cce5ff; color: #004085; }
+
+
+        /* Charts */
+        .chart-container {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .chart {
+            background-color: #f0f8ff; /* Very light blue */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            flex: 1; /* Allows charts to take equal space */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+
+        .chart h3 {
+            color: #3498db;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .bar-chart-bars {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 150px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        .bar {
+            width: 30px;
+            background-color: #3498db;
+            margin: 0 5px;
+            border-radius: 3px 3px 0 0;
+            transition: height 0.5s ease;
+            position: relative;
+        }
+
+        .bar span {
+            position: absolute;
+            top: -20px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8em;
+            color: #555;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto; /* Pushes footer to the bottom */
+            font-size: 0.9em;
+        }
+
+        /* Message Box for Alerts */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10000; /* High z-index to be on top */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: fadeOut 0.5s forwards 4.5s; /* Fade out after 4.5s (total 5s display) */
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        /* Keyframe for fadeOut animation */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Custom Confirmation Modal */
+        .confirmation-modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 10001; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .confirmation-modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 80%; /* Could be more specific */
+            max-width: 400px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+            text-align: center;
+        }
+
+        .confirmation-modal-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .confirmation-modal-content .modal-buttons button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .confirmation-modal-content .modal-buttons button.cancel {
+            background-color: #ccc;
+            color: #333;
+        }
+
+        .confirmation-modal-content .modal-buttons button:hover {
+            background-color: #2980b9;
+        }
+        .confirmation-modal-content .modal-buttons button.cancel:hover {
+            background-color: #bbb;
+        }
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                margin: 10px;
+                box-shadow: none;
+            }
+
+            aside {
+                width: 100%;
+                padding: 10px 0;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                position: relative; /* Allow toggle button to work */
+            }
+
+            .sidebar-menu {
+                display: none; /* Hidden by default on mobile */
+            }
+
+            .sidebar-menu.active {
+                display: block;
+            }
+
+            .menu-toggle {
+                display: block; /* Show toggle button on mobile */
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                width: 100%;
+                text-align: left;
+                cursor: pointer;
+                font-size: 1em;
+                margin-bottom: 10px;
+            }
+
+            main {
+                padding: 15px;
+            }
+
+            .overview-cards {
+                grid-template-columns: 1fr; /* Stack cards vertically */
+            }
+
+            .data-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch; /* for smoother scrolling on iOS */
+            }
+
+            .data-table {
+                min-width: 600px; /* Maintain minimum width for scrollability */
+            }
+
+            .chart {
+                flex-basis: 100%; /* Charts take full width */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <svg class="logo-svg" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93H3.07C3.52 16.14 6.4 19.02 10 19.93V19.93zM10 4.07V4c-3.6.91-6.48 3.79-6.93 7h1.07c0-4.08 3.05-7.39 7-7.93zm2 15.93v-2.07c4.2-.45 7.47-3.73 7.93-7.93H20.93C20.48 16.14 17.6 19.02 14 19.93zm0-15.93V4.07c3.95.49 7 3.85 7 7.93h1.07c-.45-4.14-3.33-7.02-6.93-7z"/>
+            </svg>
+            <span class="platform-name">TechSeva Service Admin</span>
+        </div>
+        <button id="logout-btn" class="logout-btn">Logout</button>
+    </header>
+
+    <div class="container">
+        <aside>
+            <button class="menu-toggle" id="menu-toggle-btn">Menu</button>
+            <nav class="sidebar-menu" id="sidebar-menu">
+                <ul>
+                    <li><a href="#overview-section" class="active">Dashboard</a></li>
+                    <li><a href="#service-providers-section">Service Providers</a></li>
+                    <li><a href="#service-docs-section">Service Docs & KYC</a></li>
+                    <li><a href="#promotions-section">Promotions</a></li>
+                    <li><a href="#performance-reports-section">Performance Reports</a></li>
+                    <li><a href="#fee-recommendations-section">Fee Recommendations</a></li>
+                    <li><a href="#complaints-section">Complaints & Tickets</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main>
+            <h1>Service Admin Dashboard</h1>
+            <p style="text-align: center; color: #555; margin-bottom: 20px;">Managing services for: <strong id="assigned-services-display">Loading Services...</strong></p>
+
+            <section id="overview-section">
+                <h2>Overview</h2>
+                <div class="overview-cards">
+                    <div class="card">
+                        <h3>Total Providers (Assigned Services)</h3>
+                        <p id="total-providers-service">Loading...</p>
+                    </div>
+                    <div class="card">
+                        <h3>Active Providers (Assigned Services)</h3>
+                        <p id="active-providers-service">Loading...</p>
+                    </div>
+                    <div class="card">
+                        <h3>Pending KYC (Assigned Services)</h3>
+                        <p id="pending-kyc-service">Loading...</p>
+                    </div>
+                    <div class="card">
+                        <h3>Completed Jobs (Assigned Services, This Month)</h3>
+                        <p id="completed-jobs-service-month">Loading...</p>
+                    </div>
+                    <div class="card">
+                        <h3>Open Tickets (Assigned Services)</h3>
+                        <p id="open-tickets-service">Loading...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="service-providers-section" style="display: none;">
+                <h2>Service Providers (Technicians)</h2>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Assigned Skills</th>
+                                <th>Status</th>
+                                <th>KYC Status</th>
+                                <th>Avg. Rating</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="service-providers-table-body">
+                            <tr><td colspan="8" style="text-align: center; color: #777;">Loading service providers...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="service-docs-section" style="display: none;">
+                <h2>Service Document & KYC Verification</h2>
+                <p>Manage KYC and other service-specific document approvals for technicians under your assigned services.</p>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>PAN</th>
+                                <th>Aadhaar</th>
+                                <!-- Add columns for other service-specific docs if applicable -->
+                                <th>KYC Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kyc-docs-table-body">
+                            <tr><td colspan="7" style="text-align: center; color: #777;">No pending documents for review.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="promotions-section" style="display: none;">
+                <h2>Promotions & Coupons</h2>
+                <h3>Suggest New Service-Specific Coupon to Superadmin</h3>
+                <form id="suggest-service-coupon-form" class="admin-form">
+                    <div class="form-group full-width">
+                        <label for="service-coupon-code">Coupon Code:</label>
+                        <input type="text" id="service-coupon-code" placeholder="e.g., PLUMBER10OFF" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="service-coupon-discount-type">Discount Type:</label>
+                        <select id="service-coupon-discount-type" required>
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount (₹)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="service-coupon-value">Discount Value:</label>
+                        <input type="number" id="service-coupon-value" step="0.01" placeholder="e.g., 10 or 50" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="service-coupon-min-amount">Min. Order Amount (₹):</label>
+                        <input type="number" id="service-coupon-min-amount" step="0.01" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="service-coupon-expiry-date">Expiry Date:</label>
+                        <input type="date" id="service-coupon-expiry-date" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="service-coupon-description">Description/Reason:</label>
+                        <textarea id="service-coupon-description" placeholder="Why is this coupon needed for your assigned services?"></textarea>
+                    </div>
+                    <button type="submit">Suggest Service Coupon</button>
+                </form>
+
+                <h3>Existing Service Promotions (View Only)</h3>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Discount</th>
+                                <th>Min. Amt</th>
+                                <th>Expiry</th>
+                                <th>Status</th>
+                                <th>Target Service(s)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="service-promotions-table-body">
+                            <tr><td colspan="6" style="text-align: center; color: #777;">No service promotions found.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="performance-reports-section" style="display: none;">
+                <h2>Service Performance Reports</h2>
+                <div class="chart-container">
+                    <div class="chart">
+                        <h3>Jobs Completed by Service (Monthly)</h3>
+                        <div class="bar-chart-bars" id="jobs-by-service-chart">
+                            <p style="text-align: center; color: #777;">Loading chart data...</p>
+                        </div>
+                        <div id="jobs-by-service-labels" style="display:flex; justify-content: space-around; font-size:0.8em; color:#777; margin-top: 5px;">
+                            <!-- Service labels will be generated by JS -->
+                        </div>
+                    </div>
+                    <div class="chart">
+                        <h3>Provider Ratings (Assigned Services)</h3>
+                        <div class="bar-chart-bars" id="provider-ratings-chart">
+                            <p style="text-align: center; color: #777;">Loading chart data...</p>
+                        </div>
+                        <div id="provider-ratings-labels" style="display:flex; justify-content: space-around; font-size:0.8em; color:#777; margin-top: 5px;">
+                            <!-- Provider names will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-form" style="margin-top: 30px;">
+                    <button id="export-service-performance-csv">Export Service Performance (CSV)</button>
+                </div>
+            </section>
+
+            <section id="fee-recommendations-section" style="display: none;">
+                <h2>Fee Change Recommendations</h2>
+                <p>Suggest service fee adjustments to the Superadmin or Finance Officer for your assigned services.</p>
+                <form id="fee-recommendation-form" class="admin-form">
+                    <div class="form-group">
+                        <label for="recommend-service-type">Service Type:</label>
+                        <select id="recommend-service-type" required>
+                             <!-- Dynamically populated from assigned services -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="recommend-fee-type">Fee Type:</label>
+                        <select id="recommend-fee-type" required>
+                            <option value="basePrice">Base Price</option>
+                            <option value="commissionRate">Commission Rate</option>
+                            <option value="laborCost">Labor Cost (Avg)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="recommend-current-value">Current Value:</label>
+                        <input type="number" id="recommend-current-value" step="0.01" readonly disabled>
+                    </div>
+                    <div class="form-group">
+                        <label for="recommend-new-value">New Proposed Value:</label>
+                        <input type="number" id="recommend-new-value" step="0.01" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="recommend-reason">Reason for Recommendation:</label>
+                        <textarea id="recommend-reason" placeholder="Explain why this fee change is necessary (e.g., market change, cost of parts, etc.)" required></textarea>
+                    </div>
+                    <button type="submit">Submit Recommendation</button>
+                </form>
+            </section>
+
+            <section id="complaints-section" style="display: none;">
+                <h2>Complaints & Support Tickets (Service-wise)</h2>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Raised By</th>
+                                <th>Subject</th>
+                                <th>Service Type</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Assigned To</th>
+                                <th>Last Update</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tickets-table-body">
+                            <tr><td colspan="9" style="text-align: center; color: #777;">No service-related tickets found.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 TechSeva. All rights reserved.</p>
+    </footer>
+
+    <!-- Message Box for Alerts -->
+    <div id="message-container"></div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmation-modal" class="confirmation-modal">
+        <div class="confirmation-modal-content">
+            <h3 id="confirmation-message"></h3>
+            <div class="modal-buttons">
+                <button id="confirm-yes">Yes</button>
+                <button id="confirm-no" class="cancel">No</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Utility Functions ---
+        const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            // Remove any existing messages to only show the latest
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+            setTimeout(() => {
+                // Fade out and remove the message box
+                messageBox.style.opacity = '0';
+                setTimeout(() => messageBox.remove(), 500); // Wait for fadeOut animation
+            }, 4500); // Message visible for 4.5 seconds before fading out
+        };
+
+        const showConfirmation = (message, onConfirm) => {
+            const modal = document.getElementById('confirmation-modal');
+            const confirmMessage = document.getElementById('confirmation-message');
+            const confirmYes = document.getElementById('confirm-yes');
+            const confirmNo = document.getElementById('confirm-no');
+
+            confirmMessage.textContent = message;
+            modal.style.display = 'flex'; // Show the modal
+
+            // Clear previous event listeners
+            confirmYes.onclick = null;
+            confirmNo.onclick = null;
+
+            confirmYes.onclick = () => {
+                onConfirm(true);
+                modal.style.display = 'none'; // Hide the modal
+            };
+            confirmNo.onclick = () => {
+                onConfirm(false);
+                modal.style.display = 'none'; // Hide the modal
+            };
+        };
+
+
+        // --- Global State for current active section and user data ---
+        let currentActiveSectionId = 'overview-section';
+        let currentUserData = null; // To store logged-in user's details, including assignedCities
+        let allApplianceTypes = []; // Store all appliance types for dropdowns
+
+        // Function to show/hide sections
+        const showSection = (sectionId) => {
+            const sections = document.querySelectorAll('main section');
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+            currentActiveSectionId = sectionId; // Update active section state
+        };
+
+        async function fetchServiceAdminData() {
+            try {
+                // Fetch current user details first to get assigned services/skills
+                const userResponse = await fetch('/api/user/me');
+                if (!userResponse.ok) throw new Error(`User data fetch failed: ${userResponse.status} ${userResponse.statusText}`);
+                const userResult = await userResponse.json();
+
+                if (!userResult.success || !userResult.user) {
+                    showMessage(userResult.message || 'Failed to fetch user data. Please login.', 'error');
+                    setTimeout(() => { window.location.href = '/'; }, 1500);
+                    return;
+                }
+                currentUserData = userResult.user;
+                document.getElementById('assigned-services-display').textContent = currentUserData.skills && currentUserData.skills.length > 0 
+                                                                               ? currentUserData.skills.join(', ') 
+                                                                               : 'N/A (No services assigned)';
+
+                // Fetch all appliance types (needed for forms and filtering)
+                const applianceTypesResponse = await fetch('/api/admin/appliance-types'); 
+                if (!applianceTypesResponse.ok) throw new Error(`Appliance types fetch failed: ${applianceTypesResponse.status} ${applianceTypesResponse.statusText}`);
+                const applianceTypesResult = await applianceTypesResponse.json();
+                if (applianceTypesResult.success) {
+                    allApplianceTypes = applianceTypesResult.applianceTypes;
+                    populateServiceTypeDropdowns(); // Populate dropdowns after fetching
+                } else {
+                    console.error('Failed to fetch appliance types:', applianceTypesResult.message);
+                    showMessage('Failed to load appliance types for dropdowns.', 'error');
+                }
+
+                // Fetch overview data (service-scoped)
+                const overviewResponse = await fetch('/api/serviceadmin/dashboard-overview');
+                if (!overviewResponse.ok) throw new Error(`Dashboard overview fetch failed: ${overviewResponse.status} ${overviewResponse.statusText}`);
+                const overviewResult = await overviewResponse.json();
+
+                if (overviewResult.success) {
+                    document.getElementById('total-providers-service').textContent = overviewResult.data.totalProviders;
+                    document.getElementById('active-providers-service').textContent = overviewResult.data.activeProviders;
+                    document.getElementById('pending-kyc-service').textContent = overviewResult.data.pendingKycApprovals;
+                    document.getElementById('completed-jobs-service-month').textContent = overviewResult.data.completedJobsThisMonth;
+                    document.getElementById('open-tickets-service').textContent = overviewResult.data.openTickets;
+                } else {
+                    showMessage(overviewResult.message || 'Failed to load overview data.', 'error');
+                }
+
+                // Fetch all relevant data for tables using general admin endpoints
+                // Using Promise.all for parallel fetching
+                const [usersResponse, jobsResponse, ticketsResponse, promotionsResponse] = await Promise.all([
+                    fetch('/api/admin/users'),
+                    fetch('/api/admin/jobs'),
+                    fetch('/api/admin/tickets'),
+                    fetch('/api/admin/promotions')
+                ]);
+
+                // Check each response individually before parsing JSON
+                if (!usersResponse.ok) throw new Error(`Users fetch failed: ${usersResponse.status} ${usersResponse.statusText}`);
+                if (!jobsResponse.ok) throw new Error(`Jobs fetch failed: ${jobsResponse.status} ${jobsResponse.statusText}`);
+                if (!ticketsResponse.ok) throw new Error(`Tickets fetch failed: ${ticketsResponse.status} ${ticketsResponse.statusText}`);
+                if (!promotionsResponse.ok) throw new Error(`Promotions fetch failed: ${promotionsResponse.status} ${promotionsResponse.statusText}`);
+
+                const usersResult = await usersResponse.json();
+                const jobsResult = await jobsResponse.json();
+                const ticketsResult = await ticketsResponse.json();
+                const promotionsResult = await promotionsResponse.json();
+
+                // Now check the 'success' flag from the JSON payload
+                if (usersResult.success && jobsResult.success && ticketsResult.success && promotionsResult.success) {
+                    // Filter users to only show technicians relevant to this Service Admin for 'Service Providers' table
+                    const allUsers = usersResult.users.filter(user => 
+                        user.role === 'technician' && currentUserData.skills.some(skill => user.skills.includes(skill))
+                    );
+                    const allJobs = jobsResult.jobs; 
+                    const allTickets = ticketsResult.tickets; 
+                    const allPromotions = promotionsResult.promotions; 
+
+                    populateServiceProvidersTable(allUsers);
+                    await fetchKycDocsForServiceAdmin(); 
+                    populatePromotionsTable(allPromotions);
+                    
+                    const allAdminsResponse = await fetch('/api/admin/users'); 
+                    if (!allAdminsResponse.ok) throw new Error(`All admins fetch failed: ${allAdminsResponse.status} ${allAdminsResponse.statusText}`);
+                    const allAdminsResult = await allAdminsResponse.json();
+                    let assignableAdmins = [];
+                    if (allAdminsResult.success) {
+                        assignableAdmins = allAdminsResult.users.filter(user => 
+                            ['Superadmin', 'Serviceadmin', 'Supportagent'].includes(user.role)
+                        );
+                    } else {
+                        console.error('Failed to fetch assignable admins:', allAdminsResult.message);
+                    }
+
+                    populateComplaintsTable(allTickets, assignableAdmins); 
+                    renderCharts(allJobs, allUsers, allApplianceTypes, currentUserData.skills);
+
+                } else {
+                    // If any of the internal 'success' flags are false, show a more specific error
+                    const errorMessageParts = [];
+                    if (!usersResult.success) errorMessageParts.push(usersResult.message || 'Users data failed.');
+                    if (!jobsResult.success) errorMessageParts.push(jobsResult.message || 'Jobs data failed.');
+                    if (!ticketsResult.success) errorMessageParts.push(ticketsResult.message || 'Tickets data failed.');
+                    if (!promotionsResult.success) errorMessageParts.push(promotionsResult.message || 'Promotions data failed.');
+                    
+                    showMessage(errorMessageParts.join(' ') || 'Failed to load Service Admin dashboard data.', 'error');
+                    console.error('Failed to load Service Admin data:', errorMessageParts.join(' '));
+                }
+            } catch (error) {
+                // This catch block will now receive more specific error messages from the 'throw new Error' statements
+                showMessage(`Error fetching Service Admin data: ${error.message}. Please ensure the server is running and all API endpoints are returning valid responses.`, 'error');
+                console.error('Error fetching Service Admin data:', error);
+            }
+        }
+
+        // --- NEW FUNCTION: Fetch all pending KYC technicians for Serviceadmin ---
+        async function fetchKycDocsForServiceAdmin() {
+            try {
+                const response = await fetch('/api/serviceadmin/all-pending-kyc-technicians'); // Call the new endpoint
+                if (!response.ok) throw new Error(`Pending KYC fetch failed: ${response.status} ${response.statusText}`);
+                const result = await response.json();
+                if (result.success) {
+                    populateServiceDocsTable(result.technicians); // Pass the fetched technicians to your populate function
+                } else {
+                    showMessage(result.message || 'Failed to load pending KYC documents.', 'error');
+                    console.error('Failed to load pending KYC:', result.message);
+                }
+            } catch (error) {
+                showMessage(`Error fetching KYC data: ${error.message}. Please ensure the server is running or the endpoint is correct.`, 'error');
+                console.error('Error fetching KYC data:', error);
+            }
+        }
+        // --- END NEW FUNCTION ---
+
+
+        function populateServiceTypeDropdowns() {
+            const selectElement = document.getElementById('recommend-service-type');
+            if (!selectElement) return;
+
+            selectElement.innerHTML = '<option value="">Select Service Type</option>';
+            // Filter appliance types to only show those assigned to this Service Admin
+            const assignedApplianceNames = currentUserData.skills; // Assuming skills array holds appliance names
+
+            allApplianceTypes.filter(app => assignedApplianceNames.includes(app.name)).forEach(appliance => {
+                const option = document.createElement('option');
+                option.value = appliance.name;
+                option.textContent = appliance.name;
+                selectElement.appendChild(option);
+            });
+        }
+
+
+        function populateServiceProvidersTable(technicians) {
+            const tableBody = document.getElementById('service-providers-table-body');
+            tableBody.innerHTML = '';
+
+            if (technicians.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #777;">No service providers found for your assigned services.</td></tr>';
+                return;
+            }
+
+            technicians.forEach(tech => {
+                const row = tableBody.insertRow();
+                let statusClass = '';
+                if (tech.status === 'active') statusClass = 'status-active';
+                else if (tech.status === 'suspended') statusClass = 'status-suspended';
+                
+                let kycClass = '';
+                if (tech.kycStatus === 'pending') kycClass = 'status-pending';
+                else if (tech.kycStatus === 'approved') kycClass = 'status-approved';
+                else if (tech.kycStatus === 'rejected') kycClass = 'status-rejected';
+
+                row.innerHTML = `
+                    <td data-label="Name">${tech.fullName}</td>
+                    <td data-label="Email">${tech.email}</td>
+                    <td data-label="Phone">${tech.phoneNumber || 'N/A'}</td>
+                    <td data-label="Assigned Skills">${tech.skills ? tech.skills.join(', ') : 'N/A'}</td>
+                    <td data-label="Status"><span class="status-badge ${statusClass}">${tech.status}</span></td>
+                    <td data-label="KYC Status"><span class="status-badge ${kycClass}">${tech.kycStatus}</span></td>
+                    <td data-label="Avg. Rating">${tech.averageRating ? tech.averageRating.toFixed(1) : 'N/A'} (${tech.ratingCount || 0} reviews)</td>
+                    <td data-label="Actions">
+                        ${tech.status === 'active' ? `<button class="suspend-btn" data-user-id="${tech._id}">Suspend</button>` : ''}
+                        ${tech.status === 'suspended' ? `<button class="activate-btn" data-user-id="${tech._id}">Activate</button>` : ''}
+                    </td>
+                `;
+            });
+            attachServiceProviderListeners();
+        }
+
+        function attachServiceProviderListeners() {
+            // Remove previous listeners (cloning to remove old ones)
+            document.querySelectorAll('#service-providers-table-body button').forEach(button => {
+                button.replaceWith(button.cloneNode(true));
+            });
+
+            document.querySelectorAll('#service-providers-table-body .suspend-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const userId = e.target.dataset.userId;
+                    showConfirmation('Are you sure you want to suspend this technician?', async (confirmed) => {
+                        if (confirmed) {
+                            try {
+                                // Service Admin can update status of technicians under their assigned services
+                                const response = await fetch(`/api/admin/users/${userId}/update-status`, { 
+                                    method: 'POST', 
+                                    headers: { 'Content-Type': 'application/json' }, 
+                                    body: JSON.stringify({ status: 'suspended' }) 
+                                });
+                                const result = await response.json();
+                                if (result.success) {
+                                    showMessage(result.message, 'success');
+                                    fetchServiceAdminData();
+                                } else {
+                                    showMessage(result.message, 'error');
+                                }
+                            } catch (error) { showMessage('Network error.', 'error'); console.error(error); }
+                        }
+                    });
+                });
+            });
+            document.querySelectorAll('#service-providers-table-body .activate-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const userId = e.target.dataset.userId;
+                    showConfirmation('Are you sure you want to activate this technician?', async (confirmed) => {
+                        if (confirmed) {
+                            try {
+                                // Service Admin can update status of technicians under their assigned services
+                                const response = await fetch(`/api/admin/users/${userId}/update-status`, { 
+                                    method: 'POST', 
+                                    headers: { 'Content-Type': 'application/json' }, 
+                                    body: JSON.stringify({ status: 'active' }) 
+                                });
+                                const result = await response.json();
+                                if (result.success) {
+                                    showMessage(result.message, 'success');
+                                    fetchServiceAdminData();
+                                } else {
+                                    showMessage(result.message, 'error');
+                                }
+                            } catch (error) { showMessage('Network error.', 'error'); console.error(error); }
+                        }
+                    });
+                });
+            });
+        }
+
+        function populateServiceDocsTable(technicians) {
+            const tableBody = document.getElementById('kyc-docs-table-body');
+            tableBody.innerHTML = '';
+
+            const pendingTechnicians = technicians.filter(user => user.kycStatus === 'pending');
+
+            if (pendingTechnicians.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">No pending KYC or documents for review.</td></tr>';
+                return;
+            }
+
+            pendingTechnicians.forEach(tech => {
+                const row = tableBody.insertRow();
+                let kycClass = '';
+                if (tech.kycStatus === 'pending') kycClass = 'status-pending';
+                
+                row.innerHTML = `
+                    <td data-label="Name">${tech.fullName}</td>
+                    <td data-label="Email">${tech.email}</td>
+                    <td data-label="Phone">${tech.phoneNumber || 'N/A'}</td>
+                    <td data-label="PAN">${tech.pan || 'N/A'}</td>
+                    <td data-label="Aadhaar">${tech.aadhaar || 'N/A'}</td>
+                    <td data-label="KYC Status"><span class="status-badge ${kycClass}">${tech.kycStatus}</span></td>
+                    <td data-label="Actions">
+                        <button class="approve-btn" data-user-id="${tech._id}">Approve KYC</button>
+                        <button class="reject-btn" data-user-id="${tech._id}">Reject KYC</button>
+                    </td>
+                `;
+            });
+            attachServiceDocListeners();
+        }
+
+        function attachServiceDocListeners() {
+            // Re-attach listeners (cloning to remove old ones)
+            document.querySelectorAll('#kyc-docs-table-body .approve-btn, #kyc-docs-table-body .reject-btn').forEach(button => {
+                button.replaceWith(button.cloneNode(true));
+            });
+
+            document.querySelectorAll('#kyc-docs-table-body .approve-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const userId = e.target.dataset.userId;
+                    showConfirmation('Are you sure you want to approve this technician\'s KYC?', async (confirmed) => {
+                        if (confirmed) {
+                            try {
+                                // Service Admin can approve/reject KYC for technicians under their assigned services
+                                const response = await fetch(`/api/admin/users/${userId}/grant-technician`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                                const result = await response.json();
+                                if (result.success) {
+                                    showMessage(result.message, 'success');
+                                    fetchKycDocsForServiceAdmin(); // Refresh only the KYC table
+                                } else {
+                                    showMessage(result.message, 'error');
+                                }
+                            } catch (error) { showMessage('Network error.', 'error'); console.error(error); }
+                        }
+                    });
+                });
+            });
+
+            document.querySelectorAll('#kyc-docs-table-body .reject-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const userId = e.target.dataset.userId;
+                    showConfirmation('Are you sure you want to reject this technician\'s KYC?', async (confirmed) => {
+                        if (confirmed) {
+                            try {
+                                // Service Admin can approve/reject KYC for technicians under their assigned services
+                                const response = await fetch(`/api/admin/users/${userId}/reject-technician`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+                                const result = await response.json();
+                                if (result.success) {
+                                    showMessage(result.message, 'success');
+                                    fetchKycDocsForServiceAdmin(); // Refresh only the KYC table
+                                } else {
+                                    showMessage(result.message, 'error');
+                                }
+                            } catch (error) { showMessage('Network error.', 'error'); console.error(error); }
+                        }
+                    });
+                });
+            });
+        }
+
+
+        function populatePromotionsTable(promotions) {
+            const tableBody = document.getElementById('service-promotions-table-body');
+            tableBody.innerHTML = '';
+
+            // Promotions are already filtered by backend based on serviceadmin's skills
+            const relevantPromotions = promotions; 
+
+            if (relevantPromotions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #777;">No service-specific promotions found.</td></tr>';
+                return;
+            }
+
+            relevantPromotions.forEach(promo => {
+                const expiryDate = new Date(promo.expiryDate).toLocaleDateString();
+                const discount = promo.discountType === 'percentage' ? `${promo.discountValue}%` : `₹${promo.discountValue.toFixed(2)}`;
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td data-label="Code">${promo.couponCode}</td>
+                    <td data-label="Discount">${discount}</td>
+                    <td data-label="Min. Amt">${promo.minOrderAmount ? `₹${promo.minOrderAmount.toFixed(2)}` : 'None'}</td>
+                    <td data-label="Expiry">${expiryDate}</td>
+                    <td data-label="Status"><span class="status-badge status-${promo.status.toLowerCase()}">${promo.status}</span></td>
+                    <td data-label="Target Service(s)">${promo.targetServices && promo.targetServices.length > 0 ? promo.targetServices.join(', ') : 'N/A'}</td>
+                `;
+            });
+        }
+
+        function populateComplaintsTable(tickets, assignableAdmins) {
+            const tableBody = document.getElementById('tickets-table-body');
+            tableBody.innerHTML = '';
+
+            if (tickets.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #777;">No service-related tickets found.</td></tr>';
+                return;
+            }
+
+            tickets.forEach(ticket => {
+                // Use the new `raisedByDisplay` and `assignedToDisplay` fields from the backend
+                const raisedByDisplay = ticket.raisedByDisplay || 'N/A';
+                const assignedToDisplay = ticket.assignedToDisplay || 'Unassigned';
+                const lastUpdate = new Date(ticket.lastUpdate).toLocaleString();
+
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td data-label="Ticket ID">${ticket.ticketId}</td>
+                    <td data-label="Raised By">${raisedByDisplay}</td>
+                    <td data-label="Subject">${ticket.subject}</td>
+                    <td data-label="Service Type">${ticket.serviceType || 'N/A'}</td> 
+                    <td data-label="Status"><span class="status-badge status-${ticket.status.toLowerCase()}">${ticket.status}</span></td>
+                    <td data-label="Priority">${ticket.priority}</td>
+                    <td data-label="Assigned To">${assignedToDisplay}</td>
+                    <td data-label="Last Update">${lastUpdate}</td>
+                    <td data-label="Actions">
+                        ${ticket.status !== 'Resolved' && ticket.status !== 'Closed' ? `
+                        <select class="assign-ticket-select" data-ticket-id="${ticket._id}">
+                            <option value="">Assign To...</option>
+                            ${assignableAdmins.map(admin => `<option value="${admin._id}" ${ticket.assignedTo && ticket.assignedTo._id === admin._id ? 'selected' : ''}>${admin.fullName} (${admin.role})</option>`).join('')}
+                        </select>
+                        <button class="resolve-ticket-btn" data-ticket-id="${ticket._id}">Resolve</button>
+                        ` : '<span class="status-badge status-completed">Resolved/Closed</span>'}
+                    </td>
+                `;
+            });
+            attachTicketListeners();
+        }
+
+        function attachTicketListeners() {
+            // Remove previous listeners (cloning to remove old ones)
+            document.querySelectorAll('#tickets-table-body .assign-ticket-select, #tickets-table-body .resolve-ticket-btn').forEach(element => {
+                element.replaceWith(element.cloneNode(true));
+            });
+
+            document.querySelectorAll('#tickets-table-body .assign-ticket-select').forEach(select => {
+                select.addEventListener('change', async (e) => {
+                    const ticketId = e.target.dataset.ticketId;
+                    const assignedTo = e.target.value;
+                    try {
+                        // Service Admin can assign tickets using the general admin endpoint
+                        const response = await fetch(`/api/admin/tickets/${ticketId}/assign`, { 
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ assignedTo })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            fetchServiceAdminData();
+                        } else {
+                            showMessage(result.message, 'error');
+                        }
+                    } catch (error) { showMessage('Network error.', 'error'); console.error(error); }
+                });
+            });
+
+            document.querySelectorAll('#tickets-table-body .resolve-ticket-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const ticketId = e.target.dataset.ticketId;
+                    showConfirmation('Are you sure you want to resolve this ticket?', async (confirmed) => {
+                        if (confirmed) {
+                            try {
+                                // Service Admin can resolve tickets using the general admin endpoint
+                                const response = await fetch(`/api/admin/tickets/${ticketId}/resolve`, { 
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' }
+                                });
+                                const result = await response.json();
+                                if (result.success) {
+                                    showMessage(result.message, 'success');
+                                    fetchServiceAdminData();
+                                } else {
+                                    showMessage(result.message, 'error');
+                                }
+                            } catch (error) { showMessage('Network error.', 'error'); console.error(error); }
+                        }
+                    });
+                });
+            });
+        }
+
+
+        function renderBarChart(elementId, data, maxDataValue, labels, barColor = '#3498db') {
+            const chartDiv = document.getElementById(elementId);
+            if (!chartDiv) return;
+
+            chartDiv.innerHTML = '';
+            if (data.length === 0) {
+                 chartDiv.innerHTML = '<p style="text-align: center; color: #777;">No data available for this chart.</p>';
+                 return;
+            }
+
+            const maxHeight = 150;
+            data.forEach((value) => {
+                const barHeight = (value / Math.max(maxDataValue, 1)) * maxHeight; // Prevent division by zero if maxDataValue is 0
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${barHeight}px`;
+                bar.style.backgroundColor = barColor;
+                bar.innerHTML = `<span>${value}</span>`;
+                chartDiv.appendChild(bar);
+            });
+
+            const labelContainerId = elementId.replace('chart', 'labels');
+            let labelContainer = document.getElementById(labelContainerId);
+            if (!labelContainer) {
+                labelContainer = document.createElement('div');
+                labelContainer.id = labelContainerId;
+                labelContainer.style.cssText = 'display:flex; justify-content: space-around; font-size:0.8em; color:#777; margin-top: 5px;';
+                chartDiv.parentNode.appendChild(labelContainer);
+            }
+            labelContainer.innerHTML = labels.map(label => `<span style="flex: 1; text-align: center;">${label}</span>`).join('');
+        }
+
+        function renderCharts(allJobs, allTechnicians, allApplianceTypes, assignedServiceNames) {
+            // Jobs Completed by Service (Monthly) - Filtered by assigned services
+            const jobsByServiceCounts = {};
+            assignedServiceNames.forEach(serviceName => {
+                jobsByServiceCounts[serviceName] = 0;
+            });
+
+            allJobs.forEach(job => {
+                if (job.status === 'Completed' && assignedServiceNames.includes(job.applianceType)) {
+                    jobsByServiceCounts[job.applianceType]++;
+                }
+            });
+
+            const serviceLabels = Object.keys(jobsByServiceCounts);
+            const serviceData = Object.values(jobsByServiceCounts);
+            renderBarChart('jobs-by-service-chart', serviceData, Math.max(...serviceData, 1), serviceLabels);
+
+            // Provider Ratings (Assigned Services)
+            const providerRatings = {};
+            allTechnicians.forEach(tech => {
+                if (assignedServiceNames.some(skill => tech.skills.includes(skill))) { // Check if technician has assigned skills
+                     providerRatings[tech.fullName.split(' ')[0]] = tech.averageRating || 0;
+                }
+            });
+
+            const sortedProviders = Object.keys(providerRatings).sort((a, b) => providerRatings[b] - providerRatings[a]).slice(0, 5); // Top 5 by rating
+            const ratingData = sortedProviders.map(name => providerRatings[name]);
+            renderBarChart('provider-ratings-chart', ratingData, 5, sortedProviders, '#2ecc71'); // Max rating is 5
+        }
+
+
+        // --- Event Listeners and Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchServiceAdminData(); // Initial data fetch and render
+            showSection(currentActiveSectionId); // Ensure the initial section is displayed
+
+            // Sidebar Navigation - Show/Hide Sections
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.sidebar-menu a').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const targetId = this.getAttribute('href').substring(1); // Remove '#'
+                    showSection(targetId);
+                    
+                    // Scroll to top of main content area, or specific section if desired
+                    document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+
+            // Sidebar Toggle for Mobile
+            const menuToggleButton = document.getElementById('menu-toggle-btn');
+            const sidebarMenu = document.getElementById('sidebar-menu');
+            if (menuToggleButton && sidebarMenu) {
+                menuToggleButton.addEventListener('click', () => {
+                    sidebarMenu.classList.toggle('active');
+                });
+            }
+
+            // Logout functionality
+            const logoutButton = document.getElementById('logout-btn');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/logout', {
+                            method: 'POST'
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage('Logged out successfully!', 'success');
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 500);
+                        } else {
+                            showMessage(result.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        showMessage('Network error during logout.', 'error');
+                    }
+                });
+            }
+
+            // --- Suggest Service Coupon Form Handler ---
+            const suggestServiceCouponForm = document.getElementById('suggest-service-coupon-form');
+            if (suggestServiceCouponForm) {
+                suggestServiceCouponForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const couponCode = document.getElementById('service-coupon-code').value;
+                    const discountType = document.getElementById('service-coupon-discount-type').value;
+                    const discountValue = parseFloat(document.getElementById('service-coupon-value').value);
+                    const minOrderAmount = parseFloat(document.getElementById('service-coupon-min-amount').value);
+                    const expiryDate = document.getElementById('service-coupon-expiry-date').value;
+                    const description = document.getElementById('service-coupon-description').value;
+
+                    if (!couponCode || !discountValue || !expiryDate) {
+                        showMessage('Please fill all required fields for the coupon.', 'error');
+                        return;
+                    }
+                    if (isNaN(discountValue) || discountValue <= 0) {
+                         showMessage('Discount value must be a positive number.', 'error');
+                         return;
+                    }
+                    if (isNaN(minOrderAmount) || minOrderAmount < 0) {
+                         showMessage('Minimum order amount must be a non-negative number.', 'error');
+                         return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/serviceadmin/promotions/suggest', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                couponCode, 
+                                discountType, 
+                                discountValue, 
+                                minOrderAmount, 
+                                expiryDate, 
+                                description,
+                                targetServices: currentUserData.skills // Automatically send assigned services
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            suggestServiceCouponForm.reset();
+                            fetchServiceAdminData(); // Refresh data to show new suggestion status
+                        } else {
+                            showMessage(result.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Suggest Service Coupon Error:', error);
+                        showMessage('Network error during coupon suggestion.', 'error');
+                    }
+                });
+            }
+
+            // --- Fee Recommendation Form Handler ---
+            const feeRecommendationForm = document.getElementById('fee-recommendation-form');
+            const recommendServiceType = document.getElementById('recommend-service-type');
+            const recommendCurrentValue = document.getElementById('recommend-current-value');
+
+            // Update current value when service type changes
+            recommendServiceType.addEventListener('change', () => {
+                const selectedService = recommendServiceType.value;
+                if (selectedService) {
+                    const selectedAppliance = allApplianceTypes.find(app => app.name === selectedService);
+                    if (selectedAppliance) {
+                        const feeType = document.getElementById('recommend-fee-type').value;
+                        if (feeType === 'basePrice') {
+                            recommendCurrentValue.value = selectedAppliance.basePrice !== undefined ? selectedAppliance.basePrice.toFixed(2) : '0.00';
+                        } else if (feeType === 'commissionRate') {
+                            recommendCurrentValue.value = selectedAppliance.commissionRate !== undefined ? selectedAppliance.commissionRate.toFixed(2) : '0.00';
+                        } else {
+                            recommendCurrentValue.value = 'N/A'; // For laborCost, if not directly on ApplianceType
+                        }
+                    } else {
+                        recommendCurrentValue.value = '';
+                    }
+                } else {
+                    recommendCurrentValue.value = '';
+                }
+            });
+
+            // Also update current value if fee type changes while a service is selected
+            document.getElementById('recommend-fee-type').addEventListener('change', () => {
+                const selectedService = recommendServiceType.value;
+                if (selectedService) {
+                    const selectedAppliance = allApplianceTypes.find(app => app.name === selectedService);
+                    if (selectedAppliance) {
+                        const feeType = document.getElementById('recommend-fee-type').value;
+                        if (feeType === 'basePrice') {
+                            recommendCurrentValue.value = selectedAppliance.basePrice !== undefined ? selectedAppliance.basePrice.toFixed(2) : '0.00';
+                        } else if (feeType === 'commissionRate') {
+                            recommendCurrentValue.value = selectedAppliance.commissionRate !== undefined ? selectedAppliance.commissionRate.toFixed(2) : '0.00';
+                        } else {
+                            recommendCurrentValue.value = 'N/A';
+                        }
+                    } else {
+                        recommendCurrentValue.value = '';
+                    }
+                }
+            });
+
+
+            if (feeRecommendationForm) {
+                feeRecommendationForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const serviceType = document.getElementById('recommend-service-type').value;
+                    const feeType = document.getElementById('recommend-fee-type').value;
+                    const newProposedValue = parseFloat(document.getElementById('recommend-new-value').value);
+                    const reason = document.getElementById('recommend-reason').value;
+
+                    if (!serviceType || !feeType || isNaN(newProposedValue) || !reason) {
+                        showMessage('Please fill all required fields for fee recommendation.', 'error');
+                        return;
+                    }
+                    if (newProposedValue <= 0) {
+                        showMessage('Proposed value must be positive.', 'error');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/api/serviceadmin/fee-recommendations/suggest', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                serviceType, 
+                                feeType, 
+                                newProposedValue, 
+                                reason,
+                                // The backend will automatically get recommendedBy and adminRole from req.user
+                            })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            feeRecommendationForm.reset();
+                            recommendCurrentValue.value = ''; // Clear current value
+                            populateServiceTypeDropdowns(); // Re-populate dropdown
+                        } else {
+                            showMessage(result.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Fee Recommendation Error:', error);
+                        showMessage('Network error during fee recommendation.', 'error');
+                    }
+                });
+            }
+
+            // --- Reports Export Buttons ---
+            const exportServicePerformanceCsvBtn = document.getElementById('export-service-performance-csv');
+            if (exportServicePerformanceCsvBtn) {
+                exportServicePerformanceCsvBtn.addEventListener('click', async () => {
+                    showMessage('Generating service performance report...', 'success');
+                    try {
+                        const response = await fetch('/api/serviceadmin/reports/service-performance', { method: 'GET' });
+                        if (response.ok) {
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'service_performance_report.csv';
+                            document.body.appendChild(a);
+                            a.click();
+                            a.remove();
+                            window.URL.revokeObjectURL(url);
+                            showMessage('Service performance report downloaded successfully!', 'success');
+                        } else {
+                            const errorText = await response.json();
+                            showMessage(errorText.message || 'Failed to download service performance report.', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Export Service Performance Error:', error);
+                        showMessage('Network error during report export.', 'error');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

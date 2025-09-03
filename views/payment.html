@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva Payment</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-svg {
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            vertical-align: middle;
+            fill: currentColor;
+        }
+
+        .platform-name {
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        .back-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9;
+        }
+
+        .container {
+            flex: 1;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .quote-details p {
+            margin: 8px 0;
+            font-size: 1em;
+            color: #444;
+        }
+
+        .quote-details p strong {
+            color: #333;
+        }
+
+        .quote-breakdown {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #eee;
+        }
+
+        .quote-breakdown p {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+
+        .quote-breakdown .total-amount {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+        .quote-breakdown .total-amount span {
+            color: #27ae60;
+        }
+        
+        .warranty-claim-message {
+            background-color: #f1f8e9; /* Light green background */
+            color: #388e3c; /* Dark green text */
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .payment-approval-section p {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        .payment-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .payment-option {
+            background-color: #ecf0f1;
+            border: 2px solid #ecf0f1;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .payment-option:hover {
+            border-color: #bdc3c7;
+        }
+
+        .payment-option.selected {
+            background-color: #eaf2f8;
+            border-color: #3498db;
+            color: #3498db;
+            box-shadow: 0 0 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .button-primary {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .button-primary:hover {
+            background-color: #229a53;
+        }
+
+        .button-disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+            font-size: 0.8em;
+            line-height: 1.4;
+        }
+
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10002;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: fadeOut 0.5s forwards 4.5s;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @media (max-width: 600px) {
+            header {
+                flex-direction: column;
+                padding: 10px;
+            }
+            .header-left {
+                margin-bottom: 10px;
+            }
+            .back-button {
+                width: 100%;
+                text-align: center;
+            }
+            .container {
+                margin: 15px auto;
+                padding: 0 10px;
+            }
+            .card {
+                padding: 18px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            h2 {
+                font-size: 1.3em;
+            }
+            .payment-options {
+                flex-direction: column;
+            }
+            .payment-option {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <svg class="logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93H3.07C3.52 16.14 6.4 19.02 10 19.93V19.93zM10 4.07V4c-3.6.91-6.48 3.79-6.93 7h1.07c0-4.08 3.05-7.39 7-7.93zm2 15.93v-2.07c4.2-.45 7.47-3.73 7.93-7.93H20.93C20.48 16.14 17.6 19.02 14 19.93zm0-15.93V4.07c3.95.49 7 3.85 7 7.93h1.07c-.45-4.14-3.33-7.02-6.93-7z"/>
+            </svg>
+            <span class="platform-name">TechSeva Payment</span>
+        </div>
+        <a href="/user" class="back-button">Back to Dashboard</a>
+    </header>
+
+    <div class="container">
+        <h1>Complete Your Payment</h1>
+
+        <section class="card quotation-summary-section">
+            <h2>Quotation Summary</h2>
+            <div id="warranty-job-message" class="warranty-claim-message" style="display:none;">
+                This is a warranty claim. Labor and service fees are covered.
+            </div>
+            <div class="quote-details">
+                <p><strong>Job ID:</strong> <span id="summary-job-id">Loading...</span></p>
+                <p><strong>Technician:</strong> <span id="summary-technician-name">Loading...</span></p>
+                <p><strong>Appliance Type:</strong> <span id="summary-appliance-type">Loading...</span></p>
+                <p><strong>Service Date & Time:</strong> <span id="summary-service-datetime">Loading...</span></p>
+            </div>
+
+            <div class="quote-breakdown">
+                <h3>Quote Breakdown</h3>
+                <p>Part Cost: ₹<span id="summary-part-cost">0.00</span></p>
+                <p>Labor Cost: ₹<span id="summary-labor-cost">0.00</span></p>
+                <p>Travel Charges: ₹<span id="summary-travel-charges">0.00</span></p>
+                <p>TechSeva Service Fee (10%): ₹<span id="summary-service-fee">0.00</span></p>
+                <p>GST @18% on Service Fee: ₹<span id="summary-gst">0.00</span></p>
+                <p class="total-amount">Total Amount: ₹<span id="summary-total-amount">0.00</span></p>
+            </div>
+        </section>
+
+        <section class="card payment-approval-section">
+            <h2>Payment Approval</h2>
+            <p id="payment-status-message">Please review the quote and proceed to payment to confirm the service.</p>
+            <button id="approve-pay-now-btn" class="button-primary">Approve and Pay Now</button>
+        </section>
+
+        <section class="card payment-methods-section" style="display:none;">
+            <h2>Select Payment Method</h2>
+            <div class="payment-options">
+                <div class="payment-option" data-method="razorpay">Razorpay (Credit/Debit/UPI)</div>
+                <div class="payment-option" data-method="cod">Cash on Delivery</div>
+            </div>
+
+            <button id="complete-payment-btn" class="button-primary button-disabled" disabled>Complete Payment</button>
+        </section>
+    </div>
+
+    <footer>
+        <p>All payments are encrypted and secured via PCI-compliant payment gateways.</p>
+        <p>&copy; 2025 TechSeva. All rights reserved.</p>
+    </footer>
+
+    <div id="message-container"></div>
+
+    <script>
+        // Utility for displaying messages
+        const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                setTimeout(() => messageBox.remove(), 500);
+            }, 4500);
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const approvePayNowBtn = document.getElementById('approve-pay-now-btn');
+            const paymentMethodsSection = document.querySelector('.payment-methods-section');
+            const paymentOptions = document.querySelectorAll('.payment-option');
+            const completePaymentBtn = document.getElementById('complete-payment-btn');
+            const paymentStatusMessage = document.getElementById('payment-status-message');
+            const warrantyJobMessage = document.getElementById('warranty-job-message');
+
+            let selectedPaymentMethod = null;
+            let currentJobData = null;
+            let razorpayInstance = null;
+
+            // Get Job ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const jobId = urlParams.get('jobId');
+
+            if (!jobId) {
+                showMessage('Error: Job ID not found in URL. Please navigate from your dashboard.', 'error');
+                approvePayNowBtn.style.display = 'none';
+                paymentMethodsSection.style.display = 'none';
+                return;
+            }
+
+            // Fetch Job Details from Backend
+            const fetchJobDetails = async () => {
+                try {
+                    const response = await fetch(`/api/jobs/${jobId}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        currentJobData = data.job;
+                        
+                        // Check if it's a warranty claim job and show the message
+                        if (currentJobData.isWarrantyClaim) {
+                            warrantyJobMessage.style.display = 'block';
+                        }
+                        
+                        document.getElementById('summary-job-id').textContent = currentJobData.jobId;
+                        document.getElementById('summary-technician-name').textContent = currentJobData.assignedTechnicianName || 'Pending Assignment';
+                        document.getElementById('summary-appliance-type').textContent = currentJobData.applianceType;
+                        
+                        const scheduledDate = new Date(currentJobData.scheduledDateTime);
+                        document.getElementById('summary-service-datetime').textContent = scheduledDate.toLocaleString();
+
+                        if (currentJobData.quotation) {
+                            const partCost = currentJobData.quotation.partCost;
+                            
+                            // Check if it's a warranty claim and set costs to zero
+                            const laborCost = currentJobData.isWarrantyClaim ? 0 : currentJobData.quotation.laborCost;
+                            const travelCharges = currentJobData.isWarrantyClaim ? 0 : currentJobData.quotation.travelCharges;
+                            
+                            // Calculate fees and totals based on whether it's a warranty claim
+                            const subtotal = partCost + laborCost + travelCharges;
+                            const serviceFee = currentJobData.isWarrantyClaim ? 0 : subtotal * 0.10;
+                            const gst = currentJobData.isWarrantyClaim ? 0 : serviceFee * 0.18;
+                            const totalAmount = subtotal + serviceFee + gst;
+
+                            // Update DOM with calculated values
+                            document.getElementById('summary-part-cost').textContent = partCost.toFixed(2);
+                            document.getElementById('summary-labor-cost').textContent = laborCost.toFixed(2);
+                            document.getElementById('summary-travel-charges').textContent = travelCharges.toFixed(2);
+                            document.getElementById('summary-service-fee').textContent = serviceFee.toFixed(2);
+                            document.getElementById('summary-gst').textContent = gst.toFixed(2);
+                            document.getElementById('summary-total-amount').textContent = totalAmount.toFixed(2);
+
+                            // Store calculated total for payment processing
+                            currentJobData.calculatedTotal = totalAmount;
+                        } else {
+                            document.getElementById('summary-part-cost').textContent = 'N/A';
+                            document.getElementById('summary-labor-cost').textContent = 'N/A';
+                            document.getElementById('summary-travel-charges').textContent = 'N/A';
+                            document.getElementById('summary-service-fee').textContent = 'N/A';
+                            document.getElementById('summary-gst').textContent = 'N/A';
+                            document.getElementById('summary-total-amount').textContent = 'N/A';
+                            paymentStatusMessage.textContent = 'Quotation not yet provided by technician.';
+                            approvePayNowBtn.classList.add('button-disabled');
+                            approvePayNowBtn.disabled = true;
+                            showMessage('Quotation not yet available for this job.', 'error');
+                            return;
+                        }
+
+                        if (currentJobData.status === 'Paid') {
+                            paymentStatusMessage.textContent = 'This job has already been paid.';
+                            approvePayNowBtn.style.display = 'none';
+                            paymentMethodsSection.style.display = 'none';
+                            showMessage('This job has already been paid.', 'success');
+                        } else if (currentJobData.status === 'Cancelled') {
+                            paymentStatusMessage.textContent = 'This job has been cancelled.';
+                            approvePayNowBtn.style.display = 'none';
+                            paymentMethodsSection.style.display = 'none';
+                            showMessage('This job has been cancelled.', 'error');
+                        } else if (currentJobData.status !== 'Diagnosed' && currentJobData.status !== 'Completed') {
+                            paymentStatusMessage.textContent = `Payment can only be processed for jobs that are 'Diagnosed' or 'Completed'. Current status: ${currentJobData.status}.`;
+                            approvePayNowBtn.classList.add('button-disabled');
+                            approvePayNowBtn.disabled = true;
+                            showMessage('Payment cannot be processed for current job status.', 'error');
+                        } else {
+                            approvePayNowBtn.classList.remove('button-disabled');
+                            approvePayNowBtn.disabled = false;
+                        }
+
+                    } else {
+                        showMessage(data.message || 'Failed to load job details.', 'error');
+                        approvePayNowBtn.style.display = 'none';
+                        paymentMethodsSection.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error fetching job details:', error);
+                    showMessage('An error occurred while fetching job details. Please try again.', 'error');
+                    approvePayNowBtn.style.display = 'none';
+                    paymentMethodsSection.style.display = 'none';
+                }
+            };
+
+            await fetchJobDetails();
+
+            // Initialize Razorpay
+            const initializeRazorpay = () => {
+                if (typeof Razorpay === 'undefined') {
+                    console.error('Razorpay SDK not loaded');
+                    return false;
+                }
+                return true;
+            };
+
+            // "Approve and Pay Now" Button Logic
+            approvePayNowBtn.addEventListener('click', () => {
+                if (currentJobData && currentJobData.quotation && (currentJobData.status === 'Diagnosed' || currentJobData.status === 'Completed')) {
+                    paymentMethodsSection.style.display = 'block';
+                    approvePayNowBtn.style.display = 'none';
+                } else {
+                    showMessage('Cannot proceed with payment. Quotation missing or job status is not ready.', 'error');
+                }
+            });
+
+            // Payment Method Selection Logic
+            paymentOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    paymentOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedPaymentMethod = option.dataset.method;
+                    completePaymentBtn.classList.remove('button-disabled');
+                    completePaymentBtn.disabled = false;
+                });
+            });
+
+            // Process Razorpay Payment
+            const processRazorpayPayment = async () => {
+                if (!initializeRazorpay()) {
+                    showMessage('Payment gateway not available. Please try again later.', 'error');
+                    return;
+                }
+
+                completePaymentBtn.textContent = 'Processing...';
+                completePaymentBtn.classList.add('button-disabled');
+                completePaymentBtn.disabled = true;
+                
+                const amountToPay = currentJobData.calculatedTotal;
+                if (amountToPay === 0) {
+                     showMessage('Total amount is zero. No payment is required.', 'success');
+                     setTimeout(() => {
+                         window.location.href = '/user?payment=success&type=warranty&id=' + currentJobData.jobId;
+                     }, 2000);
+                     return;
+                }
+
+                try {
+                    // First create an order on your server
+                    const orderResponse = await fetch('/api/create-razorpay-order', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            amount: Math.round(amountToPay * 100), // Convert to paise
+                            currency: 'INR',
+                            receipt: `job_${currentJobData.jobId}`,
+                            notes: {
+                                jobId: currentJobData.jobId,
+                                customerId: currentJobData.customerId
+                            }
+                        })
+                    });
+
+                    const orderData = await orderResponse.json();
+
+                    if (!orderData.success) {
+                        throw new Error(orderData.message || 'Failed to create payment order');
+                    }
+
+                    const options = {
+                        key: orderData.key, // Comes from server response
+                        amount: orderData.order.amount,
+                        currency: orderData.order.currency,
+                        name: 'TechSeva Services',
+                        description: `Payment for Job #${currentJobData.jobId}`,
+                        image: 'https://techseva.com/logo.png',
+                        order_id: orderData.order.id,
+                        handler: async function(response) {
+                            // Verify payment on server
+                            const verificationResponse = await fetch('/api/verify-razorpay-payment', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    jobId: currentJobData.jobId,
+                                    amount: amountToPay
+                                })
+                            });
+
+                            const verificationData = await verificationResponse.json();
+
+                            if (verificationData.success) {
+                                showMessage('Payment successful! Payment ID: ' + verificationData.paymentId, 'success');
+                                setTimeout(() => {
+                                    window.location.href = '/user?payment=success&type=online&id=' + verificationData.paymentId;
+                                }, 2000);
+                            } else {
+                                showMessage('Payment verification failed. Please contact support.', 'error');
+                                completePaymentBtn.textContent = 'Complete Payment';
+                                completePaymentBtn.classList.remove('button-disabled');
+                                completePaymentBtn.disabled = false;
+                            }
+                        },
+                        prefill: {
+                            name: currentJobData.customerName || '',
+                            email: currentJobData.customerEmail || '',
+                            contact: currentJobData.customerPhone || ''
+                        },
+                        notes: {
+                            jobId: currentJobData.jobId
+                        },
+                        theme: {
+                            color: '#3399cc'
+                        }
+                    };
+
+                    razorpayInstance = new Razorpay(options);
+                    razorpayInstance.on('payment.failed', function(response) {
+                        showMessage('Payment failed. Please try another payment method.', 'error');
+                        completePaymentBtn.textContent = 'Complete Payment';
+                        completePaymentBtn.classList.remove('button-disabled');
+                        completePaymentBtn.disabled = false;
+                    });
+                    razorpayInstance.open();
+
+                } catch (error) {
+                    console.error('Payment processing error:', error);
+                    showMessage('An error occurred during payment processing. Please try again.', 'error');
+                    completePaymentBtn.textContent = 'Complete Payment';
+                    completePaymentBtn.classList.remove('button-disabled');
+                    completePaymentBtn.disabled = false;
+                }
+            };
+
+            // Process COD Payment
+            const processCODPayment = async () => {
+                completePaymentBtn.textContent = 'Processing...';
+                completePaymentBtn.classList.add('button-disabled');
+                completePaymentBtn.disabled = true;
+                
+                const amountToPay = currentJobData.calculatedTotal;
+                if (amountToPay === 0) {
+                     showMessage('Total amount is zero. No payment is required.', 'success');
+                     setTimeout(() => {
+                         window.location.href = '/user?payment=success&type=warranty&id=' + currentJobData.jobId;
+                     }, 2000);
+                     return;
+                }
+
+                try {
+                    const response = await fetch('/api/process-cod-payment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            jobId: currentJobData.jobId,
+                            amount: amountToPay
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        showMessage('COD payment confirmed successfully! Payment ID: ' + data.paymentId, 'success');
+                        setTimeout(() => {
+                            window.location.href = '/user?payment=success&type=cod&id=' + data.paymentId;
+                        }, 2000);
+                    } else {
+                        throw new Error(data.message || 'Failed to process COD payment');
+                    }
+                } catch (error) {
+                    console.error('COD processing error:', error);
+                    showMessage(error.message || 'An error occurred during COD processing. Please try again.', 'error');
+                    completePaymentBtn.textContent = 'Complete Payment';
+                    completePaymentBtn.classList.remove('button-disabled');
+                    completePaymentBtn.disabled = false;
+                }
+            };
+
+            // "Complete Payment" Button Logic
+            completePaymentBtn.addEventListener('click', async () => {
+                if (!selectedPaymentMethod) {
+                    showMessage('Please select a payment method.', 'error');
+                    return;
+                }
+                if (!currentJobData || currentJobData.calculatedTotal === undefined) {
+                    showMessage('Error: Job quotation not available.', 'error');
+                    return;
+                }
+
+                if (selectedPaymentMethod === 'razorpay') {
+                    await processRazorpayPayment();
+                } else if (selectedPaymentMethod === 'cod') {
+                    await processCODPayment();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

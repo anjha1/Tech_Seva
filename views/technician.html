@@ -1,0 +1,2412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>TechSeva Technician Dashboard</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- jsPDF library for client-side PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF-AutoTable plugin for table generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+    <!-- html2canvas for capturing DOM elements for PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Google Maps API with Places library for Autocomplete -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initMap"></script>
+    <style>
+        /* Modern Mobile App Design System (from user dashboard) */
+        :root {
+            /* Light Mode Color Scheme */
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --secondary: #3f37c9;
+            --accent: #4895ef;
+            --danger: #f72585;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --info: #560bad;
+            
+            /* Light Mode Surface Colors */
+            --surface-1: #ffffff;
+            --surface-2: #f8f9fa;
+            --surface-3: #e9ecef;
+            
+            /* Light Mode Text Colors */
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-on-primary: #ffffff;
+
+            /* Dark Mode Color Scheme */
+            --dark-primary: #8d9eff;
+            --dark-primary-hover: #7b8de0;
+            --dark-secondary: #7f78d9;
+            --dark-accent: #8fbdf9;
+            --dark-danger: #ff6b9e;
+            --dark-success: #79dfff;
+            --dark-warning: #ffb75e;
+            --dark-info: #a06cd5;
+
+            /* Dark Mode Surface Colors */
+            --dark-surface-1: #1a1a2e;
+            --dark-surface-2: #16213e;
+            --dark-surface-3: #0f3460;
+            
+            /* Dark Mode Text Colors */
+            --dark-text-primary: #e0e0e0;
+            --dark-text-secondary: #b0b0b0;
+            --dark-text-on-primary: #ffffff;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+            
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-full: 9999px;
+            
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            
+            /* Typography */
+            --text-xs: 0.75rem;
+            --text-sm: 0.875rem;
+            --text-base: 1rem;
+            --text-lg: 1.125rem;
+            --text-xl: 1.25rem;
+            --text-2xl: 1.5rem;
+            --text-3xl: 1.875rem;
+        }
+
+        /* Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: var(--surface-2);
+            color: var(--text-primary);
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-size: var(--text-base);
+            padding-bottom: 72px; /* Space for bottom tab bar */
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for dark mode */
+        }
+
+        /* Dark Mode overrides */
+        body.dark-mode {
+            background-color: var(--dark-surface-2);
+            color: var(--dark-text-primary);
+
+            --primary: var(--dark-primary);
+            --primary-hover: var(--dark-primary-hover);
+            --secondary: var(--dark-secondary);
+            --accent: var(--dark-accent);
+            --danger: var(--dark-danger);
+            --success: var(--dark-success);
+            --warning: var(--dark-warning);
+            --info: var(--dark-info);
+
+            --surface-1: var(--dark-surface-1);
+            --surface-2: var(--dark-surface-2);
+            --surface-3: var(--dark-surface-3);
+            
+            --text-primary: var(--dark-text-primary);
+            --text-secondary: var(--dark-text-secondary);
+            --text-on-primary: var(--dark-text-on-primary);
+        }
+
+        /* App Header (from user dashboard) */
+        #app-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: var(--surface-1);
+            color: var(--text-primary);
+            padding: var(--space-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            height: 60px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .app-logo {
+            font-size: var(--text-xl);
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0 auto;
+        }
+        
+        .header-btn {
+            font-size: var(--text-xl);
+            color: var(--text-primary);
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            transition: background-color 0.2s ease;
+        }
+
+        .header-btn:hover {
+            background-color: var(--surface-3);
+        }
+
+        .profile-picture-container {
+            margin-left: auto;
+            margin-right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .profile-picture {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .profile-picture:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Side Menu and Overlay (from user dashboard) */
+        #side-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+            z-index: 150;
+            display: none;
+        }
+
+        #side-menu {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            max-width: 80vw;
+            height: 100%;
+            background-color: var(--surface-1);
+            z-index: 200;
+            box-shadow: var(--shadow-lg);
+            transition: left 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+        
+        #side-menu.open {
+            left: 0;
+        }
+        
+        .side-menu-profile {
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--space-md);
+        }
+
+        .side-menu-profile .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: var(--radius-full);
+            background-color: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .side-menu-profile .profile-avatar i {
+            font-size: var(--text-2xl);
+            color: var(--text-on-primary);
+        }
+        .side-menu-profile .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+
+        .side-menu-profile .profile-info h3 {
+            margin: 0;
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--text-on-primary);
+        }
+        .side-menu-profile .profile-info p {
+            margin: 0;
+            font-size: var(--text-sm);
+            opacity: 0.8;
+            color: var(--text-on-primary);
+        }
+
+        .side-menu-content {
+            overflow-y: auto;
+            flex-grow: 1;
+            padding: var(--space-md);
+        }
+        
+        .side-menu-content .menu-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background-color: transparent;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--space-xs);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: background-color 0.2s ease, transform 0.2s ease, color 0.3s ease;
+        }
+        
+        .side-menu-content .menu-item:hover {
+            background-color: var(--surface-2);
+            transform: translateX(5px);
+        }
+        
+        .side-menu-content .menu-item i {
+            font-size: var(--text-xl);
+            color: var(--text-secondary);
+        }
+        .side-menu-content .menu-item.active i {
+            color: var(--primary);
+        }
+
+        .side-menu-content .menu-item span {
+            font-size: var(--text-base);
+            font-weight: 500;
+        }
+        
+        .side-menu-content .menu-item.active {
+            color: var(--primary);
+            background-color: var(--surface-3);
+        }
+        
+        .side-menu-content .menu-item.danger-option i, .side-menu-content .menu-item.danger-option span {
+            color: var(--danger);
+        }
+        .side-menu-content .menu-item.danger-option:hover {
+            background-color: rgba(247, 37, 133, 0.1);
+        }
+        .side-menu-content .menu-item.danger-option:hover i, .side-menu-content .menu-item.danger-option:hover span {
+             color: var(--danger);
+        }
+        /* End of Side Menu Styles */
+
+
+        /* Bottom Tab Bar (from user dashboard) */
+        #app-tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--surface-1);
+            display: flex;
+            justify-content: space-around;
+            padding: var(--space-sm) 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.9);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            transition: background-color 0.3s ease, border-top-color 0.3s ease;
+        }
+
+        body.dark-mode #app-tab-bar {
+            background-color: rgba(26, 26, 46, 0.9);
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: var(--text-xs);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+            position: relative;
+            opacity: 0.7;
+        }
+
+        .tab-item.active {
+            color: var(--primary);
+            opacity: 1;
+        }
+
+        .tab-item i {
+            font-size: var(--text-lg);
+            margin-bottom: var(--space-xs);
+        }
+
+        .tab-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background-color: var(--primary);
+            border-radius: var(--radius-full);
+        }
+        /* End of Bottom Tab Bar */
+
+        /* Main Content Container (from user dashboard) */
+        .container {
+            flex: 1;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: var(--space-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        /* Sections & Cards (from user dashboard) */
+        section.card {
+            background-color: var(--surface-1);
+            padding: var(--space-lg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            display: none;
+            animation: fadeSlideIn 0.3s ease-out forwards;
+            width: 100%;
+            margin-bottom: var(--space-lg);
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        section.card.active-section {
+            display: block;
+        }
+
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2, h3 {
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        h1 { 
+            font-size: var(--text-2xl);
+            text-align: center;
+        }
+        
+        h2 { 
+            font-size: var(--text-xl);
+            border-bottom: 1px solid var(--surface-3);
+            padding-bottom: var(--space-sm);
+            transition: border-color 0.3s ease;
+        }
+        
+        h3 { 
+            font-size: var(--text-lg);
+            margin-top: 0;
+        }
+
+        /* Forms (from user dashboard) */
+        .form-group {
+            margin-bottom: var(--space-md);
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--space-xs);
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: var(--text-sm);
+            transition: color 0.3s ease;
+        }
+
+        /* NEW: Styles for structured address form (from user dashboard) */
+        .address-form-grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+        .address-form-grid-2col .form-group {
+            margin-bottom: 0;
+        }
+        /* End of new styles */
+
+
+        input[type="text"],
+        input[type="datetime-local"],
+        textarea,
+        select,
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"] {
+            width: 100%;
+            padding: var(--space-md);
+            border: 1px solid var(--surface-3);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-base);
+            transition: all 0.2s ease;
+            background-color: var(--surface-1);
+            color: var(--text-primary);
+        }
+
+        input[type="text"]:focus,
+        input[type="datetime-local"]:focus,
+        textarea:focus,
+        select:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+            outline: none;
+        }
+
+        /* Buttons (from user dashboard) */
+        .btn {
+            padding: var(--space-md) var(--space-lg);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--text-base);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--text-on-primary);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: var(--text-on-primary);
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: var(--text-on-primary);
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: var(--text-primary);
+        }
+
+        .btn-info {
+            background-color: var(--info);
+            color: var(--text-on-primary);
+        }
+
+        .btn-disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        /* End of shared styling */
+
+        /* Technician-specific styles - adapted to new design system */
+        .profile-summary {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .profile-photo {
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-full);
+            background-color: var(--surface-3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: var(--text-3xl);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-info h3 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+        .profile-info p {
+            margin: var(--space-xs) 0;
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+        .rating-stars {
+            color: #f1c40f;
+            font-size: var(--text-lg);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-md);
+            text-align: center;
+        }
+
+        .stat-card {
+            background-color: var(--surface-2);
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card .value {
+            font-size: var(--text-2xl);
+            font-weight: bold;
+            color: var(--info);
+        }
+        .stat-card .label {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+        
+        .earnings-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+        .earnings-card {
+            background-color: var(--surface-2);
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .earnings-card .value {
+            font-size: var(--text-2xl);
+            font-weight: bold;
+            color: var(--success);
+        }
+        .earnings-card .label {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+        }
+        
+        .bank-info {
+            background-color: var(--surface-3);
+            border: 1px dashed var(--surface-3);
+            padding: var(--space-md);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            margin-bottom: var(--space-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .bank-info.highlight {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+            font-weight: bold;
+        }
+        .withdraw-btn {
+            background-color: var(--primary);
+            color: var(--text-on-primary);
+            padding: var(--space-md) var(--space-lg);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--text-base);
+            transition: background-color 0.3s ease;
+            width: 100%;
+            display: block;
+            margin-top: var(--space-md);
+        }
+        .withdraw-btn:hover {
+            background-color: var(--primary-hover);
+        }
+        .withdraw-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .job-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        /* New styles for Job tab buttons */
+        .job-tabs {
+            display: flex;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            border-bottom: 2px solid var(--surface-3);
+        }
+
+        .job-tab-btn {
+            background-color: transparent;
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            font-size: var(--text-base);
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.3s ease, border-bottom 0.3s ease;
+            position: relative;
+        }
+
+        .job-tab-btn.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: -2px; /* to align with the parent border */
+        }
+        
+        .job-card {
+            border: 1px solid var(--surface-3);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            background-color: var(--surface-1);
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease;
+        }
+        .job-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        .job-card.highlight {
+            border-left: 5px solid var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+        .job-card.warranty-job {
+            border-left: 5px solid var(--success);
+            box-shadow: var(--shadow-md);
+        }
+        .job-card h3 {
+            margin-top: 0;
+            margin-bottom: var(--space-sm);
+            font-size: var(--text-lg);
+        }
+        .job-card p {
+            margin: var(--space-xs) 0;
+            font-size: var(--text-sm);
+        }
+        .job-actions {
+            margin-top: var(--space-md);
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            align-items: center;
+        }
+        .action-btn {
+            padding: var(--space-sm) var(--space-md);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--text-sm);
+            transition: background-color 0.3s ease, opacity 0.3s ease;
+        }
+        .action-btn.btn-accept { background-color: var(--success); color: var(--text-on-primary); }
+        .action-btn.btn-accept:hover { background-color: var(--success); }
+        .action-btn.btn-start { background-color: var(--primary); color: var(--text-on-primary); }
+        .action-btn.btn-start:hover { background-color: var(--primary-hover); }
+        .action-btn.btn-diagnose { background-color: var(--warning); color: var(--text-primary); }
+        .action-btn.btn-diagnose:hover { background-color: var(--warning); }
+        .action-btn.btn-complete { background-color: var(--success); color: var(--text-on-primary); }
+        .action-btn.btn-complete:hover { background-color: var(--success); }
+        .action-btn.btn-view-pdf { background-color: var(--secondary); color: var(--text-on-primary); }
+        .action-btn.btn-view-pdf:hover { background-color: var(--secondary); }
+        .action-btn.btn-disabled {
+            background-color: var(--surface-3);
+            color: var(--text-secondary);
+        }
+        .action-btn.btn-reject { /* New style for the reject button */
+            background-color: var(--danger);
+            color: var(--text-on-primary);
+        }
+        .action-btn.btn-reject:hover {
+            background-color: var(--danger);
+            opacity: 0.8;
+        }
+        .job-card .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: var(--text-xs);
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .job-card .badge.warranty {
+            background-color: var(--success);
+            color: var(--text-on-primary);
+        }
+
+        .file-upload-group {
+            margin-top: var(--space-md);
+            border-top: 1px dashed var(--surface-3);
+            padding-top: var(--space-md);
+            width: 100%;
+        }
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-top: var(--space-sm);
+        }
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border: 1px solid var(--surface-3);
+            border-radius: var(--radius-sm);
+        }
+
+        .settings-form select,
+        .settings-form input[type="time"],
+        .settings-form input[type="text"],
+        .settings-form input[type="number"] {
+            padding: var(--space-sm);
+            border: 1px solid var(--surface-3);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-base);
+            width: 100%;
+            box-sizing: border-box;
+            background-color: var(--surface-1);
+            color: var(--text-primary);
+        }
+        
+        /* NEW: Styles for structured address form (from user dashboard) */
+        .address-form-grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-md);
+        }
+        .address-form-grid-2col .form-group {
+            margin-bottom: 0;
+        }
+        /* End of new styles */
+
+        .use-my-location-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            margin-top: var(--space-sm);
+            padding: var(--space-sm);
+            background-color: var(--accent);
+            color: var(--text-on-primary);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--text-sm);
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: auto;
+            box-sizing: border-box;
+        }
+
+        .use-my-location-btn:hover {
+            background-color: var(--accent);
+            opacity: 0.8;
+        }
+        .use-my-location-btn i {
+            font-size: var(--text-base);
+        }
+
+        .update-button {
+            background-color: var(--success);
+            color: var(--text-on-primary);
+            padding: var(--space-md) var(--space-lg);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: var(--text-base);
+            transition: background-color 0.3s ease;
+            margin-top: var(--space-md);
+            width: 100%;
+        }
+        .update-button:hover {
+            background-color: var(--success);
+            opacity: 0.8;
+        }
+        .update-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .notifications-section {
+            background-color: var(--surface-1);
+            padding: var(--space-lg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+        }
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+            border-bottom: 1px solid var(--surface-3);
+            padding-bottom: var(--space-sm);
+        }
+        .notification-list {
+            list-style: none;
+            padding: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .notification-list li {
+            background-color: var(--surface-2);
+            padding: var(--space-sm);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--space-sm);
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            border-left: 4px solid var(--accent);
+        }
+        .notification-list li.new-job { border-left-color: var(--success); }
+        .notification-list li.payment { border-left-color: var(--primary); }
+        .notification-list li.alert { border-left-color: var(--danger); }
+
+        .dark-mode-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-md);
+            padding: var(--space-md);
+            background-color: var(--surface-1);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            margin-bottom: var(--space-md);
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease, color 0.3s ease;
+        }
+        .dark-mode-toggle:hover {
+            background-color: var(--surface-2);
+            transform: translateY(-2px);
+        }
+        .dark-mode-toggle i {
+            font-size: var(--text-xl);
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+        .dark-mode-toggle span {
+            font-size: var(--text-lg);
+            font-weight: 500;
+            color: var(--text-primary);
+            flex-grow: 1;
+            transition: color 0.3s ease;
+        }
+        .dark-mode-toggle .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+        .dark-mode-toggle .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--surface-3);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .dark-mode-toggle input:checked + .slider {
+            background-color: var(--primary);
+        }
+        .dark-mode-toggle input:checked + .slider:before {
+            transform: translateX(16px);
+        }
+
+        /* Responsive adjustments for mobile */
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--space-sm);
+            }
+            .profile-picture-container {
+                margin-right: 15px;
+            }
+            .address-form-grid-2col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- App Header -->
+    <header id="app-header">
+        <button id="toggle-side-menu-btn" class="header-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="app-logo">TechSeva</h1>
+        <div class="profile-picture-container">
+            <img id="header-profile-picture" class="profile-picture" src="https://placehold.co/120x120/E9ECEF/495057?text=T" alt="Profile Picture">
+        </div>
+        <button id="search-btn" class="header-btn" style="visibility: hidden;">
+            <i class="fas fa-search"></i>
+        </button>
+    </header>
+
+    <!-- Main Content Container -->
+    <div class="container">
+        <!-- Dashboard Overview Section -->
+        <section id="dashboard" class="card active-section">
+            <h2>Dashboard</h2>
+            <div class="profile-summary">
+                <div class="profile-photo">
+                    <img id="profile-photo-main" src="https://placehold.co/120x120/E9ECEF/495057?text=T" alt="Profile Picture">
+                </div>
+                <div class="profile-info">
+                    <h3 id="profile-name">Loading...</h3>
+                    <p id="profile-skills">Skills: Loading...</p>
+                    <p class="rating-stars" id="profile-rating">Loading...</p>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="value" id="stat-jobs-completed">0</div>
+                    <div class="label">Jobs Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="stat-average-rating">0</div>
+                    <div class="label">Avg. Rating</div>
+                </div>
+                <!-- New Stat Card for Total Revenue -->
+                <div class="stat-card">
+                    <div class="value" id="stat-total-revenue">₹ 0</div>
+                    <div class="label">Total Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="value" id="stat-earnings">₹ 0</div>
+                    <div class="label">Available for Withdrawal</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Job Requests Section -->
+        <section id="jobs" class="card">
+            <div class="job-tabs">
+                <button class="job-tab-btn active" id="new-jobs-tab-btn">New Jobs</button>
+                <button class="job-tab-btn" id="job-history-tab-btn">Job History</button>
+            </div>
+            <!-- New Jobs Container -->
+            <div id="new-job-list-container" class="job-list-container" style="display: flex;">
+                <p style="text-align: center; color: #777;">Loading new job requests...</p>
+            </div>
+            <!-- Job History Container -->
+            <div id="job-history-list-container" class="job-list-container" style="display: none;">
+                <p style="text-align: center; color: #777;">Loading job history...</p>
+            </div>
+        </section>
+
+        <!-- Earnings Section -->
+        <section id="earnings" class="card">
+            <h2>Earnings Summary</h2>
+            <div class="earnings-summary">
+                <div class="earnings-card">
+                    <div class="value" id="today-earnings">₹ 0</div>
+                    <div class="label">Today's Net Earnings</div>
+                </div>
+                <div class="earnings-card">
+                    <div class="value" id="weekly-earnings">₹ 0</div>
+                    <div class="label">Weekly Net Earnings</div>
+                </div>
+                <div class="earnings-card">
+                    <div class="value" id="monthly-earnings">₹ 0</div>
+                    <div class="label">Monthly Net Earnings</div>
+                </div>
+            </div>
+            
+            <div class="bank-info highlight" id="available-balance-info">
+                <div>
+                    <h3>Available Balance for Withdrawal</h3>
+                    <p class="value" id="available-balance">₹ 0.00</p>
+                </div>
+                <button id="refresh-balance-btn" class="btn btn-secondary" style="margin-top: 0; width: auto;">Refresh Balance</button>
+            </div>
+            <button id="withdraw-btn" class="withdraw-btn">Withdraw Now</button>
+            <p id="withdrawal-method-info" style="text-align: center; font-size: var(--text-sm); color: var(--text-secondary); margin-top: var(--space-sm);">Withdrawal will be processed based on your provided details.</p>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="card">
+            <h2>Settings & Profile</h2>
+            <form id="availability-form" class="settings-form">
+                <h3>Availability</h3>
+                <div class="form-group">
+                    <label for="available-days">Available Days:</label>
+                    <select id="available-days" multiple size="4">
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="start-time">Start Time:</label>
+                    <input type="time" id="start-time" value="09:00">
+                </div>
+                <div class="form-group">
+                    <label for="end-time">End Time:</label>
+                    <input type="time" id="end-time" value="18:00">
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="emergency-calls">
+                    <label for="emergency-calls">Available for emergency calls</label>
+                </div>
+                <button type="submit" id="update-availability-btn" class="update-button">Update Availability</button>
+            </form>
+
+            <form id="location-settings-form" class="settings-form" style="margin-top: var(--space-lg);">
+                <h3>Working Location & Service Area</h3>
+                <!-- START NEW: Structured Address Form for Technician Location -->
+                <div class="form-group">
+                    <label>Working Location Address:</label>
+                    <div class="address-form-grid-2col">
+                        <div class="form-group">
+                            <label for="working-pincode">Pincode:</label>
+                            <input type="text" id="working-pincode" placeholder="Pincode">
+                        </div>
+                        <div class="form-group">
+                            <label for="working-city">City:</label>
+                            <input type="text" id="working-city" placeholder="City">
+                        </div>
+                        <div class="form-group">
+                            <label for="working-state">State:</label>
+                            <input type="text" id="working-state" placeholder="State">
+                        </div>
+                        <div class="form-group"></div> <!-- Spacer -->
+                    </div>
+                    <div class="form-group">
+                        <label for="working-street">Road name, Area, Colony:</label>
+                        <input type="text" id="working-street" placeholder="Road name, Area, Colony">
+                    </div>
+                    <div class="form-group">
+                        <label for="working-house-building">House No., Building Name (Optional):</label>
+                        <input type="text" id="working-house-building" placeholder="House No., Building Name">
+                    </div>
+                    <input type="hidden" id="working-latitude-input" name="latitude">
+                    <input type="hidden" id="working-longitude-input" name="longitude">
+                    <button type="button" id="use-my-working-location-btn" class="btn btn-secondary">
+                        <i class="fas fa-map-marker-alt"></i> Use My Location
+                    </button>
+                    <small style="color: var(--text-secondary);">This helps us assign jobs nearest to you.</small>
+                </div>
+                <!-- END NEW: Structured Address Form -->
+                <div class="form-group">
+                    <label for="service-radius">Service Radius (in km):</label>
+                    <input type="number" id="service-radius" min="1" max="100" value="10" placeholder="e.g., 10">
+                    <small style="color: var(--text-secondary);">Jobs within this distance from your primary location will be considered.</small>
+                </div>
+                <button type="submit" id="update-location-btn" class="update-button">Update Location Settings</button>
+            </form>
+
+            <section class="card payment-details-section" style="margin-top: var(--space-lg); padding: var(--space-md);">
+                <h3>Payment Details for Withdrawal</h3>
+                <form id="payment-details-form" class="settings-form">
+                    <div class="form-group">
+                        <label for="bank-name">Bank Name:</label>
+                        <input type="text" id="bank-name" placeholder="e.g., State Bank of India">
+                    </div>
+                    <div class="form-group">
+                        <label for="account-number">Account Number:</label>
+                        <input type="text" id="account-number" placeholder="Your Bank Account Number">
+                    </div>
+                    <div class="form-group">
+                        <label for="ifsc-code">IFSC Code:</label>
+                        <input type="text" id="ifsc-code" placeholder="e.g., SBIN0000001">
+                    </div>
+                    <div class="form-group">
+                        <label for="upi-id">UPI ID:</label>
+                        <input type="text" id="upi-id" placeholder="e.g., yourname@upi">
+                        <small style="color: var(--text-secondary);">Provide either Bank Account details OR UPI ID.</small>
+                    </div>
+                    <button type="submit" id="update-payment-details-btn" class="update-button">Update Payment Details</button>
+                </form>
+                <div class="bank-info" id="current-bank-details-info" style="margin-top: 20px;">
+                    <h3>Current Stored Details:</h3>
+                    <p><strong>Bank Name:</strong> <span id="display-bank-name">N/A</span></p>
+                    <p><strong>Account No:</strong> <span id="display-account-number">N/A</span></p>
+                    <p><strong>IFSC Code:</strong> <span id="display-ifsc-code">N/A</span></p>
+                    <p><strong>UPI ID:</strong> <span id="display-upi-id">N/A</span></p>
+                </div>
+            </section>
+        </section>
+
+        <!-- Notifications Section -->
+        <section id="notifications" class="card">
+            <div class="notification-header">
+                <h2>Notifications</h2>
+            </div>
+            <ul id="notification-list" class="notification-list">
+                <p style="text-align: center; color: #777;">Loading notifications...</p>
+            </ul>
+        </section>
+    </div>
+
+    <!-- Side Menu and Overlay -->
+    <div id="side-menu-overlay"></div>
+    <nav id="side-menu">
+        <div class="side-menu-profile">
+            <div class="profile-avatar">
+                <img id="side-menu-profile-photo" src="https://placehold.co/120x120/E9ECEF/495057?text=T" alt="Technician Profile Photo">
+            </div>
+            <div class="profile-info">
+                <h3 id="side-menu-full-name">Guest Technician</h3>
+                <p id="side-menu-email">guest@techseva.com</p>
+            </div>
+        </div>
+        <div class="side-menu-content">
+            <a href="#dashboard" class="menu-item active">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#jobs" class="menu-item">
+                <i class="fas fa-wrench"></i>
+                <span>Job Requests</span>
+            </a>
+            <a href="#earnings" class="menu-item">
+                <i class="fas fa-rupee-sign"></i>
+                <span>Earnings</span>
+            </a>
+            <a href="#settings" class="menu-item">
+                <i class="fas fa-user-cog"></i>
+                <span>Settings</span>
+            </a>
+            <a href="#notifications" class="menu-item">
+                <i class="fas fa-bell"></i>
+                <span>Notifications</span>
+            </a>
+            <div class="dark-mode-toggle" id="darkModeToggle">
+                <i class="fas fa-moon"></i>
+                <span>Dark Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeCheckbox">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <button id="logout-btn" class="menu-item danger-option" style="width: 100%; border: none; background: none; cursor: pointer; text-align: left;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- Bottom Tab Navigation -->
+    <nav id="app-tab-bar">  
+        <a href="#dashboard" class="tab-item active">  
+            <i class="fas fa-tachometer-alt"></i>  
+            <span>Dashboard</span>  
+        </a>  
+        <a href="#jobs" class="tab-item">  
+            <i class="fas fa-wrench"></i>  
+            <span>Jobs</span>  
+        </a>  
+        <a href="#earnings" class="tab-item">
+            <i class="fas fa-rupee-sign"></i>
+            <span>Earnings</span>
+        </a>
+        <a href="#settings" class="tab-item">  
+            <i class="fas fa-user-cog"></i>  
+            <span>Settings</span>  
+        </a>  
+    </nav>
+
+    <!-- Message Box for Alerts -->
+    <div id="message-container"></div>
+
+    <script>
+        // Placeholder for Google Maps initMap callback
+        function initMap() {
+            // No autocomplete is used with the structured form. The 'Use My Location' button handles the geocoding.
+        }
+
+        // Utility for displaying messages (replaces alert)
+        const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                setTimeout(() => messageBox.remove(), 500);
+            }, 4500);
+        };
+        
+        // Function to get geolocation and perform reverse geocoding (adapted for new structured form)
+        async function getGeolocationAndAddress(pincodeInput, cityInput, stateInput, streetInput, houseBuildingInput, latInput, lngInput, buttonElement, originalButtonText) {
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Fetching...`;
+
+            if (!navigator.geolocation) {
+                showMessage('Geolocation is not supported by your browser.', 'error');
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = originalButtonText;
+                return;
+            }
+
+            const geoOptions = {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            };
+
+            const success = async (position) => {
+                const { latitude, longitude } = position.coords;
+                latInput.value = latitude;
+                lngInput.value = longitude;
+
+                try {
+                    const response = await fetch('/api/reverse-geocode', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ latitude, longitude })
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                    const result = await response.json();
+
+                    if (result.success && result.structuredAddress) {
+                        const { pincode, state, city, street, houseBuilding } = result.structuredAddress;
+                        pincodeInput.value = pincode || '';
+                        cityInput.value = city || '';
+                        stateInput.value = state || '';
+                        streetInput.value = street || '';
+                        houseBuildingInput.value = houseBuilding || '';
+                        showMessage('GPS location fetched!', 'success');
+                    } else {
+                        showMessage(result.message || 'Could not fetch a structured address.', 'info');
+                    }
+                } catch (error) {
+                    showMessage(`Error fetching address: ${error.message}. Coordinates saved.`, 'error');
+                    console.error('Reverse geocoding error:', error);
+                } finally {
+                    buttonElement.disabled = false;
+                    buttonElement.innerHTML = originalButtonText;
+                }
+            };
+
+            const error = (err) => {
+                let message = "Could not fetch GPS location. Enter manually.";
+                if (err.code === err.PERMISSION_DENIED) {
+                    message = "Please allow location access to use this feature.";
+                }
+                showMessage(message, 'error');
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = originalButtonText;
+                latInput.value = '';
+                lngInput.value = '';
+            };
+
+            navigator.geolocation.getCurrentPosition(success, error, geoOptions);
+        }
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Global Constants ---
+            const APP_COMMISSION_RATE = 0.10;
+            const TAX_RATE_INDIA = 0.18;
+
+            // --- Element References ---
+            const sections = document.querySelectorAll('.container section.card');
+            const toggleSideMenuBtn = document.getElementById('toggle-side-menu-btn');
+            const sideMenu = document.getElementById('side-menu');
+            const sideMenuOverlay = document.getElementById('side-menu-overlay');
+            const sideMenuItems = document.querySelectorAll('#side-menu .menu-item');
+            const tabItems = document.querySelectorAll('#app-tab-bar .tab-item');
+            const logoutButton = document.getElementById('logout-btn');
+
+            // Dashboard & Profile
+            const technicianDisplayName = document.getElementById('technician-display-name');
+            const profileName = document.getElementById('profile-name');
+            const profileSkills = document.getElementById('profile-skills');
+            const profileRating = document.getElementById('profile-rating');
+            const statJobsCompleted = document.getElementById('stat-jobs-completed');
+            const statAverageRating = document.getElementById('stat-average-rating');
+            const statEarnings = document.getElementById('stat-earnings'); 
+            const statTotalRevenue = document.getElementById('stat-total-revenue'); 
+            const sideMenuFullName = document.getElementById('side-menu-full-name');
+            const sideMenuEmail = document.getElementById('side-menu-email');
+            const sideMenuProfilePhoto = document.getElementById('side-menu-profile-photo');
+            const headerProfilePicture = document.getElementById('header-profile-picture');
+            const profilePhotoMain = document.getElementById('profile-photo-main');
+
+            // Jobs (updated)
+            const newJobsTabBtn = document.getElementById('new-jobs-tab-btn');
+            const jobHistoryTabBtn = document.getElementById('job-history-tab-btn');
+            const newJobContainer = document.getElementById('new-job-list-container');
+            const jobHistoryContainer = document.getElementById('job-history-list-container');
+            
+            // Earnings
+            const todayEarnings = document.getElementById('today-earnings');
+            const weeklyEarnings = document.getElementById('weekly-earnings');
+            const monthlyEarnings = document.getElementById('monthly-earnings');
+            const availableBalanceElement = document.getElementById('available-balance'); 
+            const withdrawButton = document.getElementById('withdraw-btn');
+            const withdrawalMethodInfo = document.getElementById('withdrawal-method-info');
+            const refreshBalanceBtn = document.getElementById('refresh-balance-btn');
+
+            // Settings
+            const availabilityForm = document.getElementById('availability-form');
+            const availableDaysSelect = document.getElementById('available-days');
+            const startTimeInput = document.getElementById('start-time');
+            const endTimeInput = document.getElementById('end-time');
+            const emergencyCallsCheckbox = document.getElementById('emergency-calls');
+            const locationSettingsForm = document.getElementById('location-settings-form');
+            // UPDATED LOCATION FORM FIELDS
+            const workingPincodeInput = document.getElementById('working-pincode');
+            const workingCityInput = document.getElementById('working-city');
+            const workingStateInput = document.getElementById('working-state');
+            const workingStreetInput = document.getElementById('working-street');
+            const workingHouseBuildingInput = document.getElementById('working-house-building');
+            // END UPDATED FIELDS
+            const workingLatitudeInput = document.getElementById('working-latitude-input');
+            const workingLongitudeInput = document.getElementById('working-longitude-input');
+            const serviceRadiusInput = document.getElementById('service-radius');
+            const useMyWorkingLocationBtn = document.getElementById('use-my-working-location-btn');
+            const paymentDetailsForm = document.getElementById('payment-details-form');
+            const bankNameInput = document.getElementById('bank-name');
+            const accountNumberInput = document.getElementById('account-number');
+            const ifscCodeInput = document.getElementById('ifsc-code');
+            const upiIdInput = document.getElementById('upi-id');
+            const updatePaymentDetailsBtn = document.getElementById('update-payment-details-btn');
+            const displayBankName = document.getElementById('display-bank-name');
+            const displayAccountNumber = document.getElementById('display-account-number');
+            const displayIfscCode = document.getElementById('display-ifsc-code');
+            const displayUpiId = document.getElementById('display-upi-id');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeCheckbox = document.getElementById('darkModeCheckbox');
+            const notificationList = document.getElementById('notification-list');
+
+
+            let currentUser = null;
+            let currentJobs = [];
+
+            // --- Dark Mode Logic (from user dashboard) ---
+            function applyDarkModePreference() {
+                const isDarkMode = localStorage.getItem('darkMode') === 'enabled';
+                if (isDarkMode) {
+                    document.body.classList.add('dark-mode');
+                    if (darkModeCheckbox) darkModeCheckbox.checked = true;
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    if (darkModeCheckbox) darkModeCheckbox.checked = false;
+                }
+            }
+
+            function toggleDarkMode() {
+                if (document.body.classList.contains('dark-mode')) {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'disabled');
+                    showMessage('Dark mode disabled.', 'info');
+                } else {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'enabled');
+                    showMessage('Dark mode enabled!', 'info');
+                }
+            }
+
+            if (darkModeToggle) {
+                darkModeToggle.addEventListener('click', toggleDarkMode);
+            }
+            if (darkModeCheckbox) {
+                darkModeCheckbox.addEventListener('change', toggleDarkMode);
+            }
+            applyDarkModePreference();
+
+
+            // --- Navigation Logic (from user dashboard) ---
+            function openSideMenu() {
+                if (sideMenu && sideMenuOverlay) {
+                    sideMenu.classList.add('open');
+                    sideMenuOverlay.style.display = 'block';
+                }
+            }
+            function closeSideMenu() {
+                if (sideMenu && sideMenuOverlay) {
+                    sideMenu.classList.remove('open');
+                    sideMenuOverlay.style.display = 'none';
+                }
+            }
+            function showSection(targetId) {
+                sections.forEach(section => section.classList.remove('active-section'));
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) targetSection.classList.add('active-section');
+                
+                sideMenuItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('href') === targetId) item.classList.add('active');
+                });
+                tabItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('href') === targetId) item.classList.add('active');
+                });
+            }
+
+            if (toggleSideMenuBtn) toggleSideMenuBtn.addEventListener('click', openSideMenu);
+            if (sideMenuOverlay) sideMenuOverlay.addEventListener('click', closeSideMenu);
+            sideMenuItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = e.currentTarget.getAttribute('href');
+                    if (targetId) {
+                        showSection(targetId);
+                        closeSideMenu();
+                    }
+                });
+            });
+            tabItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = e.currentTarget.getAttribute('href');
+                    if (targetId) {
+                        showSection(targetId);
+                    }
+                });
+            });
+
+            // --- Job Tab Navigation ---
+            function showJobTab(tabId) {
+                const newJobsActive = tabId === 'new-jobs';
+                newJobsTabBtn.classList.toggle('active', newJobsActive);
+                jobHistoryTabBtn.classList.toggle('active', !newJobsActive);
+                newJobContainer.style.display = newJobsActive ? 'flex' : 'none';
+                jobHistoryContainer.style.display = newJobsActive ? 'none' : 'flex';
+            }
+
+            newJobsTabBtn.addEventListener('click', () => showJobTab('new-jobs'));
+            jobHistoryTabBtn.addEventListener('click', () => showJobTab('job-history'));
+
+            // --- Fetch & Populate Data (adapted from original) ---
+            async function fetchTechnicianData() {
+                console.log("[FETCH DATA] Starting fetchTechnicianData...");
+                try {
+                    const userResponse = await fetch('/api/user/me');
+                    if (!userResponse.ok) throw new Error('Failed to fetch user profile.');
+                    const userResult = await userResponse.json();
+
+                    if (!userResult.success || !userResult.user) {
+                        showMessage('Failed to load technician profile. Redirecting to login.', 'error');
+                        setTimeout(() => { window.location.href = '/'; }, 1500);
+                        return;
+                    }
+                    currentUser = userResult.user;
+                    
+                    const jobsResponse = await fetch('/api/technician/jobs');
+                    if (!jobsResponse.ok) throw new Error('Failed to fetch job requests.');
+                    const jobsResult = await jobsResponse.json();
+
+                    if (!jobsResult.success) {
+                        showMessage('Failed to load job requests.', 'error');
+                        console.error('Failed to load jobs:', jobsResult.message);
+                        currentJobs = [];
+                    } else {
+                        currentJobs = jobsResult.jobs;
+                    }
+
+                    // Populate Profile Overview & Side Menu
+                    if (technicianDisplayName) technicianDisplayName.textContent = `Hello, ${currentUser.fullName || currentUser.email}!`;
+                    if (profileName) profileName.textContent = currentUser.fullName || currentUser.email;
+                    if (sideMenuFullName) sideMenuFullName.textContent = currentUser.fullName || 'Guest Technician';
+                    if (sideMenuEmail) sideMenuEmail.textContent = currentUser.email || 'guest@techseva.com';
+                    if (profileSkills) profileSkills.textContent = `Skills: ${currentUser.skills ? currentUser.skills.join(', ') : 'N/A'}`;
+                    
+                    if (profileRating) {
+                        const avgRating = currentUser.averageRating ? currentUser.averageRating.toFixed(1) : 'N/A';
+                        const stars = currentUser.averageRating ? '★'.repeat(Math.round(currentUser.averageRating)) + '☆'.repeat(5 - Math.round(currentUser.averageRating)) : '☆☆☆☆☆';
+                        profileRating.textContent = `${stars} (${avgRating})`;
+                    }
+                    if (statAverageRating) statAverageRating.textContent = currentUser.averageRating ? currentUser.averageRating.toFixed(1) : '0';
+                    
+                    const profilePhotoUrl = currentUser.profilePictureUrl || 'https://placehold.co/120x120/E9ECEF/495057?text=T';
+                    if (headerProfilePicture) headerProfilePicture.src = profilePhotoUrl;
+                    if (sideMenuProfilePhoto) sideMenuProfilePhoto.src = profilePhotoUrl;
+                    if (profilePhotoMain) profilePhotoMain.src = profilePhotoUrl;
+
+                    const completedJobsCount = currentJobs.filter(job => job.status === 'Completed' || job.status === 'Paid').length;
+                    if (statJobsCompleted) statJobsCompleted.textContent = completedJobsCount;
+
+                    if (statEarnings) statEarnings.textContent = `₹ ${currentUser.balance ? currentUser.balance.toFixed(2) : '0.00'}`;
+                    if (availableBalanceElement) availableBalanceElement.textContent = `₹ ${currentUser.balance ? currentUser.balance.toFixed(2) : '0.00'}`;
+
+                    const jobsPaidToTechnician = currentJobs.filter(job => job.payment && job.payment.status === 'Paid'); 
+                    if (todayEarnings) todayEarnings.textContent = `₹ ${calculateDailyEarnings(jobsPaidToTechnician).toFixed(2)}`;
+                    if (weeklyEarnings) weeklyEarnings.textContent = `₹ ${calculateWeeklyEarnings(jobsPaidToTechnician).toFixed(2)}`;
+                    if (monthlyEarnings) monthlyEarnings.textContent = `₹ ${calculateMonthlyEarnings(jobsPaidToTechnician).toFixed(2)}`;
+                    
+                    if (statTotalRevenue) statTotalRevenue.textContent = `₹ ${calculateTotalRevenue(currentJobs).toFixed(2)}`;
+
+                    if (withdrawButton) {
+                        const hasBankDetails = currentUser.bankDetails && currentUser.bankDetails.accountNumber && currentUser.bankDetails.bankName && currentUser.bankDetails.ifscCode;
+                        const hasUpiId = currentUser.bankDetails && currentUser.bankDetails.upiId;
+                        const canWithdraw = (currentUser.balance || 0) > 0 && (hasBankDetails || hasUpiId);
+                        withdrawButton.disabled = !canWithdraw;
+                        if (canWithdraw) {
+                            if (hasUpiId) withdrawalMethodInfo.textContent = `Withdrawal to UPI ID: ${currentUser.bankDetails.upiId}`;
+                            else if (hasBankDetails) withdrawalMethodInfo.textContent = `Withdrawal to Bank A/C: ${currentUser.bankDetails.accountNumber}`;
+                        } else {
+                            if ((currentUser.balance || 0) <= 0) withdrawalMethodInfo.textContent = "No balance to withdraw.";
+                            else withdrawalMethodInfo.textContent = "Please add payment details to enable withdrawal.";
+                        }
+                    }
+
+                    // Populate Settings Forms
+                    if (currentUser.bankDetails) {
+                        displayBankName.textContent = currentUser.bankDetails.bankName || 'N/A';
+                        displayAccountNumber.textContent = currentUser.bankDetails.accountNumber || 'N/A';
+                        displayIfscCode.textContent = currentUser.bankDetails.ifscCode || 'N/A';
+                        displayUpiId.textContent = currentUser.bankDetails.upiId || 'N/A';
+                        bankNameInput.value = currentUser.bankDetails.bankName || '';
+                        accountNumberInput.value = currentUser.bankDetails.accountNumber || '';
+                        ifscCodeInput.value = currentUser.bankDetails.ifscCode || '';
+                        upiIdInput.value = currentUser.bankDetails.upiId || '';
+                    } else {
+                         displayBankName.textContent = displayAccountNumber.textContent = displayIfscCode.textContent = displayUpiId.textContent = 'N/A';
+                         bankNameInput.value = accountNumberInput.value = ifscCodeInput.value = upiIdInput.value = '';
+                    }
+
+                    if (currentUser.availability) {
+                        Array.from(availableDaysSelect.options).forEach(option => {
+                            option.selected = currentUser.availability.availableDays.includes(option.value);
+                        });
+                        startTimeInput.value = currentUser.availability.startTime || '09:00';
+                        endTimeInput.value = currentUser.availability.endTime || '18:00';
+                        emergencyCallsCheckbox.checked = currentUser.availability.emergencyCalls || false;
+                    }
+                    
+                    // NEW: Populate the structured location fields for the technician's profile
+                    if (currentUser.workingLocation) {
+                        workingPincodeInput.value = currentUser.workingLocation.pincode || '';
+                        workingCityInput.value = currentUser.workingLocation.city || '';
+                        workingStateInput.value = currentUser.workingLocation.state || '';
+                        workingStreetInput.value = currentUser.workingLocation.street || '';
+                        workingHouseBuildingInput.value = currentUser.workingLocation.houseBuilding || '';
+                        serviceRadiusInput.value = currentUser.workingLocation.radiusKm || '10';
+                        workingLatitudeInput.value = currentUser.workingLocation.latitude || '';
+                        workingLongitudeInput.value = currentUser.workingLocation.longitude || '';
+                    } else {
+                        workingPincodeInput.value = '';
+                        workingCityInput.value = '';
+                        workingStateInput.value = '';
+                        workingStreetInput.value = '';
+                        workingHouseBuildingInput.value = '';
+                        serviceRadiusInput.value = '10';
+                        workingLatitudeInput.value = '';
+                        workingLongitudeInput.value = '';
+                    }
+
+
+                    renderJobs();
+                    console.log("[FETCH DATA] fetchTechnicianData completed.");
+
+                } catch (error) {
+                    showMessage(`Error fetching technician data: ${error.message}. Redirecting to login.`, 'error');
+                    console.error('Error fetching technician data:', error);
+                    setTimeout(() => { window.location.href = '/'; }, 1500);
+                }
+            }
+
+            // Helper function to calculate total gross revenue from all jobs with a quotation
+            function calculateTotalRevenue(jobs) {
+                let total = 0;
+                jobs.forEach(job => {
+                    if (job.quotation && job.quotation.totalEstimate) {
+                        total += job.quotation.totalEstimate;
+                    }
+                });
+                return total;
+            }
+
+            // Helper functions for earnings calculation
+            function calculateNetEarningForJob(job) {
+                if (job.quotation && job.quotation.totalEstimate) {
+                    // Check if it's a warranty claim job
+                    if (job.isWarrantyClaim) {
+                        const netEarning = job.quotation.partCost || 0; // Only get paid for parts
+                        return netEarning;
+                    } else {
+                        const grossAmount = job.quotation.totalEstimate;
+                        const appCommission = grossAmount * APP_COMMISSION_RATE;
+                        const amountBeforeTax = grossAmount - appCommission;
+                        const technicianTaxDeduction = amountBeforeTax * TAX_RATE_INDIA;
+                        return amountBeforeTax - technicianTaxDeduction;
+                    }
+                }
+                return 0;
+            }
+
+            function calculateDailyEarnings(jobs) {
+                const today = new Date();
+                let dailyNet = 0;
+                jobs.filter(job => {
+                    const paidDate = job.payment && job.payment.paidAt ? new Date(job.payment.paidAt) : null;
+                    return paidDate && paidDate.getDate() === today.getDate() && paidDate.getMonth() === today.getMonth() && paidDate.getFullYear() === today.getFullYear();
+                }).forEach(job => {
+                    dailyNet += calculateNetEarningForJob(job);
+                });
+                return dailyNet;
+            }
+
+            function calculateWeeklyEarnings(jobs) {
+                const today = new Date();
+                const firstDayOfWeek = new Date(today);
+                firstDayOfWeek.setDate(today.getDate() - today.getDay()); 
+                firstDayOfWeek.setHours(0, 0, 0, 0);
+                const lastDayOfWeek = new Date(firstDayOfWeek);
+                lastDayOfWeek.setDate(firstDayOfWeek.getDate() + 6); 
+                lastDayOfWeek.setHours(23, 59, 59, 999);
+
+                let weeklyNet = 0;
+                jobs.filter(job => {
+                    const paidDate = job.payment && job.payment.paidAt ? new Date(job.payment.paidAt) : null;
+                    return paidDate && paidDate >= firstDayOfWeek && paidDate <= lastDayOfWeek;
+                }).forEach(job => {
+                    weeklyNet += calculateNetEarningForJob(job);
+                });
+                return weeklyNet;
+            }
+
+            function calculateMonthlyEarnings(jobs) {
+                const today = new Date();
+                let monthlyNet = 0;
+                jobs.filter(job => {
+                    const paidDate = job.payment && job.payment.paidAt ? new Date(job.payment.paidAt) : null;
+                    return paidDate && paidDate.getMonth() === today.getMonth() && paidDate.getFullYear() === today.getFullYear();
+                }).forEach(job => {
+                    monthlyNet += calculateNetEarningForJob(job);
+                });
+                return monthlyNet;
+            }
+
+            // Helper function to create a full address string from a structured address object
+            function constructFullAddress(addressObj) {
+                if (!addressObj) return 'N/A';
+                if (typeof addressObj === 'string') return addressObj;
+
+                const parts = [
+                    addressObj.houseBuilding,
+                    addressObj.street,
+                    addressObj.city,
+                    addressObj.state,
+                    addressObj.pincode
+                ].filter(Boolean); // Filter out any empty or null parts
+
+                return parts.join(', ');
+            }
+
+
+            // --- Populate Job List (adapted) ---
+            function createJobCardHtml(job) {
+                const formattedDateTime = job.scheduledDateTime ? new Date(job.scheduledDateTime).toLocaleString() : 'N/A';
+                const lastUpdatedDisplay = job.updatedAt ? new Date(job.updatedAt).toLocaleString() : new Date(job.createdAt).toLocaleString();
+                const paymentStatus = job.payment && job.payment.status ? job.payment.status : 'Pending';
+                
+                let actionsHtml = '';
+                let fileUploadHtml = '';
+                let pdfButtonHtml = '';
+                
+                // Logic for actions based on job status
+                if (job.status === 'Pending' && (!job.assignedTechnicianId || job.assignedTechnicianId.toString() === currentUser._id)) {
+                    // Added both Accept and Reject buttons for a pending job
+                    actionsHtml += `<button class="action-btn btn-accept" data-job-id="${job.jobId}">Accept</button>`;
+                    actionsHtml += `<button class="action-btn btn-reject" data-job-id="${job.jobId}">Reject</button>`;
+                } else if (['Accepted', 'In Progress'].includes(job.status) && job.assignedTechnicianId && job.assignedTechnicianId.toString() === currentUser._id) {
+                    actionsHtml += `<button class="action-btn btn-diagnose" data-job-id="${job.jobId}">Diagnose & Quote</button>`;
+                } else if (job.status === 'Diagnosed' && job.assignedTechnicianId && job.assignedTechnicianId.toString() === currentUser._id) {
+                    actionsHtml += `<button class="action-btn btn-complete" data-job-id="${job.jobId}">Mark as Complete</button>`;
+                    fileUploadHtml = `
+                        <div class="file-upload-group">
+                            <label for="proof-photo-${job.jobId}">Upload Proof Photo(s):</label>
+                            <input type="file" id="proof-photo-${job.jobId}" accept="image/*" multiple data-job-id="${job.jobId}">
+                            <div class="image-preview-container" id="image-preview-${job.jobId}"></div>
+                        </div>
+                    `;
+                } else {
+                    actionsHtml += `<button class="action-btn btn-disabled" disabled>${job.status}</button>`;
+                }
+
+                if (job.proofImages && job.proofImages.length > 0) {
+                     pdfButtonHtml = `<button class="action-btn btn-view-pdf" data-job-id="${job.jobId}">View Proof PDF</button>`;
+                }
+
+                let paymentDetailsHtml = '';
+                if (job.quotation && job.quotation.totalEstimate) {
+                    const netEarning = calculateNetEarningForJob(job);
+                    paymentDetailsHtml += `<p><strong>Quotation:</strong> ₹ ${job.quotation.totalEstimate.toFixed(2)}</p>`;
+                    if (job.payment && job.payment.status === 'Paid') {
+                        paymentDetailsHtml += `<p><strong>Your Net Earning:</strong> <span style="color: var(--success); font-weight: bold;">₹ ${netEarning.toFixed(2)}</span></p>`;
+                    } else if (job.status === 'Completed' || job.status === 'Diagnosed') {
+                        paymentDetailsHtml += `<p><em>(Waiting for customer payment)</em></p>`;
+                    }
+                }
+
+                // Display job location correctly by using the helper function
+                const jobLocation = constructFullAddress(job.location);
+                
+                const jobIdDisplay = job.isWarrantyClaim ? `${job.originalJobId} <span class="badge warranty">Warranty Claim</span>` : job.jobId;
+
+
+                return `
+                    <h3>Job ID: ${jobIdDisplay} (${job.applianceType})</h3>
+                    <p><strong>Customer:</strong> ${job.customerName} (Phone: ${job.customerPhoneNumber || 'N/A'})</p>
+                    <p><strong>Location:</strong> ${jobLocation}</p>
+                    <p><strong>Scheduled:</strong> ${formattedDateTime}</p>
+                    <p><strong>Status:</strong> <span id="status-${job.jobId}">${job.status}</span></p>
+                    <p><strong>Payment Status:</strong> <span id="payment-status-${job.jobId}">${paymentStatus}</span></p>
+                    <p>Last Updated: ${lastUpdatedDisplay}</p>
+                    ${paymentDetailsHtml}
+                    <div class="job-actions" id="actions-${job.jobId}">
+                        ${actionsHtml}
+                        ${fileUploadHtml}
+                        ${pdfButtonHtml}
+                    </div>
+                `;
+            }
+
+            function renderJobs() {
+                if (!newJobContainer || !jobHistoryContainer) return;
+
+                // Clear previous job lists
+                newJobContainer.innerHTML = '';
+                jobHistoryContainer.innerHTML = '';
+                
+                const newJobStatuses = ['Pending', 'Accepted', 'In Progress', 'Diagnosed'];
+                const historyJobStatuses = ['Completed', 'Paid', 'Cancelled'];
+
+                // Filter jobs into new and history
+                const newJobs = currentJobs.filter(job => newJobStatuses.includes(job.status) && job.assignedTechnicianId && job.assignedTechnicianId.toString() === currentUser._id);
+                const historyJobs = currentJobs.filter(job => historyJobStatuses.includes(job.status) && job.assignedTechnicianId && job.assignedTechnicianId.toString() === currentUser._id);
+                
+                // Add unassigned jobs to the "New Jobs" list
+                const unassignedJobs = currentJobs.filter(job => job.status === 'Pending' && !job.assignedTechnicianId);
+                const allNewJobs = [...newJobs, ...unassignedJobs];
+
+                // Sort jobs by creation date (most recent first)
+                allNewJobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                historyJobs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                
+                if (allNewJobs.length === 0) {
+                    newJobContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No new job requests at the moment.</p>';
+                } else {
+                    allNewJobs.forEach(job => {
+                        const jobCard = document.createElement('div');
+                        let cardClass = 'job-card';
+                        if (job.isWarrantyClaim) {
+                           cardClass += ' warranty-job';
+                        } else if (['Accepted', 'In Progress', 'Diagnosed'].includes(job.status)) {
+                           cardClass += ' highlight';
+                        }
+                        jobCard.className = cardClass;
+                        jobCard.innerHTML = createJobCardHtml(job);
+                        newJobContainer.appendChild(jobCard);
+                    });
+                }
+
+                if (historyJobs.length === 0) {
+                    jobHistoryContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No completed, paid or cancelled jobs to show.</p>';
+                } else {
+                     historyJobs.forEach(job => {
+                        const jobCard = document.createElement('div');
+                        jobCard.className = `job-card`;
+                        jobCard.innerHTML = createJobCardHtml(job);
+                        jobHistoryContainer.appendChild(jobCard);
+                    });
+                }
+
+                attachJobActionListeners();
+            }
+
+
+            // Function to fetch notifications (new from user dashboard)
+            async function fetchNotifications() {
+                notificationList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">Loading notifications...</p>';
+                try {
+                    const response = await fetch('/api/technician/announcements');
+                    const result = await response.json();
+                    if (result.success && result.announcements) {
+                        renderNotifications(result.announcements);
+                    } else {
+                        throw new Error(result.message || 'Failed to fetch notifications.');
+                    }
+                } catch (error) {
+                    notificationList.innerHTML = `<p style="text-align: center; color: var(--danger);">Error loading notifications.</p>`;
+                    console.error('Error fetching notifications:', error);
+                }
+            }
+
+            // Function to render notifications (new from user dashboard)
+            function renderNotifications(notifications) {
+                notificationList.innerHTML = '';
+                if (notifications.length === 0) {
+                    notificationList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No new notifications.</p>';
+                } else {
+                    notifications.sort((a,b) => new Date(b.publishedOn) - new Date(a.publishedOn));
+                    notifications.forEach(notification => {
+                        const li = document.createElement('li');
+                        li.className = `notification-item ${notification.type}`;
+                        li.innerHTML = `<strong>${notification.title}</strong><br>${notification.content}`;
+                        notificationList.appendChild(li);
+                    });
+                }
+            }
+
+
+            function attachJobActionListeners() {
+                document.querySelectorAll('#new-job-list-container .action-btn, #job-history-list-container .action-btn').forEach(button => {
+                    button.removeEventListener('click', handleJobAction);
+                    button.addEventListener('click', handleJobAction);
+                });
+                document.querySelectorAll('input[type="file"]').forEach(input => {
+                    input.removeEventListener('change', handleFileSelect);
+                    input.addEventListener('change', handleFileSelect);
+                });
+                document.querySelectorAll('.btn-view-pdf').forEach(button => {
+                    button.removeEventListener('click', handleViewPdf);
+                    button.addEventListener('click', handleViewPdf);
+                });
+            }
+
+            function handleFileSelect(event) {
+                const fileInput = event.target;
+                const jobId = fileInput.dataset.jobId;
+                const previewContainer = document.getElementById(`image-preview-${jobId}`);
+                if (!previewContainer) return;
+
+                previewContainer.innerHTML = '';
+                const files = fileInput.files;
+
+                if (files.length > 0) {
+                    Array.from(files).forEach(file => {
+                        if (file.type.startsWith('image/')) {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                const img = document.createElement('img');
+                                img.src = e.target.result;
+                                img.className = 'image-preview';
+                                previewContainer.appendChild(img);
+                            };
+                            reader.readAsDataURL(file);
+                        } else {
+                            showMessage('Only image files are allowed.', 'error');
+                        }
+                    });
+                }
+            }
+            
+            async function generatePdfForJob(jobId, imageDataUrls) {
+                if (imageDataUrls.length === 0) {
+                    showMessage('No images available to generate PDF.', 'info');
+                    return;
+                }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+                let yOffset = 40;
+                const margin = 20;
+                const imgWidth = 550;
+                const pageHeight = doc.internal.pageSize.height;
+                doc.setFontSize(16);
+                doc.text(`Proof Images for Job ID: ${jobId}`, margin, yOffset);
+                yOffset += 30;
+                for (let i = 0; i < imageDataUrls.length; i++) {
+                    const imgData = imageDataUrls[i];
+                    const img = new Image();
+                    img.src = imgData;
+                    await new Promise(resolve => {
+                        img.onload = () => resolve();
+                        img.onerror = () => {
+                            console.error(`Error loading image for PDF generation: ${imgData.substring(0, 50)}...`);
+                            resolve();
+                        };
+                    });
+                    if (!img.complete || img.naturalWidth === 0 || img.naturalHeight === 0) {
+                        continue;
+                    }
+                    const imgHeight = (img.height * imgWidth) / img.width;
+                    if (yOffset + imgHeight + margin > pageHeight) {
+                        doc.addPage();
+                        yOffset = margin;
+                    }
+                    doc.addImage(imgData, 'JPEG', margin, yOffset, imgWidth, imgHeight);
+                    yOffset += imgHeight + 20;
+                }
+                doc.save(`job_${jobId}_proofs.pdf`);
+                showMessage('PDF generated successfully!', 'success');
+            }
+
+            async function handleViewPdf(event) {
+                const button = event.target;
+                const jobId = button.dataset.jobId;
+                const job = currentJobs.find(j => j.jobId === jobId);
+                if (job && job.proofImages && job.proofImages.length > 0) {
+                    button.disabled = true;
+                    button.textContent = 'Generating PDF...';
+                    try {
+                        await generatePdfForJob(jobId, job.proofImages);
+                    } catch (error) {
+                        console.error('Error generating proof PDF:', error);
+                        showMessage('Failed to generate proof PDF.', 'error');
+                    } finally {
+                        button.disabled = false;
+                        button.textContent = 'View Proof PDF';
+                    }
+                } else {
+                    showMessage('No proof images available for this job to generate PDF.', 'error');
+                }
+            }
+
+
+            async function handleJobAction(event) {
+                const button = event.target;
+                const jobId = button.dataset.jobId;
+                const action = button.textContent.trim().toLowerCase();
+                if (!jobId) { showMessage('Job ID not found.', 'error'); return; }
+                let endpoint = '';
+                let method = 'POST';
+                let successMessage = '';
+                let errorMessage = '';
+                let bodyData = { jobId: jobId };
+                switch (action) {
+                    case 'accept': endpoint = '/api/technician/jobs/accept'; successMessage = `Job ${jobId} accepted.`; errorMessage = `Failed to accept job ${jobId}.`; break;
+                    case 'reject': endpoint = '/api/technician/jobs/reject'; successMessage = `Job ${jobId} rejected.`; errorMessage = `Failed to reject job ${jobId}.`; break;
+                    case 'diagnose & quote': window.location.href = `/diagnosis?jobId=${jobId}`; return;
+                    case 'mark as complete':
+                        endpoint = '/api/technician/jobs/complete';
+                        successMessage = `Job ${jobId} marked as complete and proof images saved.`;
+                        errorMessage = `Failed to complete job ${jobId} or upload proof.`;
+                        const fileInput = document.getElementById(`proof-photo-${jobId}`);
+                        const files = fileInput ? fileInput.files : null;
+                        const base64Images = [];
+                        if (files && files.length > 0) {
+                            const fileReadPromises = Array.from(files).map(file => {
+                                return new Promise((resolve, reject) => {
+                                    const reader = new FileReader();
+                                    reader.onload = (e) => { base64Images.push(e.target.result); resolve(); };
+                                    reader.onerror = (e) => { console.error("Error reading file:", e); reject(new Error("Failed to read file.")); };
+                                    reader.readAsDataURL(file);
+                                });
+                            });
+                            await Promise.all(fileReadPromises);
+                        } else {
+                            showMessage('Please upload at least one proof photo.', 'error');
+                            return;
+                        }
+                        bodyData = { jobId: jobId, proofImages: base64Images };
+                        break;
+                    default: showMessage('Unknown job action.', 'error'); return;
+                }
+                button.disabled = true;
+                const originalText = button.textContent;
+                button.textContent = 'Processing...';
+                try {
+                    const response = await fetch(endpoint, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bodyData)
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        showMessage(result.message || successMessage, 'success');
+                        await fetchTechnicianData();
+                    } else {
+                        showMessage(result.message || errorMessage, 'error');
+                        console.error(`Error performing action '${action}' for job ${jobId}:`, result.message || 'Server error');
+                    }
+                } catch (error) {
+                    showMessage(`Network error during job action '${action}'.`, 'error');
+                    console.error(`Network error for job action '${action}':`, error);
+                } finally {
+                    button.disabled = false;
+                    button.textContent = originalText;
+                }
+            }
+
+
+            if (logoutButton) {
+                logoutButton.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/logout', { method: 'POST' });
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            showMessage('Logged out successfully.', 'success');
+                            setTimeout(() => { window.location.href = '/'; }, 1000);
+                        } else {
+                            showMessage(result.message || 'Logout failed.', 'error');
+                        }
+                    } catch (error) {
+                        showMessage('Network error during logout.', 'error');
+                        console.error('Logout error:', error);
+                    }
+                });
+            }
+
+            if (refreshBalanceBtn) {
+                refreshBalanceBtn.addEventListener('click', async () => {
+                    refreshBalanceBtn.disabled = true;
+                    const originalRefreshText = refreshBalanceBtn.textContent;
+                    refreshBalanceBtn.textContent = 'Refreshing...';
+                    try {
+                        await fetchTechnicianData();
+                        showMessage('Balance refreshed!', 'success');
+                    } catch (error) {
+                        showMessage('Failed to refresh balance.', 'error');
+                        console.error('Refresh balance error:', error);
+                    } finally {
+                        refreshBalanceBtn.disabled = false;
+                        refreshBalanceBtn.textContent = originalRefreshText;
+                    }
+                });
+            }
+
+
+            if (withdrawButton) {
+                withdrawButton.addEventListener('click', async () => {
+                    await fetchTechnicianData();
+                    if ((currentUser.balance || 0) <= 0) {
+                        showMessage('No available balance for withdrawal.', 'info');
+                        return;
+                    }
+                    const hasBankDetails = currentUser.bankDetails && currentUser.bankDetails.accountNumber && currentUser.bankDetails.bankName && currentUser.bankDetails.ifscCode;
+                    const hasUpiId = currentUser.bankDetails && currentUser.bankDetails.upiId;
+                    if (!hasBankDetails && !hasUpiId) {
+                        showMessage('Please provide either bank account details or a UPI ID.', 'error');
+                        return;
+                    }
+                    if (currentUser.bankDetails.accountNumber && (!currentUser.bankDetails.bankName || !currentUser.bankDetails.ifscCode)) {
+                        showMessage('If providing an Account Number, Bank Name and IFSC Code are required.', 'error');
+                        return;
+                    }
+                    const withdrawalAmount = currentUser.balance;
+                    withdrawButton.disabled = true;
+                    const originalWithdrawText = withdrawButton.textContent;
+                    withdrawButton.textContent = 'Processing Withdrawal...';
+                    try {
+                        const response = await fetch('/api/technician/withdraw', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ amount: withdrawalAmount })
+                        });
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            showMessage(result.message, 'success');
+                            await fetchTechnicianData();
+                        } else {
+                            showMessage(result.message || 'Withdrawal failed.', 'error');
+                        }
+                    } catch (error) {
+                        showMessage('Network error during withdrawal.', 'error');
+                    } finally {
+                        withdrawButton.disabled = false;
+                        withdrawButton.textContent = originalWithdrawText;
+                    }
+                });
+            }
+
+            if (availabilityForm) {
+                availabilityForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const selectedDays = Array.from(availableDaysSelect.selectedOptions).map(option => option.value);
+                    const availabilityData = {
+                        availableDays: selectedDays,
+                        startTime: startTimeInput.value,
+                        endTime: endTimeInput.value,
+                        emergencyCalls: emergencyCallsCheckbox.checked
+                    };
+                    const updateBtn = event.submitter;
+                    updateBtn.disabled = true;
+                    const originalUpdateText = updateBtn.textContent;
+                    updateBtn.textContent = 'Updating...';
+                    try {
+                        const response = await fetch('/api/technician/update-availability', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(availabilityData)
+                        });
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            showMessage(result.message || 'Availability updated successfully!', 'success');
+                            await fetchTechnicianData();
+                        } else {
+                            showMessage(result.message || 'Failed to update availability.', 'error');
+                        }
+                    } catch (error) {
+                        showMessage('Network error during availability update.', 'error');
+                    } finally {
+                        updateBtn.disabled = false;
+                        updateBtn.textContent = originalUpdateText;
+                    }
+                });
+            }
+            
+            // NEW LOGIC FOR THE NEW STRUCTURED LOCATION FORM
+            async function getGeolocationAndAddress(pincodeInput, cityInput, stateInput, streetInput, houseBuildingInput, latInput, lngInput, buttonElement, originalButtonText) {
+                buttonElement.disabled = true;
+                buttonElement.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Fetching...`;
+
+                if (!navigator.geolocation) {
+                    showMessage('Geolocation is not supported by your browser.', 'error');
+                    buttonElement.disabled = false;
+                    buttonElement.innerHTML = originalButtonText;
+                    return;
+                }
+
+                const geoOptions = {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                };
+
+                const success = async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    latInput.value = latitude;
+                    lngInput.value = longitude;
+
+                    try {
+                        const response = await fetch('/api/reverse-geocode', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ latitude, longitude })
+                        });
+                        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                        const result = await response.json();
+
+                        if (result.success && result.structuredAddress) {
+                            const { pincode, state, city, street, houseBuilding } = result.structuredAddress;
+                            pincodeInput.value = pincode || '';
+                            cityInput.value = city || '';
+                            stateInput.value = state || '';
+                            streetInput.value = street || '';
+                            houseBuildingInput.value = houseBuilding || '';
+                            showMessage('GPS location fetched!', 'success');
+                        } else {
+                            showMessage(result.message || 'Could not fetch a structured address.', 'info');
+                        }
+                    } catch (error) {
+                        showMessage(`Error fetching address: ${error.message}. Coordinates saved.`, 'error');
+                        console.error('Reverse geocoding error:', error);
+                    } finally {
+                        buttonElement.disabled = false;
+                        buttonElement.innerHTML = originalButtonText;
+                    }
+                };
+
+                const error = (err) => {
+                    let message = "Could not fetch GPS location. Enter manually.";
+                    if (err.code === err.PERMISSION_DENIED) {
+                        message = "Please allow location access to use this feature.";
+                    }
+                    showMessage(message, 'error');
+                    buttonElement.disabled = false;
+                    buttonElement.innerHTML = originalButtonText;
+                    latInput.value = '';
+                    lngInput.value = '';
+                };
+
+                navigator.geolocation.getCurrentPosition(success, error, geoOptions);
+            }
+
+            if (useMyWorkingLocationBtn) {
+                const originalBtnText = useMyWorkingLocationBtn.textContent.trim();
+                useMyWorkingLocationBtn.addEventListener('click', () => {
+                    getGeolocationAndAddress(
+                        workingPincodeInput,
+                        workingCityInput,
+                        workingStateInput,
+                        workingStreetInput,
+                        workingHouseBuildingInput,
+                        workingLatitudeInput,
+                        workingLongitudeInput,
+                        useMyWorkingLocationBtn,
+                        originalBtnText
+                    );
+                });
+            }
+
+            if (locationSettingsForm) {
+                locationSettingsForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    
+                    const pincode = workingPincodeInput.value.trim();
+                    const city = workingCityInput.value.trim();
+                    const state = workingStateInput.value.trim();
+                    const street = workingStreetInput.value.trim();
+                    const houseBuilding = workingHouseBuildingInput.value.trim();
+                    const serviceRadius = parseFloat(serviceRadiusInput.value);
+                    const latitude = workingLatitudeInput.value;
+                    const longitude = workingLongitudeInput.value;
+
+                    if (!pincode || !city || !state || !street) { 
+                        showMessage('Please fill all required address fields.', 'error');
+                        return; 
+                    }
+                    if (isNaN(serviceRadius) || serviceRadius <= 0) { 
+                        showMessage('Please enter a valid service radius.', 'error');
+                        return;
+                    }
+                    if (!latitude || !longitude) {
+                        showMessage('Please use "Use My Location" to get the latitude and longitude.', 'error');
+                        return;
+                    }
+
+                    const updateLocationBtn = event.submitter;
+                    updateLocationBtn.disabled = true;
+                    const originalUpdateLocationText = updateLocationBtn.textContent;
+                    updateLocationBtn.textContent = 'Updating Location...';
+
+                    try {
+                        const response = await fetch('/api/technician/update-location', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                workingLocation: {
+                                    pincode,
+                                    city,
+                                    state,
+                                    street,
+                                    houseBuilding,
+                                    radiusKm: serviceRadius,
+                                    latitude: parseFloat(latitude),
+                                    longitude: parseFloat(longitude)
+                                }
+                            })
+                        });
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            showMessage(result.message || 'Location settings updated!', 'success');
+                            await fetchTechnicianData();
+                        } else {
+                            showMessage(result.message || 'Failed to update location settings.', 'error');
+                        }
+                    } catch (error) {
+                        showMessage('Network error during location update.', 'error');
+                    } finally {
+                        updateLocationBtn.disabled = false;
+                        updateLocationBtn.textContent = originalUpdateLocationText;
+                    }
+                });
+            }
+            // END OF UPDATED LOGIC
+
+            if (paymentDetailsForm) {
+                paymentDetailsForm.addEventListener('submit', async (event) => {
+                    event.preventDefault();
+                    const bankName = bankNameInput.value.trim();
+                    const accountNumber = accountNumberInput.value.trim();
+                    const ifscCode = ifscCodeInput.value.trim();
+                    const upiId = upiIdInput.value.trim();
+
+                    if (!accountNumber && !upiId) { showMessage('Please provide either bank account details or a UPI ID.', 'error'); return; }
+                    if (accountNumber && (!bankName || !ifscCode)) { showMessage('If providing an Account Number, Bank Name and IFSC Code are required.', 'error'); return; }
+
+                    const paymentDetails = { bankName, accountNumber, ifscCode, upiId };
+                    const updatePaymentDetailsBtn = event.submitter;
+                    updatePaymentDetailsBtn.disabled = true;
+                    const originalUpdatePaymentText = updatePaymentDetailsBtn.textContent;
+                    updatePaymentDetailsBtn.textContent = 'Saving...';
+
+                    try {
+                        const response = await fetch('/api/technician/update-payment-details', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(paymentDetails)
+                        });
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            showMessage(result.message || 'Payment details updated!', 'success');
+                            await fetchTechnicianData();
+                        } else {
+                            showMessage(result.message || 'Failed to update payment details.', 'error');
+                        }
+                    } catch (error) {
+                        showMessage('Network error during payment details update.', 'error');
+                    } finally {
+                        updatePaymentDetailsBtn.disabled = false;
+                        updatePaymentDetailsBtn.textContent = originalUpdatePaymentText;
+                    }
+                });
+            }
+
+            // Initial data fetch and section display
+            fetchTechnicianData();
+            showSection('#dashboard');
+        });
+    </script>
+</body>
+</html>

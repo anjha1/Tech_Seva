@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How TechSeva Works - Connecting You to Technicians</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif; /* Using Inter font as requested */
+            background-color: #f8f9fa; /* Light grey background */
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header / Navbar */
+        header {
+            background-color: #2c3e50; /* Dark blue/grey */
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap; /* Allow wrapping for mobile */
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+            text-decoration: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            font-size: 1.2em; /* Emoji size */
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 25px; /* Spacing between nav items */
+        }
+
+        .nav-item a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-item a:hover, .nav-item a.active {
+            background-color: #34495e; /* Slightly lighter blue/grey on hover */
+        }
+
+        /* Hamburger menu (for mobile) */
+        .menu-toggle {
+            display: none; /* Hidden on desktop */
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.8em;
+            cursor: pointer;
+        }
+
+        /* Main Content Container */
+        main {
+            flex: 1; /* Allows main content to grow and push footer down */
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Section Styling */
+        section {
+            padding: 60px 0;
+            text-align: center;
+            background-color: white;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 1s ease-out; /* Fade-in animation */
+        }
+
+        section:nth-child(even) {
+            background-color: #f4f7f6; /* Alternate background for sections */
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.8em;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 2.2em;
+            margin-bottom: 30px;
+        }
+
+        p {
+            font-size: 1.1em;
+            color: #555;
+            margin-bottom: 15px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            background-color: #3498db; /* Blue */
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 30px; /* Rounded corners */
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            border: none;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .btn-green {
+            background-color: #27ae60; /* Green */
+        }
+
+        .btn:hover {
+            transform: translateY(-3px); /* Lift effect */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn-green:hover {
+            background-color: #229a53;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .btn-purple {
+            background-color: #8e44ad; /* Purple */
+        }
+        .btn-purple:hover {
+            background-color: #7d3c98;
+        }
+
+
+        /* How It Works Steps */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .step-card {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-align: left;
+            border-bottom: 4px solid #3498db; /* Blue accent */
+        }
+
+        .step-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .step-card h3 {
+            font-size: 1.5em;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #3498db;
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Increased gap for icon */
+        }
+        .step-icon-wrapper { /* New wrapper for the numbered icon */
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: #3498db; /* Default blue for numbers */
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2em; /* Size of the number itself */
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+        .step-card p {
+            font-size: 0.95em;
+            color: #666;
+            margin-bottom: 0;
+        }
+
+        /* Specific colors for customer flow icons & step-card accents */
+        .customer-flow .step-icon-wrapper { background-color: #28a745; } /* Green for customer numbers */
+        .customer-flow .step-card { border-bottom-color: #28a745; } /* Green accent */
+
+        /* Specific colors for technician flow icons & step-card accents */
+        /* Removed technician flow for now as per content, but kept styles for future */
+        /* .technician-flow .step-icon-wrapper { background-color: #ffc107; } */
+        /* .technician-flow .step-card { border-bottom-color: #ffc107; } */
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .feature-item {
+            background-color: #ffffff; /* Changed from eaf2f8 for cleaner look */
+            padding: 25px;
+            border-radius: 8px;
+            text-align: left;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: flex-start; /* Align content to top */
+            gap: 15px;
+            border-left: 4px solid #3498db; /* Blue accent for features */
+        }
+        .feature-item:hover {
+            background-color: #f0f7ff; /* Lighter hover effect */
+        }
+
+        .feature-item h3 {
+            font-size: 1.3em;
+            margin-top: 0;
+            color: #3498db;
+            margin-bottom: 10px;
+            flex-grow: 1; /* Allow title to take available space */
+        }
+        .feature-icon-large {
+            font-size: 1.8em; /* Larger icon for features */
+            color: #2c3e50; /* Darker color for feature icons */
+            flex-shrink: 0; /* Prevent icon from shrinking */
+        }
+        .feature-text-content {
+            flex-grow: 1;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background-color: #eaf2f8;
+            padding: 80px 20px;
+        }
+        .cta-section h2 {
+            color: #3498db;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .cta-section p {
+            font-size: 1.2em;
+            color: #555;
+            margin-bottom: 40px;
+        }
+        .cta-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+
+        /* Footer */
+        footer {
+            background-color: #2c3e50; /* Darker footer */
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 0.9em;
+            margin-top: 50px; /* Space from last section */
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            text-align: left;
+            margin-bottom: 30px;
+        }
+
+        .footer-section h4 {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #3498db; /* Blue headings in footer */
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 8px;
+        }
+
+        .footer-section ul li a,
+        .footer-section p,
+        .footer-section address {
+            color: #b0c4d6; /* Lighter text for readability */
+            text-decoration: none;
+            font-size: 0.95em;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .contact-info p, .contact-info address {
+            margin-bottom: 5px;
+        }
+        .contact-info i {
+            margin-right: 8px;
+            color: #3498db;
+        }
+
+        .subscribe-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .subscribe-form input[type="email"] {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #555;
+            background-color: #444;
+            color: white;
+            font-size: 0.9em;
+        }
+        .subscribe-form button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
+        .subscribe-form button:hover {
+            background-color: #2980b9;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #444;
+            padding-top: 20px;
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .footer-logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .footer-logo-text {
+            font-size: 1.1em;
+            color: #b0c4d6;
+        }
+
+        .social-icons {
+            font-size: 1.8em; /* Larger icons in footer */
+            margin: 0; /* Remove default margin */
+        }
+        .social-icons a {
+            color: white;
+            margin: 0 10px;
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
+        .social-icons a:hover {
+            color: #3498db;
+            transform: scale(1.2);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+            }
+            .nav-menu {
+                flex-direction: column;
+                width: 100%;
+                gap: 5px;
+                margin-top: 15px;
+                display: none; /* Hidden by default on mobile */
+            }
+            .nav-menu.active {
+                display: flex; /* Show when active */
+            }
+            .menu-toggle {
+                display: block; /* Show hamburger */
+                align-self: flex-end; /* Push to right in header */
+                margin-top: -30px; /* Adjust vertical position */
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.8em;
+            }
+            p {
+                font-size: 1em;
+            }
+            .steps-grid, .features-grid, .footer-content {
+                grid-template-columns: 1fr; /* Stack columns vertically */
+            }
+            .step-card, .feature-item {
+                margin-bottom: 20px;
+                max-width: none;
+            }
+            .cta-buttons {
+                flex-direction: column;
+            }
+            .cta-buttons .btn {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .footer-section {
+                text-align: center; /* Center footer sections on mobile */
+            }
+            .footer-section ul {
+                padding-left: 0;
+            }
+            .footer-section ul li {
+                display: inline-block;
+                margin: 0 5px;
+            }
+            .footer-bottom {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">
+            <span class="logo-icon">🔧</span> TechSeva
+        </a>
+        <button class="menu-toggle" id="menu-toggle">☰</button>
+        <nav class="nav-menu" id="main-nav-menu">
+            <li class="nav-item"><a href="/">Home</a></li>
+            <li class="nav-item"><a href="working.html" class="active">How It Works</a></li>
+            <li class="nav-item"><a href="contact.html">Contact</a></li>
+            <li class="nav-item"><a href="javascript:void(0)" id="login-nav-btn">Login/Signup</a></li>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero-section">
+            <div class="container">
+                <h1>How TechSeva Works</h1>
+                <p>Connecting you to reliable technicians, made simple and transparent.</p>
+            </div>
+        </section>
+
+        <section class="customer-flow" style="background: linear-gradient(135deg, #f0faff 0%, #e0f2f7 100%);">
+            <div class="container">
+                <h2>Customer Journey: Get Your Appliance Fixed</h2>
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <h3><span class="step-icon-wrapper">1</span> Book a Service</h3>
+                        <p>Choose from our wide range of services including electrical repairs, plumbing, appliance servicing, and more. You can book through:</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm mt-2">
+                            <li>Mobile App: Available in multiple regional languages</li>
+                            <li>IVR System: Call our number and book without a smartphone</li>
+                            <li>Website: Simple online booking form</li>
+                        </ul>
+                    </div>
+                    <div class="step-card">
+                        <h3><span class="step-icon-wrapper">2</span> AI Technician Matching</h3>
+                        <p>Our proprietary AI algorithm considers multiple factors to find the best technician for your job:</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm mt-2">
+                            <li>Location: Finds the nearest available technician</li>
+                            <li>Skills: Matches based on your specific appliance/problem</li>
+                            <li>Ratings: Prioritizes highly-rated technicians</li>
+                            <li>Availability: Finds someone who can come quickly</li>
+                        </ul>
+                    </div>
+                    <div class="step-card">
+                        <h3><span class="step-icon-wrapper">3</span> Diagnosis & Quotation</h3>
+                        <p>When the technician arrives, they follow our standardized diagnostic process:</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm mt-2">
+                            <li>Take photos of the appliance/problem</li>
+                            <li>Select faulty parts from our digital inventory</li>
+                            <li>System automatically generates a detailed quote including:
+                                <ul class="list-circle list-inside ml-4">
+                                    <li>Parts needed (with brand options)</li>
+                                    <li>Labor charges (based on job complexity)</li>
+                                    <li>Travel fee (distance-based)</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="step-card">
+                        <h3><span class="step-icon-wrapper">4</span> Approval & Payment</h3>
+                        <p>Before any work begins, you'll receive the quote for approval:</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm mt-2">
+                            <li>View the quote on your app or via SMS</li>
+                            <li>See exactly what parts will be used and their costs</li>
+                            <li>Choose to approve or reject the quote</li>
+                            <li>Secure payment options:
+                                <ul class="list-circle list-inside ml-4">
+                                    <li>UPI (PhonePe, Google Pay, etc.)</li>
+                                    <li>Credit/Debit Cards</li>
+                                    <li>Cash (with digital receipt)</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="step-card">
+                        <h3><span class="step-icon-wrapper">5</span> Repair & Warranty</h3>
+                        <p>Once approved, the technician completes the repair with full transparency:</p>
+                        <ul class="list-disc list-inside text-gray-600 text-sm mt-2">
+                            <li>Photos of installed parts</li>
+                            <li>Digital invoice with warranty details</li>
+                            <li>Follow-up support if needed</li>
+                            <li>Standard 30-day warranty on all repairs</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="platform-features" style="background: linear-gradient(45deg, #eaf2f8 0%, #dbe9f5 100%);">
+            <div class="container">
+                <h2>Our Platform Features</h2>
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <span class="feature-icon-large fas fa-city"></span>
+                        <div class="feature-text-content">
+                            <h3>Designed for Tier-2 & Tier-3 Towns</h3>
+                            <p>Our solutions are tailored to meet the specific needs of smaller cities and rural communities across India.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon-large fas fa-mobile-alt"></span>
+                        <div class="feature-text-content">
+                            <h3>App & IVR Booking</h3>
+                            <p>Seamless booking via our mobile app for smartphone users and a dedicated IVR phone system for feature phone users.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon-large fas fa-camera-retro"></span>
+                        <div class="feature-text-content">
+                            <h3>Image-Based Diagnosis</h3>
+                            <p>Technicians upload images showing the actual problem before quoting, ensuring transparency and accuracy.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon-large fas fa-rupee-sign"></span>
+                        <div class="feature-text-content">
+                            <h3>Dynamic Pricing</h3>
+                            <p>Prices adjust based on parts needed, travel distance, and job complexity, providing fair and transparent costs.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon-large fas fa-language"></span>
+                        <div class="feature-text-content">
+                            <h3>Regional Language Support</h3>
+                            <p>Our platform is available in Hindi, Tamil, Telugu, Bengali, and other regional languages for broader accessibility.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon-large fas fa-check-circle"></span>
+                        <div class="feature-text-content">
+                            <h3>Verified Technicians</h3>
+                            <p>All technicians undergo rigorous background checks and skill verification to ensure trusted and reliable service.</p>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon-large fas fa-file-invoice"></span>
+                        <div class="feature-text-content">
+                            <h3>Digital Invoices</h3>
+                            <p>Receive detailed invoices with warranty information instantly via app, SMS, or email for every service.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="container">
+                <h2>Ready to Experience Hassle-Free Repairs?</h2>
+                <p>Download the TechSeva app today and get your first service at 20% off!</p>
+                <div class="cta-buttons">
+                    <a href="javascript:void(0)" class="btn btn-primary">Download App</a>
+                    <a href="/" class="btn btn-green">Book Now</a>
+                    <a href="javascript:void(0)" class="btn btn-purple" id="join-tech-btn-working">Become a Technician</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-section">
+                <h4><span class="logo-icon">🔧</span> TechSeva</h4>
+                <p class="footer-logo-text">Bringing reliable home services to tier-2 and tier-3 towns across India with transparent pricing and trusted local technicians.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="working.html">How It Works</a></li>
+                    <li><a href="javascript:void(0)" id="footer-for-technicians-link">For Technicians</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Our Services</h4>
+                <ul>
+                    <li><a href="#">Electricians</a></li>
+                    <li><a href="#">Plumbers</a></li>
+                    <li><a href="#">AC Repair</a></li>
+                    <li><a href="#">Appliance Repair</a></li>
+                    <li><a href="#">Carpenters</a></li>
+                    <li><a href="#">Other Services</a></li>
+                </ul>
+            </div>
+            <div class="footer-section contact-info">
+                <h4>Contact Us</h4>
+                <address>
+                    <p><i class="fas fa-map-marker-alt"></i> Chatariya, Darbhanga, Bihar 846006, India</p>
+                    <p><i class="fas fa-phone"></i> +91 84391 31459</p>
+                    <p><i class="fas fa-envelope"></i> <a href="mailto: achhutanandjha1@gmail.com"> achhutanandjha1@gmail.com</a></p>
+                </address>
+                <div class="subscribe-form">
+                    <input type="email" placeholder="Subscribe for updates">
+                    <button>Subscribe</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+                <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+            <p>&copy; 2025 TechSeva. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menu-toggle');
+            const mainNavMenu = document.getElementById('main-nav-menu');
+            const loginNavBtn = document.getElementById('login-nav-btn');
+            const joinTechBtnWorking = document.getElementById('join-tech-btn-working');
+            const footerForTechniciansLink = document.getElementById('footer-for-technicians-link');
+
+            if (menuToggle && mainNavMenu) {
+                menuToggle.addEventListener('click', () => {
+                    mainNavMenu.classList.toggle('active');
+                });
+            }
+
+            const showAuthModal = (initialTab = 'login', initialRole = 'user') => {
+                console.log(`Attempting to show auth modal: Tab - ${initialTab}, Role - ${initialRole}`);
+                window.location.href = `/?showAuth=${initialTab}&role=${initialRole}`;
+            };
+
+            if (loginNavBtn) {
+                loginNavBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showAuthModal('login', 'user');
+                });
+            }
+
+            if (joinTechBtnWorking) {
+                joinTechBtnWorking.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showAuthModal('signup', 'technician');
+                });
+            }
+
+            if (footerForTechniciansLink) {
+                footerForTechniciansLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showAuthModal('signup', 'technician');
+                });
+            }
+        });
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva Finance Officer Dashboard</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Basic Reset & Body Styling */
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Lighter, subtle background */
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        /* Header / Navbar */
+        header {
+            background-color: #2c3e50; /* Dark blue/grey */
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-svg {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .platform-name {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .logout-btn {
+            background-color: #e74c3c; /* Red */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #c0392b; /* Darker red */
+        }
+
+        /* Layout Container */
+        .container {
+            display: flex;
+            flex: 1; /* Allows main content to grow */
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        aside {
+            width: 250px;
+            background-color: #34495e; /* Darker blue/grey */
+            color: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0; /* Prevents sidebar from shrinking */
+        }
+
+        .sidebar-menu ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar-menu li a {
+            display: block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar-menu li a:hover,
+        .sidebar-menu li a.active {
+            background-color: #2c3e50; /* Slightly darker than sidebar */
+            border-left: 5px solid #3498db; /* Blue accent */
+            padding-left: 15px;
+        }
+
+        /* Main Content */
+        main {
+            flex-grow: 1; /* Allows main content to take remaining space */
+            padding: 20px;
+            background-color: #f9f9f9; /* Light grey */
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Overview Cards */
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: #eaf2f8; /* Light blue */
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            font-size: 1.2em;
+            color: #3498db; /* Blue */
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Forms */
+        .admin-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-end; /* Align items to the bottom */
+        }
+
+        .form-group {
+            flex: 1 1 200px; /* Default flex for form groups */
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .form-group label {
+            font-size: 0.9em;
+            color: #555;
+            font-weight: bold;
+        }
+        .admin-form input[type="text"],
+        .admin-form input[type="email"],
+        .admin-form input[type="number"],
+        .admin-form input[type="date"],
+        .admin-form select,
+        .admin-form textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9em;
+            width: 100%; /* Take full width of its flex container */
+            box-sizing: border-box; /* Include padding/border in width */
+        }
+        .admin-form textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        .form-group.full-width {
+            flex-basis: 100%;
+        }
+        .form-group.checkbox-group {
+            flex-direction: row;
+            align-items: center;
+            gap: 5px;
+        }
+        .form-group.checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        .admin-form button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+            flex-shrink: 0; /* Prevents button from shrinking */
+        }
+        .admin-form button:hover {
+            background-color: #2980b9;
+        }
+        .admin-form button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        /* Tables */
+        .data-table-container {
+            overflow-x: auto; /* Allows horizontal scrolling for tables on smaller screens */
+            width: 100%;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            min-width: 700px; /* Ensure table has a minimum width for scrolling */
+        }
+
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .data-table th {
+            background-color: #ecf0f1; /* Light grey for headers */
+            font-weight: bold;
+            color: #555;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9; /* Alternate row background */
+        }
+
+        .data-table button, .data-table select {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-right: 5px;
+            transition: background-color 0.3s ease;
+            white-space: nowrap; /* Prevents button text from wrapping */
+            vertical-align: middle;
+        }
+
+        .data-table .approve-btn {
+            background-color: #28a745; /* Green */
+            color: white;
+        }
+        .data-table .approve-btn:hover {
+            background-color: #218838;
+        }
+
+        .data-table .reject-btn, .data-table .delete-btn, .data-table .suspend-btn {
+            background-color: #dc3545; /* Red */
+            color: white;
+        }
+        .data-table .reject-btn:hover, .data-table .delete-btn:hover, .data-table .suspend-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .data-table .edit-btn, .data-table .activate-btn {
+            background-color: #ffc107; /* Orange/Yellow */
+            color: #333;
+        }
+        .data-table .edit-btn:hover, .data-table .activate-btn:hover {
+            background-color: #e0a800;
+        }
+
+        .data-table .process-payout-btn, .data-table .mark-paid-btn, .data-table .resolve-ticket-btn {
+            background-color: #3498db; /* Blue */
+            color: white;
+        }
+        .data-table .process-payout-btn:hover, .data-table .mark-paid-btn:hover, .data-table .resolve-ticket-btn:hover {
+            background-color: #2980b9;
+        }
+        .data-table button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: capitalize;
+        }
+        .status-active { background-color: #d4edda; color: #155724; } /* Greenish */
+        .status-suspended { background-color: #fff3cd; color: #856404; } /* Yellowish */
+        .status-pending { background-color: #f8d7da; color: #721c24; } /* Reddish */
+        .status-approved { background-color: #d1ecf1; color: #0c5460; } /* Light blue */
+        .status-rejected { background-color: #f8d7da; color: #721c24; }
+        .status-paid { background-color: #d4edda; color: #155724; }
+        .status-completed { background-color: #cce5ff; color: #004085; }
+        .status-success { background-color: #d4edda; color: #155724; }
+        .status-failed { background-color: #f8d7da; color: #721c24; }
+        .status-processing { background-color: #fff3cd; color: #856404; }
+
+
+        /* Charts */
+        .chart-container {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .chart {
+            background-color: #f0f8ff; /* Very light blue */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            flex: 1; /* Allows charts to take equal space */
+            min-width: 280px; /* Minimum width before wrapping */
+        }
+
+        .chart h3 {
+            color: #3498db;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .bar-chart-bars {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 150px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        .bar {
+            width: 30px;
+            background-color: #3498db;
+            margin: 0 5px;
+            border-radius: 3px 3px 0 0;
+            transition: height 0.5s ease;
+            position: relative;
+        }
+
+        .bar span {
+            position: absolute;
+            top: -20px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8em;
+            color: #555;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto; /* Pushes footer to the bottom */
+            font-size: 0.9em;
+        }
+
+        /* Message Box for Alerts */
+        .message-box {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 10000; /* High z-index to be on top */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            animation: fadeOut 0.5s forwards 4.5s; /* Fade out after 4.5s (total 5s display) */
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .message-box.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-box.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        /* Keyframe for fadeOut animation */
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                margin: 10px;
+                box-shadow: none;
+            }
+
+            aside {
+                width: 100%;
+                padding: 10px 0;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                position: relative; /* Allow toggle button to work */
+            }
+
+            .sidebar-menu {
+                display: none; /* Hidden by default on mobile */
+            }
+
+            .sidebar-menu.active {
+                display: block;
+            }
+
+            .menu-toggle {
+                display: block; /* Show toggle button on mobile */
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                width: 100%;
+                text-align: left;
+                cursor: pointer;
+                font-size: 1em;
+                margin-bottom: 10px;
+            }
+
+            main {
+                padding: 15px;
+            }
+
+            .overview-cards {
+                grid-template-columns: 1fr; /* Stack cards vertically */
+            }
+
+            .data-table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch; /* for smoother scrolling on iOS */
+            }
+
+            .data-table {
+                min-width: 600px; /* Maintain minimum width for scrollability */
+            }
+
+            .chart {
+                flex-basis: 100%; /* Charts take full width */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <svg class="logo-svg" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93H3.07C3.52 16.14 6.4 19.02 10 19.93V19.93zM10 4.07V4c-3.6.91-6.48 3.79-6.93 7h1.07c0-4.08 3.05-7.39 7-7.93zm2 15.93v-2.07c4.2-.45 7.47-3.73 7.93-7.93H20.93C20.48 16.14 17.6 19.02 14 19.93zm0-15.93V4.07c3.95.49 7 3.85 7 7.93h1.07c-.45-4.14-3.33-7.02-6.93-7z"/>
+            </svg>
+            <span class="platform-name">TechSeva Finance Officer</span>
+        </div>
+        <button id="logout-btn" class="logout-btn">Logout</button>
+    </header>
+
+    <div class="container">
+        <aside>
+            <button class="menu-toggle" id="menu-toggle-btn">Menu</button>
+            <nav class="sidebar-menu" id="sidebar-menu">
+                <ul>
+                    <li><a href="#overview-section" class="active">Dashboard</a></li>
+                    <li><a href="#transactions-history-section">Transactions History</a></li>
+                    <li><a href="#payout-requests-section">Payout Requests</a></li>
+                    <li><a href="#revenue-reports-section">Revenue Reports</a></li>
+                    <li><a href="#coupon-impact-section">Coupon Impact</a></li>
+                    <li><a href="#financial-summaries-section">Financial Summaries</a></li>
+                    <li><a href="#compliance-section">Financial Compliance</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main>
+            <h1>Finance Officer Dashboard</h1>
+
+            <section id="overview-section">
+                <h2>Overview</h2>
+                <div class="overview-cards">
+                    <div class="card">
+                        <h3>Today's Earnings</h3>
+                        <p id="today-earnings">Loading...</p>
+                    </div>
+                    <div class="card">
+                        <h3>This Week's Earnings</h3>
+                        <p id="week-earnings">Loading...</p>
+                    </div>
+                    <div class="card">
+                        <h3>This Month's Earnings</h3>
+                        <p id="month-earnings">Loading...</p>
+                    </div>
+                    <div class="card">
+                        <h3>Pending Payouts</h3>
+                        <p id="pending-payouts">Loading...</p>
+                    </div>
+                    <div class="card">
+                        <h3>Total Failed Transactions</h3>
+                        <p id="failed-transactions">Loading...</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="transactions-history-section" style="display: none;">
+                <h2>All Transactions History</h2>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>User/Technician</th>
+                                <th>Job ID</th>
+                                <th>Type</th>
+                                <th>Amount (₹)</th>
+                                <th>Status</th>
+                                <th>Method</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactions-table-body">
+                            <tr><td colspan="8" style="text-align: center; color: #777;">Loading transactions...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="payout-requests-section" style="display: none;">
+                <h2>Technician Payout Requests</h2>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Technician Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Requested Amount (₹)</th>
+                                <th>Current Balance (₹)</th>
+                                <th>Bank Details / UPI ID</th>
+                                <th>Request Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payout-requests-table-body">
+                            <tr><td colspan="8" style="text-align: center; color: #777;">No pending payout requests.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="revenue-reports-section" style="display: none;">
+                <h2>Revenue Reports</h2>
+                <div class="admin-form">
+                    <div class="form-group">
+                        <label for="report-filter-period">Filter by Period:</label>
+                        <select id="report-filter-period">
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly" selected>Monthly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="report-filter-city">Filter by City:</label>
+                        <select id="report-filter-city">
+                            <option value="">All Cities</option>
+                            <!-- Options populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="report-filter-service">Filter by Service:</label>
+                        <select id="report-filter-service">
+                            <option value="">All Services</option>
+                            <!-- Options populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button id="generate-revenue-report">Generate Report</button>
+                        <button id="export-revenue-csv">Export to CSV</button>
+                    </div>
+                </div>
+                <div class="data-table-container" style="margin-top: 20px;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date/Period</th>
+                                <th>Gross Revenue (₹)</th>
+                                <th>Net Revenue (₹)</th>
+                                <th>Commissions Earned (₹)</th>
+                                <th>Payouts Made (₹)</th>
+                                <th>Refunds (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="revenue-report-table-body">
+                            <tr><td colspan="6" style="text-align: center; color: #777;">Generate a report to see data.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="coupon-impact-section" style="display: none;">
+                <h2>Coupon Usage & Impact (View Only)</h2>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Coupon Code</th>
+                                <th>Discount</th>
+                                <th>Min. Amt</th>
+                                <th>Expiry</th>
+                                <th>Usage Count</th>
+                                <th>Total Discounted (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coupon-impact-table-body">
+                            <tr><td colspan="6" style="text-align: center; color: #777;">Loading coupon data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="financial-summaries-section" style="display: none;">
+                <h2>Financial Summaries</h2>
+                <p>Detailed breakdowns and aggregated financial data.</p>
+                <div class="chart-container">
+                    <div class="chart">
+                        <h3>Monthly Gross Earnings (Last 6 Months)</h3>
+                        <div class="bar-chart-bars" id="gross-earnings-chart">
+                            <p style="text-align: center; color: #777;">Loading chart data...</p>
+                        </div>
+                        <div id="gross-earnings-labels" style="display:flex; justify-content: space-around; font-size:0.8em; color:#777; margin-top: 5px;"></div>
+                    </div>
+                    <div class="chart">
+                        <h3>Monthly Net Earnings (Last 6 Months)</h3>
+                        <div class="bar-chart-bars" id="net-earnings-chart">
+                            <p style="text-align: center; color: #777;">Loading chart data...</p>
+                        </div>
+                        <div id="net-earnings-labels" style="display:flex; justify-content: space-around; font-size:0.8em; color:#777; margin-top: 5px;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="compliance-section" style="display: none;">
+                <h2>Financial Compliance & Audit Logs</h2>
+                <p>Review and audit financial transactions for compliance. Flag suspicious activities.</p>
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Log ID</th>
+                                <th>Event Type</th>
+                                <th>Related Txn/Job ID</th>
+                                <th>Description</th>
+                                <th>Flagged By</th>
+                                <th>Timestamp</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="compliance-logs-table-body">
+                            <tr><td colspan="7" style="text-align: center; color: #777;">No compliance logs found.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 TechSeva. All rights reserved.</p>
+    </footer>
+
+    <!-- Message Box for Alerts -->
+    <div id="message-container"></div>
+
+    <script>
+        // --- Utility Functions ---
+        const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            // Remove any existing messages to only show the latest
+            const existingMessageBox = messageContainer.querySelector('.message-box');
+            if (existingMessageBox) {
+                existingMessageBox.remove();
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+            setTimeout(() => {
+                // Fade out and remove the message box
+                messageBox.style.opacity = '0';
+                setTimeout(() => messageBox.remove(), 500); // Wait for fadeOut animation
+            }, 4500); // Message visible for 4.5 seconds before fading out
+        };
+
+        // --- Global State for current active section ---
+        let currentActiveSectionId = 'overview-section';
+        let allUsersData = []; // To store all user data for lookups (e.g., in transactions)
+        let allCitiesData = []; // To store all cities for filter dropdown
+        let allServicesData = []; // To store all service types for filter dropdown
+
+        // Function to show/hide sections
+        const showSection = (sectionId) => {
+            const sections = document.querySelectorAll('main section');
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+            currentActiveSectionId = sectionId; // Update active section state
+        };
+
+        async function fetchFinanceData() {
+            try {
+                // Fetch basic overview data for cards
+                const overviewResponse = await fetch('/api/finance/dashboard-overview');
+                const overviewResult = await overviewResponse.json();
+                if (overviewResult.success) {
+                    document.getElementById('today-earnings').textContent = `₹${overviewResult.data.dailyEarnings.toFixed(2)}`;
+                    document.getElementById('week-earnings').textContent = `₹${overviewResult.data.weeklyEarnings.toFixed(2)}`;
+                    document.getElementById('month-earnings').textContent = `₹${overviewResult.data.monthlyEarnings.toFixed(2)}`;
+                    document.getElementById('pending-payouts').textContent = `₹${overviewResult.data.pendingPayouts.toFixed(2)}`;
+                    document.getElementById('failed-transactions').textContent = overviewResult.data.failedTransactions;
+                } else {
+                    showMessage(overviewResult.message || 'Failed to load overview data.', 'error');
+                }
+
+                // Fetch all data for tables and charts
+                const [transactionsResponse, payoutRequestsResponse, promotionsResponse, usersResponse, citiesResponse, servicesResponse, complianceResponse] = await Promise.all([
+                    fetch('/api/finance/transactions'), // Get all transactions (platform-wide)
+                    fetch('/api/finance/payout-requests'), // Get technician withdrawal requests
+                    fetch('/api/finance/promotions-impact'), // Get coupon data
+                    fetch('/api/superadmin/users'), // To resolve user names for transactions/payouts
+                    fetch('/api/superadmin/locations'), // For city filter dropdown
+                    fetch('/api/superadmin/appliance-types'), // For service filter dropdown
+                    fetch('/api/finance/compliance-logs') // Financial compliance logs
+                ]);
+
+                const transactionsResult = await transactionsResponse.json();
+                const payoutRequestsResult = await payoutRequestsResponse.json();
+                const promotionsResult = await promotionsResponse.json();
+                const usersResult = await usersResponse.json();
+                const citiesResult = await citiesResponse.json();
+                const servicesResult = await servicesResponse.json();
+                const complianceResult = await complianceResponse.json();
+
+
+                if (transactionsResult.success && payoutRequestsResult.success && promotionsResult.success && usersResult.success && citiesResult.success && servicesResult.success && complianceResult.success) {
+                    allUsersData = usersResult.users; // Store for global use
+                    allCitiesData = citiesResult.locations; // Store for global use
+                    allServicesData = servicesResult.applianceTypes; // Store for global use
+
+                    populateTransactionsTable(transactionsResult.transactions, allUsersData);
+                    populatePayoutRequestsTable(payoutRequestsResult.payoutRequests, allUsersData);
+                    populateCouponImpactTable(promotionsResult.promotions);
+                    populateComplianceLogsTable(complianceResult.logs);
+                    
+                    populateFilterDropdowns(); // Populate city/service filter dropdowns
+
+                    // Render charts
+                    renderCharts(transactionsResult.transactions);
+
+                } else {
+                    const errorMessage = (transactionsResult.message || '') + (payoutRequestsResult.message || '') + (promotionsResult.message || '') + (usersResult.message || '') + (citiesResult.message || '') + (servicesResult.message || '') + (complianceResult.message || '') || 'Failed to load finance dashboard data.';
+                    showMessage(errorMessage, 'error');
+                    console.error('Failed to load finance data:', errorMessage);
+                }
+            } catch (error) {
+                showMessage('Network error while fetching Finance Officer data. Please ensure the server is running.', 'error');
+                console.error('Error fetching Finance Officer data:', error);
+            }
+        }
+
+        function populateFilterDropdowns() {
+            const cityFilter = document.getElementById('report-filter-city');
+            cityFilter.innerHTML = '<option value="">All Cities</option>';
+            allCitiesData.forEach(city => {
+                const option = document.createElement('option');
+                option.value = city.city;
+                option.textContent = city.city;
+                cityFilter.appendChild(option);
+            });
+
+            const serviceFilter = document.getElementById('report-filter-service');
+            serviceFilter.innerHTML = '<option value="">All Services</option>';
+            allServicesData.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service.name;
+                option.textContent = service.name;
+                serviceFilter.appendChild(option);
+            });
+        }
+
+
+        function populateTransactionsTable(transactions, users) {
+            const tableBody = document.getElementById('transactions-table-body');
+            tableBody.innerHTML = '';
+
+            if (transactions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #777;">No transactions found.</td></tr>';
+                return;
+            }
+
+            transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            transactions.forEach(txn => {
+                const userName = txn.userId ? (users.find(u => u._id === txn.userId) ? users.find(u => u._id === txn.userId).fullName : 'Unknown User') : 'N/A';
+                const row = tableBody.insertRow();
+                let statusClass = `status-${txn.status.toLowerCase()}`;
+
+                row.innerHTML = `
+                    <td data-label="Transaction ID">${txn.transactionId}</td>
+                    <td data-label="User/Technician">${userName}</td>
+                    <td data-label="Job ID">${txn.jobId || 'N/A'}</td>
+                    <td data-label="Type">${txn.type}</td>
+                    <td data-label="Amount (₹)">₹${txn.amount.toFixed(2)}</td>
+                    <td data-label="Status"><span class="status-badge ${statusClass}">${txn.status}</span></td>
+                    <td data-label="Method">${txn.paymentMethod || 'N/A'}</td>
+                    <td data-label="Timestamp">${new Date(txn.createdAt).toLocaleString()}</td>
+                `;
+            });
+        }
+
+        function populatePayoutRequestsTable(payoutRequests, users) {
+            const tableBody = document.getElementById('payout-requests-table-body');
+            tableBody.innerHTML = '';
+
+            const pendingPayouts = payoutRequests.filter(req => req.status === 'Pending');
+
+            if (pendingPayouts.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #777;">No pending payout requests.</td></tr>';
+                return;
+            }
+
+            pendingPayouts.forEach(request => {
+                const technician = users.find(u => u._id === request.userId);
+                const bankDetails = technician && technician.bankDetails 
+                                    ? `Bank: ${technician.bankDetails.bankName || 'N/A'}, Acc: ${technician.bankDetails.accountNumber || 'N/A'}, IFSC: ${technician.bankDetails.ifscCode || 'N/A'}, UPI: ${technician.bankDetails.upiId || 'N/A'}`
+                                    : 'No details provided';
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td data-label="Technician Name">${technician ? technician.fullName : 'Unknown'}</td>
+                    <td data-label="Email">${technician ? technician.email : 'N/A'}</td>
+                    <td data-label="Phone">${technician ? technician.phoneNumber || 'N/A' : 'N/A'}</td>
+                    <td data-label="Requested Amount (₹)">₹${request.amount.toFixed(2)}</td>
+                    <td data-label="Current Balance (₹)">₹${technician ? technician.balance.toFixed(2) : 'N/A'}</td>
+                    <td data-label="Bank Details / UPI ID">${bankDetails}</td>
+                    <td data-label="Request Date">${new Date(request.createdAt).toLocaleDateString()}</td>
+                    <td data-label="Actions">
+                        <button class="process-payout-btn" data-request-id="${request._id}" data-user-id="${request.userId}" data-amount="${request.amount}">Process Payout</button>
+                    </td>
+                `;
+            });
+            attachPayoutListeners();
+        }
+
+        function attachPayoutListeners() {
+            document.querySelectorAll('#payout-requests-table-body .process-payout-btn').forEach(button => {
+                button.replaceWith(button.cloneNode(true)); // Clone to remove old listeners
+            });
+
+            document.querySelectorAll('#payout-requests-table-body .process-payout-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const requestId = e.target.dataset.requestId;
+                    const userId = e.target.dataset.userId;
+                    const amount = parseFloat(e.target.dataset.amount);
+
+                    if (confirm(`Are you sure you want to process a payout of ₹${amount.toFixed(2)} for this technician?`)) {
+                        e.target.disabled = true;
+                        e.target.textContent = 'Processing...';
+                        try {
+                            const response = await fetch(`/api/finance/payouts/${requestId}/process`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ userId, amount }) // Send user and amount for backend verification
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                showMessage(result.message, 'success');
+                                fetchFinanceData(); // Refresh data
+                            } else {
+                                showMessage(result.message, 'error');
+                                e.target.disabled = false;
+                                e.target.textContent = 'Process Payout';
+                            }
+                        } catch (error) {
+                            console.error('Process Payout Error:', error);
+                            showMessage('Network error during payout processing.', 'error');
+                            e.target.disabled = false;
+                            e.target.textContent = 'Process Payout';
+                        }
+                    }
+                });
+            });
+        }
+
+
+        async function generateRevenueReport() {
+            const period = document.getElementById('report-filter-period').value;
+            const city = document.getElementById('report-filter-city').value;
+            const service = document.getElementById('report-filter-service').value;
+            const tableBody = document.getElementById('revenue-report-table-body');
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #777;">Generating report...</td></tr>';
+
+            try {
+                const queryParams = new URLSearchParams({ period, city, service }).toString();
+                const response = await fetch(`/api/finance/reports/revenue?${queryParams}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.reportData.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #777;">No data available for the selected filters.</td></tr>';
+                        showMessage('No data found for the selected report filters.', 'info');
+                        return;
+                    }
+
+                    tableBody.innerHTML = ''; // Clear existing
+                    result.reportData.forEach(row => {
+                        const tr = tableBody.insertRow();
+                        tr.innerHTML = `
+                            <td>${row.periodLabel}</td>
+                            <td>₹${row.grossRevenue.toFixed(2)}</td>
+                            <td>₹${row.netRevenue.toFixed(2)}</td>
+                            <td>₹${row.commissionsEarned.toFixed(2)}</td>
+                            <td>₹${row.payoutsMade.toFixed(2)}</td>
+                            <td>₹${row.refunds.toFixed(2)}</td>
+                        `;
+                    });
+                    showMessage('Revenue report generated successfully!', 'success');
+                } else {
+                    showMessage(result.message || 'Failed to generate revenue report.', 'error');
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #777;">Failed to load report.</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error generating revenue report:', error);
+                showMessage('Network error during report generation.', 'error');
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #777;">Error loading report.</td></tr>';
+            }
+        }
+
+        async function exportRevenueCsv() {
+            const period = document.getElementById('report-filter-period').value;
+            const city = document.getElementById('report-filter-city').value;
+            const service = document.getElementById('report-filter-service').value;
+            showMessage('Exporting revenue report...', 'success');
+
+            try {
+                const queryParams = new URLSearchParams({ period, city, service, format: 'csv' }).toString();
+                const response = await fetch(`/api/finance/reports/revenue?${queryParams}`);
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `revenue_report_${period}_${new Date().toISOString().slice(0,10)}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                    showMessage('Revenue report CSV downloaded successfully!', 'success');
+                } else {
+                    const errorText = await response.json();
+                    showMessage(errorText.message || 'Failed to download revenue report CSV.', 'error');
+                }
+            } catch (error) {
+                console.error('Export Revenue CSV Error:', error);
+                showMessage('Network error during report export.', 'error');
+            }
+        }
+
+
+        function populateCouponImpactTable(promotions) {
+            const tableBody = document.getElementById('coupon-impact-table-body');
+            tableBody.innerHTML = '';
+
+            if (promotions.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #777;">No coupon data found.</td></tr>';
+                return;
+            }
+
+            promotions.forEach(promo => {
+                const expiryDate = new Date(promo.expiryDate).toLocaleDateString();
+                const discount = promo.discountType === 'percentage' ? `${promo.discountValue}%` : `₹${promo.discountValue.toFixed(2)}`;
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td data-label="Coupon Code">${promo.couponCode}</td>
+                    <td data-label="Discount">${discount}</td>
+                    <td data-label="Min. Amt">${promo.minOrderAmount ? `₹${promo.minOrderAmount.toFixed(2)}` : 'None'}</td>
+                    <td data-label="Expiry">${expiryDate}</td>
+                    <td data-label="Usage Count">${promo.usageCount || 0}</td>
+                    <td data-label="Total Discounted (₹)">₹${promo.totalDiscountedAmount ? promo.totalDiscountedAmount.toFixed(2) : '0.00'}</td>
+                `;
+            });
+        }
+
+        function populateComplianceLogsTable(logs) {
+            const tableBody = document.getElementById('compliance-logs-table-body');
+            tableBody.innerHTML = '';
+
+            if (logs.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #777;">No compliance logs found.</td></tr>';
+                return;
+            }
+
+            logs.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            logs.forEach(log => {
+                const row = tableBody.insertRow();
+                // Placeholder for flagging functionality
+                const actionsHtml = `<button class="flag-activity-btn" data-log-id="${log._id}">Flag</button>`;
+                
+                row.innerHTML = `
+                    <td data-label="Log ID">${log.logId}</td>
+                    <td data-label="Event Type">${log.eventType}</td>
+                    <td data-label="Related Txn/Job ID">${log.relatedId || 'N/A'}</td>
+                    <td data-label="Description">${log.description}</td>
+                    <td data-label="Flagged By">${log.flaggedBy || 'N/A'}</td>
+                    <td data-label="Timestamp">${new Date(log.timestamp).toLocaleString()}</td>
+                    <td data-label="Actions">${actionsHtml}</td>
+                `;
+            });
+            attachComplianceLogListeners();
+        }
+
+        function attachComplianceLogListeners() {
+            document.querySelectorAll('#compliance-logs-table-body .flag-activity-btn').forEach(button => {
+                button.replaceWith(button.cloneNode(true));
+            });
+
+            document.querySelectorAll('#compliance-logs-table-body .flag-activity-btn').forEach(button => {
+                button.addEventListener('click', async (e) => {
+                    const logId = e.target.dataset.logId;
+                    const flagReason = prompt("Enter reason for flagging this activity:");
+                    if (flagReason) {
+                        try {
+                            const response = await fetch(`/api/finance/compliance-logs/${logId}/flag`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ reason: flagReason })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                showMessage(result.message, 'success');
+                                fetchFinanceData(); // Refresh data
+                            } else {
+                                showMessage(result.message, 'error');
+                            }
+                        } catch (error) {
+                            console.error('Flag Compliance Log Error:', error);
+                            showMessage('Network error during flagging.', 'error');
+                        }
+                    }
+                });
+            });
+        }
+
+
+        function renderBarChart(elementId, data, maxDataValue, labels, barColor = '#3498db') {
+            const chartDiv = document.getElementById(elementId);
+            if (!chartDiv) return;
+
+            chartDiv.innerHTML = '';
+            if (data.length === 0) {
+                 chartDiv.innerHTML = '<p style="text-align: center; color: #777;">No data available for this chart.</p>';
+                 // Clear labels as well
+                 const labelContainer = document.getElementById(`${elementId.replace('-chart', '')}-labels`);
+                 if (labelContainer) labelContainer.innerHTML = '';
+                 return;
+            }
+
+            const maxHeight = 150;
+            data.forEach((value) => {
+                const barHeight = (value / Math.max(maxDataValue, 1)) * maxHeight;
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.style.height = `${barHeight}px`;
+                bar.style.backgroundColor = barColor;
+                bar.innerHTML = `<span>${value.toFixed(0)}</span>`; // Show integer for earnings
+                chartDiv.appendChild(bar);
+            });
+
+            const labelContainer = document.getElementById(`${elementId.replace('-chart', '')}-labels`);
+            if (labelContainer) {
+                labelContainer.innerHTML = labels.map(label => `<span style="flex: 1; text-align: center;">${label}</span>`).join('');
+            }
+        }
+
+        function renderCharts(allTransactions) {
+            // Monthly Gross & Net Earnings
+            const monthlyGrossEarnings = {};
+            const monthlyNetEarnings = {};
+            const now = new Date();
+
+            // Initialize last 6 months
+            for (let i = 0; i < 6; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthYear = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+                monthlyGrossEarnings[monthYear] = 0;
+                monthlyNetEarnings[monthYear] = 0;
+            }
+
+            allTransactions.forEach(txn => {
+                const txnDate = new Date(txn.createdAt);
+                const monthYear = `${txnDate.getFullYear()}-${(txnDate.getMonth() + 1).toString().padStart(2, '0')}`;
+
+                if (monthlyGrossEarnings.hasOwnProperty(monthYear) && txn.status === 'Success') {
+                    if (txn.type === 'PaymentIn' && txn.jobId) { // Customer payments are part of gross revenue
+                        monthlyGrossEarnings[monthYear] += txn.amount;
+                    } else if (txn.type === 'Commission' && txn.amount > 0) { // Commission from jobs is part of net revenue (positive value)
+                         monthlyNetEarnings[monthYear] += txn.amount;
+                    } else if (txn.type === 'Refund' && txn.amount > 0) { // Refunds reduce net revenue
+                         monthlyNetEarnings[monthYear] -= txn.amount;
+                    }
+                }
+            });
+
+            const sortedMonths = Object.keys(monthlyGrossEarnings).sort();
+            const grossData = sortedMonths.map(month => monthlyGrossEarnings[month]);
+            const netData = sortedMonths.map(month => monthlyNetEarnings[month]);
+            const monthLabels = sortedMonths.map(month => new Date(month + '-01').toLocaleString('en-us', { month: 'short' }));
+
+            renderBarChart('gross-earnings-chart', grossData, Math.max(...grossData, 1), monthLabels, '#3498db');
+            renderBarChart('net-earnings-chart', netData, Math.max(...netData, 1), monthLabels, '#2ecc71');
+        }
+
+
+        // --- Event Listeners and Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchFinanceData(); // Initial data fetch and render
+            showSection(currentActiveSectionId); // Ensure the initial section is displayed
+
+            // Sidebar Navigation - Show/Hide Sections
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.sidebar-menu a').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const targetId = this.getAttribute('href').substring(1); // Remove '#'
+                    showSection(targetId);
+                    
+                    // Scroll to top of main content area, or specific section if desired
+                    document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+
+            // Sidebar Toggle for Mobile
+            const menuToggleButton = document.getElementById('menu-toggle-btn');
+            const sidebarMenu = document.getElementById('sidebar-menu');
+            if (menuToggleButton && sidebarMenu) {
+                menuToggleButton.addEventListener('click', () => {
+                    sidebarMenu.classList.toggle('active');
+                });
+            }
+
+            // Logout functionality
+            const logoutButton = document.getElementById('logout-btn');
+            if (logoutButton) {
+                logoutButton.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/logout', {
+                            method: 'POST'
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            showMessage('Logged out successfully!', 'success');
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 500);
+                        } else {
+                            showMessage(result.message, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Logout error:', error);
+                        showMessage('Network error during logout.', 'error');
+                    }
+                });
+            }
+
+            // --- Revenue Report Generation & Export ---
+            document.getElementById('generate-revenue-report').addEventListener('click', generateRevenueReport);
+            document.getElementById('export-revenue-csv').addEventListener('click', exportRevenueCsv);
+
+        });
+    </script>
+</body>
+</html>
