@@ -70,350 +70,162 @@
                 </div>
             </div> -->
         </div>
-
+        
     </section>
-     <section class="appliance-repair">
+
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="circuit-lines"></div>
+        <div class="container">
+           <div class="section-title">
+    <h2>Our Services</h2>
+    <p>We provide comprehensive tech solutions for all your devices with certified expertise</p>
+</div>
+
+<div class="services-grid">
+
+    <!-- Group 1: TV, AC, Refrigerator -->
+    <div class="service-card">
+        <div class="service-icon">
+            <i class="fas fa-snowflake"></i>
+        </div>
+        <h3>TV / AC / Refrigerator Repair</h3>
+        <!-- <p>We offer expert repair and maintenance services for:
+            <ul>
+                <li>AC Repair & Servicing (gas refilling, maintenance)</li>
+                <li>TV Repair (screen, motherboard, no display issues)</li>
+                <li>Refrigerator Repair (cooling problems, noise, water leaks)</li>
+            </ul>
+        </p> -->
+        <a href="#unauthenticated-book-service" class="btn btn-primary">Book Now</a>
+    <div class="auth-overlay" id="phone-update-modal">
+    <div class="auth-container">
+        <span class="close-auth-modal" id="close-phone-update-modal">&times;</span>
+        <div class="auth-header-modal">
+            <img src="https://placehold.co/90x90/3498DB/FFFFFF/png?text=TS" alt="Service Logo" style="width: 70px; height: 70px; margin-bottom: 10px;">
+            <h1>Almost There!</h1>
+            <p>Please provide a phone number to complete your profile.</p>
+        </div>
+        <form id="phone-update-form">
+            <div class="form-group">
+                <label for="phone-update-input">Phone Number:</label>
+                <input type="tel" id="phone-update-input" name="phoneNumber" placeholder="e.g., 9876543210" pattern="[0-9]{10}" required>
+            </div>
+            <button type="submit" class="auth-btn" id="phone-update-btn">Save & Continue</button>
+        </form>
+    </div>
+</div>
+
+    <!-- Group 2: Washing Machine, Geyser, Microwave -->
+    <div class="service-card">
+        <div class="service-icon">
+            <i class="fas fa-tools"></i>
+        </div>
+        <h3>Washing Machine / Geyser / Microwave Repair</h3>
+        <!-- <p>Our certified technicians can repair and service:
+            <ul>
+                <li>Washing Machines (leaks, noise, drum not rotating)</li>
+                <li>Geysers (not heating, thermostat, installation)</li>
+                <li>Microwaves (not heating, sparks, display errors)</li>
+            </ul>
+        </p> -->
+        <a href="#unauthenticated-book-service" class="btn btn-primary">Book Now</a>
+    </div>
+
+    <!-- Group 3: Fan, Smartphone, Laptop -->
+    <div class="service-card">
+        <div class="service-icon">
+            <i class="fas fa-cogs"></i>
+        </div>
+        <h3>Fan / Smartphone / Laptop Repair</h3>
+        <!-- <p>We provide reliable service for:
+            <ul>
+                <li>Fans (ceiling, pedestal, exhaust – motor & blade issues)</li>
+                <li>Smartphones (screen, battery, water damage)</li>
+                <li>Laptops (keyboard, battery, virus removal, OS install)</li>
+            </ul>
+        </p> -->
+        <a href="#unauthenticated-book-service" class="btn btn-primary">Book Now</a>
+    </div>
+
+</div>
+
+                
+            
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="why-choose">
+        <div class="floating-devices" id="floating-devices"></div>
         <div class="container">
             <div class="section-title">
-                <h2>Appliance Repair Services</h2>
-                <p>Professional repair services for all your home appliances by certified technicians</p>
+                <h2>Why Choose TechSeva?</h2>
+                <p>We're committed to providing the best service experience in the industry</p>
             </div>
-            
-            <div class="services-grid">
-                <!-- AC Repair -->
-                <div class="service-card">
-                    <div class="service-image">
-                        <img src="/images/ACRepair.png" alt="AC Repair Service">
+            <div class="benefits">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-bolt"></i>
                     </div>
-                    <div class="service-content">
-                        <h3 class="service-title">AC Repair & Service</h3>
-                        <p class="service-description">Professional AC servicing, gas refilling, and repair for all brands</p>
-                        <ul class="service-features">
-                            <li><i class="fas fa-check"></i> Cooling issue resolution</li>
-                            <li><i class="fas fa-check"></i> Gas leak detection & repair</li>
-                            <li><i class="fas fa-check"></i> Compressor servicing</li>
-                        </ul>
-                        <a href="#unauthenticated-book-service" class="select-service-btn">Select Service</a>
-                    </div>
+                    <h3>Fast Turnaround</h3>
+                    <p>Most repairs completed in under 2 hours at your location with our mobile service vans.</p>
                 </div>
-                
-                <!-- Refrigerator Repair -->
-                <div class="service-card">
-                    <div class="service-image">
-                        <img src="/images/RefrigeratorRepair.png" alt="Refrigerator Repair Service">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-certificate"></i>
                     </div>
-                    <div class="service-content">
-                        <h3 class="service-title">Refrigerator Repair</h3>
-                        <p class="service-description">Expert fridge and freezer repair with genuine replacement parts</p>
-                        <ul class="service-features">
-                            <li><i class="fas fa-check"></i> Cooling system repair</li>
-                            <li><i class="fas fa-check"></i> Compressor issues</li>
-                            <li><i class="fas fa-check"></i> Door seal replacement</li>
-                        </ul>
-                        <a href="#unauthenticated-book-service" class="select-service-btn">Select Service</a>
-                    </div>
+                    <h3>Certified Experts</h3>
+                    <p>Our technicians are trained and certified by leading brands like Apple, Samsung, and Dell.</p>
                 </div>
-                
-                <!-- Washing Machine -->
-                <div class="service-card">
-                    <div class="service-image">
-                        <img src="/images/WashingMachineRepair.png" alt="Washing Machine Repair Service">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-rupee-sign"></i>
                     </div>
-                    <div class="service-content">
-                        <h3 class="service-title">Washing Machine Repair</h3>
-                        <p class="service-description">Expert repair for washing machines, dryers, and all laundry appliances</p>
-                        <ul class="service-features">
-                            <li><i class="fas fa-check"></i> Drum and motor repairs</li>
-                            <li><i class="fas fa-check"></i> Water leakage fixes</li>
-                            <li><i class="fas fa-check"></i> Spin cycle issues</li>
-                        </ul>
-                        <a href="#unauthenticated-book-service" class="select-service-btn">Select Service</a>
-                    </div>
+                    <h3>Transparent Pricing</h3>
+                    <p>No hidden costs. Get upfront quotes with 90-day warranty on all repairs.</p>
                 </div>
-                
-                <!-- Geyser Repair -->
-                <div class="service-card">
-                    <div class="service-image">
-                        <img src="/images/GeyserRepair.png" alt="Geyser Repair Service">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-map-marked-alt"></i>
                     </div>
-                    <div class="service-content">
-                        <h3 class="service-title">Geyser Repair</h3>
-                        <p class="service-description">Professional geyser repair and maintenance services</p>
-                        <ul class="service-features">
-                            <li><i class="fas fa-check"></i> Heating element replacement</li>
-                            <li><i class="fas fa-check"></i> Thermostat issues</li>
-                            <li><i class="fas fa-check"></i> Leakage problems</li>
-                        </ul>
-                        <a href="#unauthenticated-book-service" class="select-service-btn">Select Service</a>
-                    </div>
+                    <h3>Wide Coverage</h3>
+                    <p>Serving in 50+ cities across India with 1000+ skilled technicians.</p>
                 </div>
-                
-                <!-- Fan Repair -->
-                <div class="service-card">
-                    <div class="service-image">
-                        <img src="/images/FanRepair.png" alt="Fan Repair Service">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="fas fa-headset"></i>
                     </div>
-                    <div class="service-content">
-                        <h3 class="service-title">Fan Repair</h3>
-                        <p class="service-description">Comprehensive fan repair services for all types of fans</p>
-                        <ul class="service-features">
-                            <li><i class="fas fa-check"></i> Motor repair and replacement</li>
-                            <li><i class="fas fa-check"></i> Speed control issues</li>
-                            <li><i class="fas fa-check"></i> Blade balancing</li>
-                        </ul>
-                        <a href="#unauthenticated-book-service" class="select-service-btn">Select Service</a>
-                    </div>
-                </div>
-                
-                <!-- Computer Repair -->
-                <div class="service-card">
-                    <div class="service-image">
-                        <img src="/images/ComputerRepair.png" alt="Computer Repair Service">
-                    </div>
-                    <div class="service-content">
-                        <h3 class="service-title">Computer Repair</h3>
-                        <p class="service-description">Expert computer repair and maintenance services</p>
-                        <ul class="service-features">
-                            <li><i class="fas fa-check"></i> Hardware troubleshooting</li>
-                            <li><i class="fas fa-check"></i> Software installation</li>
-                            <li><i class="fas fa-check"></i> Virus removal</li>
-                        </ul>
-                        <a href="#unauthenticated-book-service" class="select-service-btn">Select Service</a>
-                    </div>
-                </div>
-                
-                <!-- Laptop Repair -->
-                <div class="service-card">
-                    <div class="service-image">
-                        <img src="/images/LaptopRepair.png" alt="Laptop Repair Service">
-                    </div>
-                    <div class="service-content">
-                        <h3 class="service-title">Laptop Repair</h3>
-                        <p class="service-description">Professional laptop repair services for all brands</p>
-                        <ul class="service-features">
-                            <li><i class="fas fa-check"></i> Screen replacement</li>
-                            <li><i class="fas fa-check"></i> Keyboard issues</li>
-                            <li><i class="fas fa-check"></i> Battery replacement</li>
-                        </ul>
-                        <a href="#unauthenticated-book-service" class="select-service-btn">Select Service</a>
-                    </div>
-                </div>
-                
-                <!-- Mobile Phone Repair -->
-                <div class="service-card">
-                    <div class="service-image">
-                        <img src="/images/MobilePhoneRepair.png" alt="Mobile Phone Repair Service">
-                    </div>
-                    <div class="service-content">
-                        <h3 class="service-title">Mobile Phone Repair</h3>
-                        <p class="service-description">Expert mobile phone repair services for all models</p>
-                        <ul class="service-features">
-                            <li><i class="fas fa-check"></i> Screen replacement</li>
-                            <li><i class="fas fa-check"></i> Battery issues</li>
-                            <li><i class="fas fa-check"></i> Software problems</li>
-                        </ul>
-                        <a href="#unauthenticated-book-service" class="select-service-btn">Select Service</a>
-                    </div>
-                </div>
-                
-                <!-- Dishwasher Repair -->
-                <div class="service-card">
-                    <div class="service-image">
-                        <img src="/images/DishwasherRepair.png" alt="Dishwasher Repair Service">
-                    </div>
-                    <div class="service-content">
-                        <h3 class="service-title">Dishwasher Repair</h3>
-                        <p class="service-description">Professional dishwasher repair and maintenance</p>
-                        <ul class="service-features">
-                            <li><i class="fas fa-check"></i> Pump and motor issues</li>
-                            <li><i class="fas fa-check"></i> Drainage problems</li>
-                            <li><i class="fas fa-check"></i> Control panel repair</li>
-                        </ul>
-                        <a href="#unauthenticated-book-service" class="select-service-btn">Select Service</a>
-                    </div>
-                </div>
-                
-                <!-- Inverter/Battery Repair -->
-                <div class="service-card">
-                    <div class="service-image">
-                        <img src="/images/InverterBatteryRepair.png" alt="Inverter/Battery Repair Service">
-                    </div>
-                    <div class="service-content">
-                        <h3 class="service-title">Inverter/Battery Repair</h3>
-                        <p class="service-description">Expert inverter and battery repair services</p>
-                        <ul class="service-features">
-                            <li><i class="fas fa-check"></i> Battery replacement</li>
-                            <li><i class="fas fa-check"></i> Charging issues</li>
-                            <li><i class="fas fa-check"></i> Circuit board repair</li>
-                        </ul>
-                        <a href="#unauthenticated-book-service" class="select-service-btn">Select Service</a>
-                    </div>
-                </div>
-                
-                <!-- General Electrical Work -->
-                <div class="service-card">
-                    <div class="service-image">
-                        <img src="/images/GeneralElectricalWork.png" alt="General Electrical Work Service">
-                    </div>
-                    <div class="service-content">
-                        <h3 class="service-title">General Electrical Work</h3>
-                        <p class="service-description">Comprehensive electrical repair and installation services</p>
-                        <ul class="service-features">
-                            <li><i class="fas fa-check"></i> Wiring and rewiring</li>
-                            <li><i class="fas fa-check"></i> Switchboard repair</li>
-                            <li><i class="fas fa-check"></i> Lighting installation</li>
-                        </ul>
-                        <a href="#unauthenticated-book-service" class="select-service-btn">Select Service</a>
-                    </div>
+                    <h3>24/7 Support</h3>
+                    <p>Round-the-clock customer support via chat, phone and email for all your queries.</p>
                 </div>
             </div>
         </div>
     </section>
-      
 
-    <!-- Why Choose Us Section -->
-    <div class="section-container">
-        <section class="why-choose">
-            <div class="floating-devices" id="floating-devices"></div>
-            <div class="container">
-                <div class="section-title">
-                    <h2>Why Choose TechSeva?</h2>
-                    <p>We're committed to providing the best service experience in the industry</p>
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3>50K+</h3>
+                    <p>Devices Repaired</p>
                 </div>
-                <div class="benefits">
-                    <div class="benefit-item">
-                        <div class="benefit-icon">
-                            <div class="benefit-image">
-                                <img src="/images/MobilePhoneRepair.png" alt="Fast Turnaround">
-                            </div>
-                        </div>
-                        <h3>Fast Turnaround</h3>
-                        <p>Most repairs completed in under 2 hours at your location with our mobile service vans.</p>
-                    </div>
-                    <div class="benefit-item">
-                        <div class="benefit-icon">
-                            <div class="benefit-image">
-                                <img src="/images/ComputerRepair.png" alt="Certified Experts">
-                            </div>
-                        </div>
-                        <h3>Certified Experts</h3>
-                        <p>Our technicians are trained and certified by leading brands like Apple, Samsung, and Dell.</p>
-                    </div>
-                    <div class="benefit-item">
-                        <div class="benefit-icon">
-                            <div class="benefit-image">
-                                <img src="/images/InverterBatteryRepair.png" alt="Transparent Pricing">
-                            </div>
-                        </div>
-                        <h3>Transparent Pricing</h3>
-                        <p>No hidden costs. Get upfront quotes with 90-day warranty on all repairs.</p>
-                    </div>
-                    <div class="benefit-item">
-                        <div class="benefit-icon">
-                            <div class="benefit-image">
-                                <img src="/images/GeneralElectricalWork.png" alt="Wide Coverage">
-                            </div>
-                        </div>
-                        <h3>Wide Coverage</h3>
-                        <p>Serving in 50+ cities across India with 1000+ skilled technicians.</p>
-                    </div>
-                    <div class="benefit-item">
-                        <div class="benefit-icon">
-                            <div class="benefit-image">
-                                <img src="/images/GeyserRepair.png" alt="24/7 Support">
-                            </div>
-                        </div>
-                        <h3>24/7 Support</h3>
-                        <p>Round-the-clock customer support via chat, phone and email for all your queries.</p>
-                    </div>
+                <div class="stat-item">
+                    <h3>1K+</h3>
+                    <p>Certified Technicians</p>
+                </div>
+                <div class="stat-item">
+                    <h3>50+</h3>
+                    <p>Cities Covered</p>
+                </div>
+                <div class="stat-item">
+                    <h3>4.9/5</h3>
+                    <p>Customer Rating</p>
                 </div>
             </div>
-        </section>
-    </div>
-
-    <!-- Service Process Section -->
-    <div class="section-container">
-        <section class="service-process">
-            
-                
-                <div class="section-title">
-                    <h2>Our Platform Features</h2>
-                    <p>Designed for Tier-2 & Tier-3 Towns across India</p>
-                </div>
-                
-                <div class="features-grid">
-                    <div class="feature-item">
-                        <div class="feature-image">
-                            <img src="/images/ACRepair.png" alt="App & IVR Booking">
-                        </div>
-                        <h3>App & IVR Booking</h3>
-                        <p>Seamless booking via our mobile app for smartphone users and a dedicated IVR phone system for feature phone users.</p>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-image">
-                            <img src="/images/RefrigeratorRepair.png" alt="Image-Based Diagnosis">
-                        </div>
-                        <h3>Image-Based Diagnosis</h3>
-                        <p>Technicians upload images showing the actual problem before quoting, ensuring transparency and accuracy.</p>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-image">
-                            <img src="/images/DishwasherRepair.png" alt="Dynamic Pricing">
-                        </div>
-                        <h3>Dynamic Pricing</h3>
-                        <p>Prices adjust based on parts needed, travel distance, and job complexity, providing fair and transparent costs.</p>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-image">
-                            <img src="/images/FanRepair.png" alt="Regional Language Support">
-                        </div>
-                        <h3>Regional Language Support</h3>
-                        <p>Our platform is available in Hindi, Tamil, Telugu, Bengali, and other regional languages for broader accessibility.</p>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-image">
-                            <img src="/images/LaptopRepair.png" alt="Verified Technicians">
-                        </div>
-                        <h3>Verified Technicians</h3>
-                        <p>All technicians undergo rigorous background checks and skill verification to ensure trusted and reliable service.</p>
-                    </div>
-                    
-                    <div class="feature-item">
-                        <div class="feature-image">
-                            <img src="/images/QRCode.png" alt="Digital Invoices">
-                        </div>
-                        <h3>Digital Invoices</h3>
-                        <p>Receive detailed invoices with warranty information instantly via app, SMS, or email for every service.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <script>
-        // Simple animation for the floating devices
-        document.addEventListener('DOMContentLoaded', function() {
-            const floatingDevices = document.getElementById('floating-devices');
-            if (floatingDevices) {
-                let position = 0;
-                let direction = 1;
-                
-                setInterval(() => {
-                    position += direction * 0.5;
-                    if (position > 10 || position < -10) {
-                        direction *= -1;
-                    }
-                    floatingDevices.style.transform = `translateY(${position}px)`;
-                }, 100);
-            }
-        });
-    </script>
-
-   
+        </div>
+    </section>
 
     <!-- Booking Service Section for Unauthenticated/Authenticated Users -->
    <!-- Booking Service Section for Unauthenticated/Authenticated Users -->
@@ -507,120 +319,6 @@
         </div>
     </section>
 
-    <!-- Pricing Comparison Section -->
-    <div class="section-container">
-        <section class="pricing-comparison">
-            <div class="container">
-                <div class="section-title">
-                    <h2>Static vs Dynamic Pricing</h2>
-                    <p>Understanding how our pricing model benefits both customers and service providers</p>
-                </div>
-                
-                <div class="comparison-intro">
-                    <p>Traditional service companies often use static pricing models that don't account for variations in repair complexity, parts availability, or technician expertise. TechSeva's dynamic pricing model ensures fair pricing for customers while maintaining profitability for our technicians.</p>
-                </div>
-                
-                <div class="comparison-content">
-                    <div class="pricing-model static-pricing">
-                        <div class="model-header">
-                            <div class="model-icon">
-                                <img src="/images/InverterBatteryRepair.png" alt="Static Pricing">
-                            </div>
-                            <h3 class="model-title">Static Pricing</h3>
-                        </div>
-                        <ul class="model-features">
-                            <li>Fixed rates regardless of actual repair complexity</li>
-                            <li>One-size-fits-all approach to service costs</li>
-                            <li>Often includes hidden fees and charges</li>
-                            <li>No consideration for parts availability or cost fluctuations</li>
-                            <li>Limited flexibility for customer budget constraints</li>
-                            <li>Often leads to either overcharging or undercharging</li>
-                        </ul>
-                        <p><strong>Result:</strong> Inefficient pricing that often doesn't reflect the true value of service provided.</p>
-                    </div>
-                    
-                    <div class="pricing-model dynamic-pricing">
-                        <div class="model-header">
-                            <div class="model-icon">
-                                <img src="/images/ComputerRepair.png" alt="Dynamic Pricing">
-                            </div>
-                            <h3 class="model-title">Dynamic Pricing</h3>
-                        </div>
-                        <ul class="model-features">
-                            <li>Real-time pricing based on actual parts and labor required</li>
-                            <li>Transparent cost breakdown before any work begins</li>
-                            <li>Considers technician expertise and certification levels</li>
-                            <li>Accounts for part availability and market prices</li>
-                            <li>Flexible options for different quality tiers of parts</li>
-                            <li>Distance-based travel fee calculation</li>
-                        </ul>
-                        <p><strong>Result:</strong> Fair pricing that accurately reflects the specific service requirements.</p>
-                    </div>
-                </div>
-                
-                <div class="profit-section">
-                    <div class="profit-image">
-                        <img src="/images/MobilePhoneRepair.png" alt="Profit with Dynamic Pricing">
-                    </div>
-                    <div class="profit-content">
-                        <h3>Increased Profit with Dynamic Pricing</h3>
-                        <ul class="profit-points">
-                            <li><strong>Optimized Resource Allocation:</strong> Dynamic pricing ensures technicians are compensated fairly for their specific expertise and time investment.</li>
-                            <li><strong>Reduced Customer Disputes:</strong> Transparent pricing leads to higher customer satisfaction and fewer payment issues.</li>
-                            <li><strong>Better Inventory Management:</strong> Real-time part pricing helps maintain optimal inventory levels and reduces waste.</li>
-                            <li><strong>Competitive Advantage:</strong> Fair and transparent pricing attracts more customers and builds brand loyalty.</li>
-                            <li><strong>Increased Service Volume:</strong> Satisfied customers are more likely to return and refer others, increasing overall revenue.</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="visual-comparison">
-                    <h3 class="section-subtitle" style="text-align: center; margin-bottom: 30px;">Pricing Model Comparison</h3>
-                    <div class="comparison-chart">
-                        <div class="chart-bar">
-                            <div class="bar static-bar">
-                                <div class="bar-label">Static Pricing</div>
-                            </div>
-                            <div class="chart-label">Customer Satisfaction: 65%</div>
-                        </div>
-                        <div class="chart-bar">
-                            <div class="bar dynamic-bar">
-                                <div class="bar-label">Dynamic Pricing</div>
-                            </div>
-                            <div class="chart-label">Customer Satisfaction: 92%</div>
-                        </div>
-                        <div class="chart-bar">
-                            <div class="bar static-bar" style="height: 70%;">
-                                <div class="bar-label">Static Pricing</div>
-                            </div>
-                            <div class="chart-label">Technician Profit Margin: 22%</div>
-                        </div>
-                        <div class="chart-bar">
-                            <div class="bar dynamic-bar" style="height: 90%;">
-                                <div class="bar-label">Dynamic Pricing</div>
-                            </div>
-                            <div class="chart-label">Technician Profit Margin: 35%</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <script>
-        // Simple animation for chart bars
-        document.addEventListener('DOMContentLoaded', function() {
-            const bars = document.querySelectorAll('.bar');
-            bars.forEach(bar => {
-                const height = bar.style.height;
-                bar.style.height = '0';
-                setTimeout(() => {
-                    bar.style.transition = 'height 1s ease-in-out';
-                    bar.style.height = height;
-                }, 500);
-            });
-        });
-    </script>
     <!-- App Download Section -->
     <section class="app-section">
     <div class="container">
@@ -695,7 +393,19 @@
         </div>
     </section>
 
-  
+    <!-- Multilingual Support Banner (from index1.html) -->
+    <section class="multilingual-banner">
+        <div class="container">
+            <div class="section-title">
+                <h2>Available in Your Language!</h2>
+                <p>Available in Hindi, Bhojpuri, Bengali, Tamil, Telugu & more!</p>
+            </div>
+            <div class="language-dropdown-placeholder">
+                Select Language 🌐
+                <!-- This is a placeholder for UI demonstration. A real dropdown would be here -->
+            </div>
+        </div>
+    </section>
 
     <!-- Testimonials Section -->
     <section class="testimonials" id="testimonials">
@@ -811,7 +521,27 @@
     </section>
 
     <!-- City Coverage Section -->
-       
+    <section class="coverage">
+        <div class="container">
+            <div class="section-title">
+                <h2>We Serve Across India</h2>
+                <p>Currently operating in these cities with more coming soon</p>
+            </div>
+            <div class="city-grid">
+                <div class="city-item">Delhi NCR</div>
+                <div class="city-item">Mumbai</div>
+                <div class="city-item">Bangalore</div>
+                <div class="city-item">Hyderabad</div>
+                <div class="city-item">Chennai</div>
+                <div class="city-item">Kolkata</div>
+                <div class="city-item">Pune</div>
+                <div class="city-item">Ahmedabad</div>
+                <div class="city-item">Jaipur</div>
+                <div class="city-item">Lucknow</div>
+                <div class="city-item">Chandigarh</div>
+                <div class="city-item">Indore</div>
+            </div>
+        </div>
     </section>
     </main>
 
@@ -873,16 +603,15 @@
                 </div>
             </div>
             <div class="footer-bottom">
-    <div class="payment-methods">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/Visa_Logo.png" alt="Visa" class="payment-method">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" class="payment-method">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/e/eb/Paytm_Logo_%28standalone%29.svg" alt="Paytm" class="payment-method">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI" class="payment-method">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/American_Express_logo.svg" alt="Amex" class="payment-method">
-    </div>
-    <p>&copy; 2023 TechSeva Technologies Pvt Ltd. All rights reserved.</p>
-</div>
-
+                <div class="payment-methods">
+                    <img src="https://via.placeholder.com/50x30/ffffff/007acc?text=Visa" alt="Visa" class="payment-method">
+                    <img src="https://via.placeholder.com/50x30/ffffff/007acc?text=MC" alt="Mastercard" class="payment-method">
+                    <img src="https://via.placeholder.com/50x30/ffffff/007acc?text=Paytm" alt="Paytm" class="payment-method">
+                    <img src="https://via.placeholder.co/50x30/ffffff/007acc?text=UPI" alt="UPI" class="payment-method">
+                    <img src="https://via.placeholder.co/50x30/ffffff/007acc?text=Amex" alt="Amex" class="payment-method">
+                </div>
+                <p>&copy; 2023 TechSeva Technologies Pvt Ltd. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 

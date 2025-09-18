@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - TechSeva</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Auth CSS -->
+    <link rel="stylesheet" href="/css/auth.css">
+    <!-- Google Identity Services Library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <img src="https://placehold.co/90x90/3498DB/FFFFFF/png?text=TS" alt="Service Logo" style="width: 70px; height: 70px; margin-bottom: 10px;">
+            <h1>Welcome Back</h1>
+            <p>Login to your TechSeva account</p>
+        </div>
+
+        <div class="role-selection">
+            <label>I am a:</label>
+            <div class="role-options">
+                <button class="role-btn active" data-role="user">
+                    <i class="fas fa-user"></i> User
+                </button>
+                <button class="role-btn" data-role="technician">
+                    <i class="fas fa-tools"></i> Technician
+                </button>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form active">
+            <div class="form-group">
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" name="email" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group password-input">
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+                <i class="fas fa-eye toggle-password"></i>
+            </div>
+            <input type="hidden" id="login-user-role" name="role" value="user">
+            <button type="submit" class="auth-btn">Login</button>
+            <div class="auth-footer">
+                <p style="margin-bottom: 10px;">OR</p>
+                <!-- Google Sign-in button for Login -->
+                <div id="g_id_signin_wrapper">
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-shape="rectangular"
+                         data-theme="outline"
+                         data-text="signin_with"
+                         data-size="large"
+                         data-context="signin">
+                    </div>
+                </div>
+                <a href="/forgot-password" class="forgot-password">Forgot Password?</a>
+                <p>Don't have an account? <a href="/signup">Sign Up</a></p>
+            </div>
+        </form>
+    </div>
+
+    <!-- Message Box Placeholder -->
+    <div id="message-container"></div>
+
+    <!-- Google Identity Services Initialization -->
+    <div id="g_id_onload"
+         data-client_id="162423995881-uvq3jdk68i8lsfkk497llfvkp0a45ovm.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-nonce="ANY_RANDOM_STRING">
+    </div>
+
+    <script>
+        // Function to display messages (success/error)
+        const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            // Remove any existing messages
+            messageContainer.innerHTML = '';
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+            messageContainer.style.display = 'block';
+
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                setTimeout(() => {
+                    messageBox.remove();
+                    if (!messageContainer.children.length) {
+                        messageContainer.style.display = 'none';
+                    }
+                }, 500);
+            }, 4500);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Role Selection Logic
+            const roleButtons = document.querySelectorAll('.role-btn');
+            const loginRoleInput = document.getElementById('login-user-role');
+
+            roleButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    roleButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const selectedRole = button.dataset.role;
+                    loginRoleInput.value = selectedRole;
+                });
+            });
+
+            // Password Toggle Logic
+            document.querySelectorAll('.toggle-password').forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const passwordInput = toggle.previousElementSibling;
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    toggle.classList.toggle('fa-eye');
+                    toggle.classList.toggle('fa-eye-slash');
+                });
+            });
+
+            // Login Form Submission
+            const loginForm = document.getElementById('login-form');
+            const loginEmailInput = document.getElementById('login-email');
+            const loginPasswordInput = document.getElementById('login-password');
+            const loginSubmitBtn = loginForm.querySelector('.auth-btn');
+
+            loginForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                showMessage('', null);
+
+                const email = loginEmailInput.value.trim();
+                const password = loginPasswordInput.value;
+                const role = loginRoleInput.value;
+
+                if (!email || !password || !role) {
+                    showMessage('Please enter email, password, and select a role.', 'error');
+                    return;
+                }
+
+                loginSubmitBtn.disabled = true;
+                loginSubmitBtn.textContent = 'Logging in...';
+
+                try {
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password, role })
+                    });
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showMessage(result.message, 'success');
+                        const prefillData = sessionStorage.getItem('prefillBookingData');
+                        if (prefillData) {
+                            sessionStorage.removeItem('prefillBookingData');
+                            setTimeout(() => {
+                                window.location.href = '/user';
+                            }, 500);
+                        } else if (result.redirect) {
+                            setTimeout(() => {
+                                window.location.href = result.redirect;
+                            }, 500);
+                        } else {
+                            console.warn('Login successful but no redirect URL provided by server.');
+                        }
+                    } else {
+                        showMessage(result.message || 'Login failed. Please check your credentials.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showMessage('Network error during login. Please try again.', 'error');
+                } finally {
+                    loginSubmitBtn.disabled = false;
+                    loginSubmitBtn.textContent = 'Login';
+                }
+            });
+        });
+
+        // Google Sign-in Callback
+        window.handleCredentialResponse = async (response) => {
+            console.log('Google Sign-In response received:', response);
+            const idToken = response.credential;
+
+            if (!idToken) {
+                console.error('Google Sign-In: ID token not found in response.');
+                showMessage('Google Sign-in failed: No ID token received.', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/google-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.message || `Server responded with status ${res.status}`);
+                }
+
+                const data = await res.json();
+                console.log('Response data from /api/google-login:', data);
+
+                if (data.success) {
+                    if (data.needsPhoneUpdate) {
+                        showMessage(data.message || "Please add your phone number to continue.", 'info');
+                        setTimeout(() => {
+                            window.location.href = '/phone-update';
+                        }, 500);
+                    } else {
+                        showMessage(data.message || "Google Sign-In successful!", 'success');
+                        if (data.redirect) {
+                            setTimeout(() => {
+                                window.location.href = data.redirect;
+                            }, 500);
+                        }
+                    }
+                } else {
+                    showMessage(data.message || "Google Sign-in failed.", 'error');
+                }
+            } catch (error) {
+                console.error('Error during Google sign-in:', error);
+                showMessage(error.message || 'Network error during Google Sign-In. Please try again.', 'error');
+            }
+        };
+    </script>
+</body>
+</html>

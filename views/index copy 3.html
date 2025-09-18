@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSeva - Trusted Appliance Repair & Home Services</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-purple: #6C3DD1;
+            --primary-green: #00B140;
+            --primary-blue: #007acc;
+            --primary-teal: #00c2c7;
+            --dark-text: #212529;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+            --border-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--dark-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-color: var(--white);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 15px 0;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 45px;
+            margin-right: 10px;
+        }
+
+        .logo h1 {
+            color: var(--primary-purple);
+            font-size: 28px;
+            font-weight: 800;
+        }
+
+        .logo span {
+            color: var(--primary-green);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin: 0 15px;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--dark-text);
+            font-weight: 500;
+            transition: var(--transition);
+            font-size: 16px;
+        }
+
+        .nav-menu a:hover {
+            color: var(--primary-purple);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: var(--light-gray);
+            border-radius: 50px;
+            padding: 8px 15px;
+            width: 300px;
+        }
+
+        .search-bar input {
+            border: none;
+            background: transparent;
+            padding: 5px 10px;
+            width: 100%;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .search-bar button {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: var(--dark-text);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn i {
+            margin-right: 8px;
+        }
+
+        .btn-outline {
+            border: 2px solid var(--primary-purple);
+            color: var(--primary-purple);
+            background: transparent;
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-purple);
+            color: var(--white);
+        }
+
+        .btn-primary {
+            background: var(--primary-purple);
+            color: var(--white);
+            border: 2px solid var(--primary-purple);
+        }
+
+        .btn-primary:hover {
+            background: transparent;
+            color: var(--primary-purple);
+        }
+
+        .btn-green {
+            background: var(--primary-green);
+            color: var(--white);
+            border: 2px solid var(--primary-green);
+        }
+
+        .btn-green:hover {
+            background: transparent;
+            color: var(--primary-green);
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--primary-purple);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(108, 61, 209, 0.9), rgba(108, 61, 209, 0.8)), url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover no-repeat;
+            color: var(--white);
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+        }
+
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Categories Section */
+        .categories {
+            padding: 80px 0;
+            background: var(--light-gray);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--dark-text);
+            margin-bottom: 15px;
+        }
+
+        .section-title p {
+            color: #666;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .category-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .category-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .category-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(108, 61, 209, 0.1);
+            border-radius: 50%;
+            color: var(--primary-purple);
+            font-size: 30px;
+        }
+
+        .category-card h3 {
+            margin-bottom: 15px;
+            color: var(--dark-text);
+        }
+
+        .category-card p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Services Section */
+        .services {
+            padding: 80px 0;
+        }
+
+        .services-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            background: var(--light-gray);
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .tab-btn.active {
+            background: var(--primary-purple);
+            color: var(--white);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .service-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .service-image {
+            height: 200px;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 24px;
+        }
+
+        .service-details {
+            padding: 20px;
+        }
+
+        .service-details h3 {
+            margin-bottom: 10px;
+            color: var(--dark-text);
+        }
+
+        .service-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .service-price {
+            font-weight: 700;
+            color: var(--primary-purple);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        /* Stats Section */
+        .stats {
+            padding: 80px 0;
+            background: linear-gradient(135deg, var(--primary-purple) 0%, #8a63d2 100%);
+            color: var(--white);
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .stat-item h3 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .stat-item p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 80px 0;
+            background: var(--light-gray);
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .step {
+            text-align: center;
+            padding: 30px;
+            background: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-purple);
+            color: var(--white);
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .step h3 {
+            margin-bottom: 15px;
+            color: var(--dark-text);
+        }
+
+        /* Why Choose Us */
+        .why-choose {
+            padding: 80px 0;
+        }
+
+        .benefits {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .benefit {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .benefit-icon {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(108, 61, 209, 0.1);
+            color: var(--primary-purple);
+            border-radius: 50%;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .benefit-content h3 {
+            margin-bottom: 10px;
+            color: var(--dark-text);
+        }
+
+        /* Offers Section */
+        .offers {
+            padding: 80px 0;
+            background: var(--light-gray);
+        }
+
+        .offers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .offer-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .offer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .offer-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-green);
+            color: var(--white);
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .offer-image {
+            height: 200px;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 24px;
+        }
+
+        .offer-details {
+            padding: 20px;
+        }
+
+        .offer-details h3 {
+            margin-bottom: 10px;
+            color: var(--dark-text);
+        }
+
+        .offer-price {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .discounted-price {
+            font-weight: 700;
+            color: var(--primary-purple);
+            font-size: 1.2rem;
+        }
+
+        .countdown {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .countdown-item {
+            background: var(--primary-purple);
+            color: var(--white);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 50px;
+        }
+
+        .countdown-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .countdown-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+
+        /* Testimonials */
+        .testimonials {
+            padding: 80px 0;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .testimonial-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .testimonial-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: #888;
+            font-size: 20px;
+        }
+
+        .testimonial-info h4 {
+            color: var(--dark-text);
+            margin-bottom: 5px;
+        }
+
+        .testimonial-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .testimonial-rating {
+            color: #FFC107;
+            margin-bottom: 15px;
+        }
+
+        .testimonial-text {
+            color: #666;
+            font-style: italic;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 100px 0;
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover no-repeat;
+            color: var(--white);
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .cta p {
+            max-width: 700px;
+            margin: 0 auto 40px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a1a1a;
+            color: var(--white);
+            padding: 80px 0 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .footer-column h3 {
+            color: var(--white);
+            margin-bottom: 25px;
+            font-size: 1.2rem;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .footer-column h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary-purple);
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: #ccc;
+            text-decoration: none;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-purple);
+            transform: translateX(5px);
+        }
+
+        .footer-links a i {
+            margin-right: 10px;
+            font-size: 12px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .social-links a {
+            color: var(--white);
+            background: rgba(255, 255, 255, 0.1);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .social-links a:hover {
+            background: var(--primary-purple);
+            transform: translateY(-5px);
+        }
+
+        .newsletter {
+            margin-top: 25px;
+        }
+
+        .newsletter p {
+            margin-bottom: 15px;
+            color: #aaa;
+        }
+
+        .newsletter-form {
+            display: flex;
+        }
+
+        .newsletter-form input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 50px 0 0 50px;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+        }
+
+        .newsletter-form button {
+            background: var(--primary-purple);
+            color: var(--white);
+            border: none;
+            padding: 0 20px;
+            border-radius: 0 50px 50px 0;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .newsletter-form button:hover {
+            background: var(--primary-green);
+        }
+
+        .app-download {
+            margin-top: 25px;
+        }
+
+        .app-download p {
+            margin-bottom: 15px;
+            color: #aaa;
+        }
+
+        .app-badges {
+            display: flex;
+            gap: 15px;
+        }
+
+        .app-badge {
+            height: 40px;
+            transition: var(--transition);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .app-badge:hover {
+            transform: scale(1.05);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #999;
+            font-size: 14px;
+        }
+
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .payment-method {
+            height: 25px;
+            filter: grayscale(100%) brightness(2);
+            opacity: 0.7;
+            transition: var(--transition);
+        }
+
+        .payment-method:hover {
+            filter: none;
+            opacity: 1;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 80px;
+                left: 0;
+                width: 100%;
+                background: var(--white);
+                flex-direction: column;
+                padding: 20px;
+                box-shadow: var(--shadow);
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .nav-menu li {
+                margin: 10px 0;
+            }
+
+            .search-bar {
+                width: 200px;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-actions {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .search-bar {
+                width: 100%;
+            }
+
+            .auth-buttons {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .hero {
+                padding: 80px 0;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .section-title h2 {
+                font-size: 2rem;
+            }
+
+            .countdown {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .logo h1 {
+                font-size: 24px;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stat-item h3 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <img src="https://via.placeholder.com/45x45/6C3DD1/FFFFFF?text=TS" alt="TechSeva Logo">
+                <h1>Tech<span>Seva</span></h1>
+            </div>
+
+            <ul class="nav-menu">
+                <li><a href="#" class="active">Home</a></li>
+                <li><a href="#">Services</a></li>
+                <li><a href="#">Pricing</a></li>
+                <li><a href="#">How It Works</a></li>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+
+            <div class="header-actions">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search for services...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+                <div class="auth-buttons">
+                    <a href="#" class="btn btn-outline"><i class="fas fa-user"></i> Login</a>
+                    <a href="#" class="btn btn-primary"><i class="fas fa-briefcase"></i> Become a Technician</a>
+                </div>
+            </div>
+
+            <div class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Trusted Technicians. Instant Booking.</h1>
+                <p>Get your appliances repaired by certified experts at your convenience. 100% quality service guaranteed.</p>
+                <div class="hero-buttons">
+                    <a href="#" class="btn btn-green"><i class="fas fa-calendar-alt"></i> Book a Service</a>
+                    <a href="#" class="btn btn-outline" style="color: #fff; border-color: #fff;"><i class="fas fa-tools"></i> Become a Partner</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories">
+        <div class="container">
+            <div class="section-title">
+                <h2>Services You Can Trust</h2>
+                <p>We provide comprehensive solutions for all your home appliance needs</p>
+            </div>
+
+            <div class="categories-grid">
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-tv"></i>
+                    </div>
+                    <h3>TV Repair</h3>
+                    <p>Expert repair for all TV brands and models</p>
+                    <a href="#" class="btn btn-outline">Learn More</a>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-snowflake"></i>
+                    </div>
+                    <h3>AC Service</h3>
+                    <p>AC installation, repair and maintenance</p>
+                    <a href="#" class="btn btn-outline">Learn More</a>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <h3>Washing Machine</h3>
+                    <p>Repair and service for all washing machine types</p>
+                    <a href="#" class="btn btn-outline">Learn More</a>
+                </div>
+
+                <div class="category-card">
+                    <div class="category-icon">
+                        <i class="fas fa-blender"></i>
+                    </div>
+                    <h3>Kitchen Appliances</h3>
+                    <p>Microwave, refrigerator and more</p>
+                    <a href="#" class="btn btn-outline">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services">
+        <div class="container">
+            <div class="section-title">
+                <h2>Most Booked Services</h2>
+                <p>Quick, reliable solutions for your everyday needs</p>
+            </div>
+
+            <div class="services-tabs">
+                <button class="tab-btn active">All Services</button>
+                <button class="tab-btn">AC Repair</button>
+                <button class="tab-btn">TV Repair</button>
+                <button class="tab-btn">Washing Machine</button>
+                <button class="tab-btn">Refrigerator</button>
+            </div>
+
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-image">
+                        <i class="fas fa-snowflake"></i> AC Service
+                    </div>
+                    <div class="service-details">
+                        <h3>AC General Service</h3>
+                        <div class="service-meta">
+                            <span><i class="fas fa-clock"></i> 60 mins</span>
+                            <span><i class="fas fa-star"></i> 4.8 (2.5K)</span>
+                        </div>
+                        <div class="service-price">₹499 <span class="original-price">₹799</span></div>
+                        <a href="#" class="btn btn-primary">Book Now</a>
+                    </div>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-image">
+                        <i class="fas fa-tv"></i> TV Repair
+                    </div>
+                    <div class="service-details">
+                        <h3>LED TV Repair</h3>
+                        <div class="service-meta">
+                            <span><i class="fas fa-clock"></i> 90 mins</span>
+                            <span><i class="fas fa-star"></i> 4.7 (1.8K)</span>
+                        </div>
+                        <div class="service-price">₹599 <span class="original-price">₹999</span></div>
+                        <a href="#" class="btn btn-primary">Book Now</a>
+                    </div>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-image">
+                        <i class="fas fa-tshirt"></i> Washing Machine
+                    </div>
+                    <div class="service-details">
+                        <h3>Washing Machine Repair</h3>
+                        <div class="service-meta">
+                            <span><i class="fas fa-clock"></i> 75 mins</span>
+                            <span><i class="fas fa-star"></i> 4.8 (2.1K)</span>
+                        </div>
+                        <div class="service-price">₹549 <span class="original-price">₹899</span></div>
+                        <a href="#" class="btn btn-primary">Book Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3>50K+</h3>
+                    <p>Happy Customers</p>
+                </div>
+                <div class="stat-item">
+                    <h3>1K+</h3>
+                    <p>Certified Technicians</p>
+                </div>
+                <div class="stat-item">
+                    <h3>25+</h3>
+                    <p>Cities Covered</p>
+                </div>
+                <div class="stat-item">
+                    <h3>4.9/5</h3>
+                    <p>Customer Rating</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <div class="section-title">
+                <h2>How It Works</h2>
+                <p>Getting your appliances fixed has never been easier</p>
+            </div>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Choose Your Service</h3>
+                    <p>Select from our wide range of appliance repair services</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Pick Date & Time</h3>
+                    <p>Schedule a visit at your convenience</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Get It Done</h3>
+                    <p>Our expert arrives and completes the job professionally</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="why-choose">
+        <div class="container">
+            <div class="section-title">
+                <h2>Why Choose TechSeva?</h2>
+                <p>We're committed to providing the best service experience</p>
+            </div>
+
+            <div class="benefits">
+                <div class="benefit">
+                    <div class="benefit-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Verified Professionals</h3>
+                        <p>All our technicians are background-verified and skilled</p>
+                    </div>
+                </div>
+
+                <div class="benefit">
+                    <div class="benefit-icon">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Transparent Pricing</h3>
+                        <p>No hidden charges. Pay only for what you need</p>
+                    </div>
+                </div>
+
+                <div class="benefit">
+                    <div class="benefit-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>90-Day Warranty</h3>
+                        <p>All repairs come with a warranty for your peace of mind</p>
+                    </div>
+                </div>
+
+                <div class="benefit">
+                    <div class="benefit-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>On-Time Service</h3>
+                        <p>We value your time. Our experts arrive as scheduled</p>
+                    </div>
+                </div>
+
+                <div class="benefit">
+                    <div class="benefit-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>24/7 Support</h3>
+                        <p>Our customer support team is always available to help you</p>
+                    </div>
+                </div>
+
+                <div class="benefit">
+                    <div class="benefit-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <div class="benefit-content">
+                        <h3>Genuine Parts</h3>
+                        <p>We use only high-quality, genuine parts for all repairs</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Offers Section -->
+    <section class="offers">
+        <div class="container">
+            <div class="section-title">
+                <h2>Ongoing Offers & Deals</h2>
+                <p>Avail these exclusive offers for a limited time</p>
+            </div>
+
+            <div class="offers-grid">
+                <div class="offer-card">
+                    <div class="offer-badge">20% OFF</div>
+                    <div class="offer-image">
+                        <i class="fas fa-snowflake"></i> AC Service Offer
+                    </div>
+                    <div class="offer-details">
+                        <h3>AC Summer Service Package</h3>
+                        <p>Complete AC servicing including gas refilling, cleaning and maintenance</p>
+                        <div class="offer-price">
+                            <span class="original-price">₹1499</span>
+                            <span class="discounted-price">₹1199</span>
+                        </div>
+                        <a href="#" class="btn btn-primary">Avail Now</a>
+                        <div class="countdown">
+                            <div class="countdown-item">
+                                <div class="countdown-value">2</div>
+                                <div class="countdown-label">Days</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value">12</div>
+                                <div class="countdown-label">Hours</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value">45</div>
+                                <div class="countdown-label">Mins</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value">30</div>
+                                <div class="countdown-label">Secs</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="offer-card">
+                    <div class="offer-badge">FLAT ₹499</div>
+                    <div class="offer-image">
+                        <i class="fas fa-tv"></i> TV Repair Offer
+                    </div>
+                    <div class="offer-details">
+                        <h3>TV Repair Special</h3>
+                        <p>Complete TV repair service with 90 days warranty on parts and service</p>
+                        <div class="offer-price">
+                            <span class="original-price">₹899</span>
+                            <span class="discounted-price">₹499</span>
+                        </div>
+                        <a href="#" class="btn btn-primary">Avail Now</a>
+                        <div class="countdown">
+                            <div class="countdown-item">
+                                <div class="countdown-value">5</div>
+                                <div class="countdown-label">Days</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value">08</div>
+                                <div class="countdown-label">Hours</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value">20</div>
+                                <div class="countdown-label">Mins</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value">15</div>
+                                <div class="countdown-label">Secs</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="offer-card">
+                    <div class="offer-badge">FREE</div>
+                    <div class="offer-image">
+                        <i class="fas fa-tools"></i> Free Checkup
+                    </div>
+                    <div class="offer-details">
+                        <h3>Free Appliance Checkup</h3>
+                        <p>Free diagnosis for any appliance. Pay only if you proceed with repair</p>
+                        <div class="offer-price">
+                            <span class="original-price">₹299</span>
+                            <span class="discounted-price">FREE</span>
+                        </div>
+                        <a href="#" class="btn btn-primary">Avail Now</a>
+                        <div class="countdown">
+                            <div class="countdown-item">
+                                <div class="countdown-value">7</div>
+                                <div class="countdown-label">Days</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value">10</div>
+                                <div class="countdown-label">Hours</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value">30</div>
+                                <div class="countdown-label">Mins</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value">45</div>
+                                <div class="countdown-label">Secs</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <div class="section-title">
+                <h2>Customer Reviews</h2>
+                <p>See what our customers have to say about our services</p>
+            </div>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <div class="testimonial-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="testimonial-info">
+                            <h4>Rahul Sharma</h4>
+                            <p>Delhi</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">The technician was polite, explained the issue with my AC and gave a clear estimate before starting the work. I felt completely comfortable letting him work in my home. Highly recommended!</p>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <div class="testimonial-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="testimonial-info">
+                            <h4>Priya Patel</h4>
+                            <p>Mumbai</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">I was worried about extra charges, but TechSeva kept everything transparent. The final bill matched the estimate, and payment was smooth. It's great to finally have a trustworthy service provider.</p>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-header">
+                        <div class="testimonial-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="testimonial-info">
+                            <h4>Amit Khanna</h4>
+                            <p>Bangalore</p>
+                        </div>
+                    </div>
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <p class="testimonial-text">My washing machine started acting up just two days after repair. I called TechSeva, and they sent the same technician back—no extra cost, no arguments. That 7-day promise is real!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to get your appliances fixed?</h2>
+            <p>Book our expert technicians today and enjoy hassle-free appliance repair services</p>
+            <a href="#" class="btn btn-green"><i class="fas fa-calendar-alt"></i> Book a Service Now</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>TechSeva</h3>
+                    <p>India's most trusted tech service and repair platform, bringing expert solutions to your doorstep.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Home</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Services</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Pricing</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> How It Works</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Contact Us</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> AC Repair & Service</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> TV Repair</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Washing Machine Repair</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Refrigerator Repair</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Microwave Repair</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-column">
+                    <h3>Contact Info</h3>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-phone"></i> +91 9876543210</a></li>
+                        <li><a href="#"><i class="fas fa-envelope"></i> info@techseva.com</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> 123 Tech Street, Tech City</a></li>
+                    </ul>
+
+                    <div class="app-download">
+                        <p>Download Our App</p>
+                        <div class="app-badges">
+                            <img src="https://via.placeholder.com/120x40/000000/FFFFFF?text=App+Store" alt="App Store" class="app-badge">
+                            <img src="https://via.placeholder.com/120x40/000000/FFFFFF?text=Google+Play" alt="Google Play" class="app-badge">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2023 TechSeva Technologies Pvt Ltd. All rights reserved.</p>
+                <div class="payment-methods">
+                    <img src="https://via.placeholder.com/40x25/FFFFFF/000000?text=Visa" alt="Visa" class="payment-method">
+                    <img src="https://via.placeholder.com/40x25/FFFFFF/000000?text=MC" alt="Mastercard" class="payment-method">
+                    <img src="https://via.placeholder.com/40x25/FFFFFF/000000?text=Paytm" alt="Paytm" class="payment-method">
+                    <img src="https://via.placeholder.com/40x25/FFFFFF/000000?text=UPI" alt="UPI" class="payment-method">
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        document.querySelector('.mobile-menu-toggle').addEventListener('click', function() {
+            document.querySelector('.nav-menu').classList.toggle('active');
+        });
+
+        // Service Tabs
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Countdown Timer (simplified version)
+        function updateCountdowns() {
+            const countdowns = document.querySelectorAll('.countdown');
+            countdowns.forEach(countdown => {
+                // This is a simplified version - in a real implementation
+                // you would calculate the actual time difference
+                const seconds = countdown.querySelector('.countdown-item:last-child .countdown-value');
+                let secValue = parseInt(seconds.textContent);
+                
+                if (secValue > 0) {
+                    seconds.textContent = secValue - 1;
+                } else {
+                    seconds.textContent = 59;
+                    // Would need to update minutes, hours, days accordingly
+                }
+            });
+        }
+
+        setInterval(updateCountdowns, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - TechSeva</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Auth CSS -->
+    <link rel="stylesheet" href="/css/auth.css">
+    <!-- Google Identity Services Library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <img src="https://placehold.co/90x90/3498DB/FFFFFF/png?text=TS" alt="Service Logo" style="width: 70px; height: 70px; margin-bottom: 10px;">
+            <h1>Join TechSeva</h1>
+            <p>Create your account to get started</p>
+        </div>
+
+        <div class="role-selection">
+            <label>I am a:</label>
+            <div class="role-options">
+                <button class="role-btn active" data-role="user">
+                    <i class="fas fa-user"></i> User
+                </button>
+                <button class="role-btn" data-role="technician">
+                    <i class="fas fa-tools"></i> Technician
+                </button>
+            </div>
+        </div>
+
+        <!-- Sign Up Form -->
+        <form id="signup-form" class="auth-form active">
+            <div class="form-group">
+                <label for="signup-fullname">Full Name:</label>
+                <input type="text" id="signup-fullname" name="fullName" placeholder="Your Full Name" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-email">Email:</label>
+                <input type="email" id="signup-email" name="email" placeholder="Your Email Address" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-phone">Phone Number:</label>
+                <input type="tel" id="signup-phone" name="phoneNumber" placeholder="e.g., 9876543210" pattern="[0-9]{10}" required>
+            </div>
+            <div class="form-group password-input">
+                <label for="signup-password">Password:</label>
+                <input type="password" id="signup-password" name="password" placeholder="Min 8 characters" minlength="8" required>
+                <i class="fas fa-eye toggle-password"></i>
+            </div>
+            <div class="form-group password-input">
+                <label for="signup-confirm-password">Confirm Password:</label>
+                <input type="password" id="signup-confirm-password" name="confirmPassword" placeholder="Confirm your password" minlength="8" required>
+                <i class="fas fa-eye toggle-confirm-password"></i>
+            </div>
+
+            <!-- Technician Specific Fields -->
+            <div id="technician-fields">
+                <div class="form-group">
+                    <label for="signup-aadhaar">Aadhaar Number:</label>
+                    <input type="text" id="signup-aadhaar" name="aadhaar" placeholder="12-digit Aadhaar" pattern="[0-9]{12}">
+                </div>
+                <div class="form-group">
+                    <label for="signup-pan">PAN Number:</label>
+                    <input type="text" id="signup-pan" name="pan" placeholder="10-character PAN (e.g., ABCDE1234F)" pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}">
+                </div>
+                <div class="form-group">
+                    <label for="signup-skills">Skills (comma-separated):</label>
+                    <input type="text" id="signup-skills" name="skills" placeholder="e.g., AC Repair, Electrician">
+                </div>
+            </div>
+
+            <input type="hidden" id="signup-user-role" name="role" value="user">
+            <button type="submit" class="auth-btn">Sign Up</button>
+            <div class="auth-footer">
+                <p id="signup-or-separator" style="margin-bottom: 10px;">OR</p>
+                <!-- Google Sign-in button for Register -->
+                <div id="g_id_signup_wrapper">
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-shape="rectangular"
+                         data-theme="outline"
+                         data-text="signup_with"
+                         data-size="large"
+                         data-context="signup">
+                    </div>
+                </div>
+                <p>Already have an account? <a href="/login">Login</a></p>
+            </div>
+        </form>
+    </div>
+
+    <!-- OTP Verification Modal -->
+    <div id="otp-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="close-otp-modal">&times;</span>
+            <h2>Email Verification</h2>
+            <p>We've sent a 6-digit OTP to your email <span id="user-email-display"></span></p>
+            <div class="otp-input">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+                <input type="text" maxlength="1" class="otp-digit" pattern="\d*">
+            </div>
+            <button id="verify-otp" class="auth-btn">Verify</button>
+            <p class="resend-otp">Didn't receive OTP? <a href="javascript:void(0)" id="resend-otp">Resend</a></p>
+        </div>
+    </div>
+
+    <!-- Message Box Placeholder -->
+    <div id="message-container"></div>
+
+    <!-- Google Identity Services Initialization -->
+    <div id="g_id_onload"
+         data-client_id="162423995881-uvq3jdk68i8lsfkk497llfvkp0a45ovm.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-nonce="ANY_RANDOM_STRING">
+    </div>
+
+    <script>
+        // Function to display messages (success/error)
+        const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            messageContainer.innerHTML = '';
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+            messageContainer.style.display = 'block';
+
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                setTimeout(() => {
+                    messageBox.remove();
+                    if (!messageContainer.children.length) {
+                        messageContainer.style.display = 'none';
+                    }
+                }, 500);
+            }, 4500);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Role Selection Logic
+            const roleButtons = document.querySelectorAll('.role-btn');
+            const signupRoleInput = document.getElementById('signup-user-role');
+            const technicianFields = document.getElementById('technician-fields');
+            const googleSignupWrapper = document.getElementById('g_id_signup_wrapper');
+            const signupOrSeparator = document.getElementById('signup-or-separator');
+
+            roleButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    roleButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const selectedRole = button.dataset.role;
+                    signupRoleInput.value = selectedRole;
+
+                    if (selectedRole === 'technician') {
+                        technicianFields.style.display = 'block';
+                        document.getElementById('signup-aadhaar').setAttribute('required', 'required');
+                        document.getElementById('signup-pan').setAttribute('required', 'required');
+                        document.getElementById('signup-skills').setAttribute('required', 'required');
+
+                        // Hide Google Signup for technicians
+                        if (googleSignupWrapper) googleSignupWrapper.style.display = 'none';
+                        if (signupOrSeparator) signupOrSeparator.style.display = 'none';
+                    } else {
+                        technicianFields.style.display = 'none';
+                        document.getElementById('signup-aadhaar').removeAttribute('required');
+                        document.getElementById('signup-pan').removeAttribute('required');
+                        document.getElementById('signup-skills').removeAttribute('required');
+
+                        // Show Google Signup for users
+                        if (googleSignupWrapper) googleSignupWrapper.style.display = 'flex';
+                        if (signupOrSeparator) signupOrSeparator.style.display = 'block';
+                    }
+                });
+            });
+
+            // Password Toggle Logic
+            document.querySelectorAll('.toggle-password, .toggle-confirm-password').forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const passwordInput = toggle.previousElementSibling;
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    toggle.classList.toggle('fa-eye');
+                    toggle.classList.toggle('fa-eye-slash');
+                });
+            });
+
+            // Sign Up Form Submission
+            const signupForm = document.getElementById('signup-form');
+            const signupSubmitBtn = signupForm.querySelector('.auth-btn');
+
+            signupForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                showMessage('', null);
+
+                const fullName = document.getElementById('signup-fullname').value.trim();
+                const email = document.getElementById('signup-email').value.trim();
+                const phoneNumber = document.getElementById('signup-phone').value.trim();
+                const password = document.getElementById('signup-password').value;
+                const confirmPassword = document.getElementById('signup-confirm-password').value;
+                const role = signupRoleInput.value;
+
+                if (!fullName || !email || !phoneNumber || !password || !confirmPassword) {
+                    showMessage('Please fill in all required fields.', 'error');
+                    return;
+                }
+                if (password !== confirmPassword) {
+                    showMessage('Passwords do not match.', 'error');
+                    return;
+                }
+                if (password.length < 8) {
+                    showMessage('Password must be at least 8 characters.', 'error');
+                    return;
+                }
+                if (!/^\d{10}$/.test(phoneNumber)) {
+                    showMessage('Please enter a valid 10-digit phone number.', 'error');
+                    return;
+                }
+
+                const signupData = { fullName, email, phoneNumber, password, role };
+                if (role === 'technician') {
+                    signupData.aadhaar = document.getElementById('signup-aadhaar').value.trim();
+                    signupData.pan = document.getElementById('signup-pan').value.trim();
+                    signupData.skills = document.getElementById('signup-skills').value.trim();
+
+                    if (!signupData.aadhaar || !signupData.pan || !signupData.skills) {
+                        showMessage('Technician registration requires Aadhaar, PAN, and Skills.', 'error');
+                        return;
+                    }
+                }
+
+                signupSubmitBtn.disabled = true;
+                signupSubmitBtn.textContent = 'Sending OTP...';
+
+                try {
+                    const otpResponse = await fetch('/send-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: signupData.email })
+                    });
+                    const otpResult = await otpResponse.json();
+
+                    if (otpResponse.ok) {
+                        document.getElementById('user-email-display').textContent = signupData.email;
+                        document.getElementById('otp-modal').style.display = 'flex';
+                        showMessage(otpResult.message, 'success');
+                        sessionStorage.setItem('pendingSignupData', JSON.stringify(signupData));
+                    } else {
+                        showMessage(otpResult.message || 'Failed to send OTP.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Signup (OTP Send) error:', error);
+                    showMessage('Network error during OTP send. Please try again.', 'error');
+                } finally {
+                    signupSubmitBtn.disabled = false;
+                    signupSubmitBtn.textContent = 'Sign Up';
+                }
+            });
+
+            // OTP Input focus management
+            const otpDigits = document.querySelectorAll('.otp-digit');
+            otpDigits.forEach((digitInput, index) => {
+                digitInput.addEventListener('input', () => {
+                    if (digitInput.value.length === 1 && index < otpDigits.length - 1) {
+                        otpDigits[index + 1].focus();
+                    }
+                    const allFilled = Array.from(otpDigits).every(input => input.value.length === 1);
+                    if (allFilled) {
+                        document.getElementById('verify-otp').click();
+                    }
+                });
+
+                digitInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && digitInput.value === '' && index > 0) {
+                        otpDigits[index - 1].focus();
+                    }
+                });
+            });
+
+            // Close OTP Modal
+            document.getElementById('close-otp-modal').addEventListener('click', () => {
+                document.getElementById('otp-modal').style.display = 'none';
+                sessionStorage.removeItem('pendingSignupData');
+                otpDigits.forEach(digit => digit.value = '');
+                showMessage('', null);
+            });
+
+            // Verify OTP
+            document.getElementById('verify-otp').addEventListener('click', async () => {
+                showMessage('', null);
+
+                const enteredOtp = Array.from(otpDigits).map(input => input.value).join('');
+                const storedSignupData = JSON.parse(sessionStorage.getItem('pendingSignupData'));
+
+                if (!storedSignupData || !enteredOtp || enteredOtp.length !== 6) {
+                    showMessage('Please enter the complete 6-digit OTP.', 'error');
+                    return;
+                }
+
+                document.getElementById('verify-otp').disabled = true;
+                document.getElementById('verify-otp').textContent = 'Verifying...';
+
+                try {
+                    const verifyResponse = await fetch('/verify-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: storedSignupData.email, otp: enteredOtp })
+                    });
+
+                    if (!verifyResponse.ok) {
+                        const verifyResult = await verifyResponse.json();
+                        throw new Error(verifyResult.message || 'OTP verification failed.');
+                    }
+
+                    const registerResponse = await fetch('/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(storedSignupData)
+                    });
+
+                    if (!registerResponse.ok) {
+                        const registerResult = await registerResponse.json();
+                        throw new Error(registerResult.message || 'Registration failed.');
+                    }
+
+                    const registerResult = await registerResponse.json();
+                    document.getElementById('otp-modal').style.display = 'none';
+                    showMessage('Registration successful! You can now login.', 'success');
+
+                    const prefillData = sessionStorage.getItem('prefillBookingData');
+                    if (prefillData) {
+                        sessionStorage.removeItem('prefillBookingData');
+                        window.location.href = '/user';
+                    } else if (registerResult.redirect) {
+                        window.location.href = registerResult.redirect;
+                    }
+                } catch (error) {
+                    console.error('OTP Verification or Registration Error:', error);
+                    showMessage(error.message, 'error');
+                } finally {
+                    document.getElementById('verify-otp').disabled = false;
+                    document.getElementById('verify-otp').textContent = 'Verify';
+                }
+            });
+
+            // Resend OTP
+            document.getElementById('resend-otp').addEventListener('click', async (e) => {
+                e.preventDefault();
+                showMessage('', null);
+
+                const storedSignupData = JSON.parse(sessionStorage.getItem('pendingSignupData'));
+
+                if (!storedSignupData || !storedSignupData.email) {
+                    showMessage('No email found to resend OTP.', 'error');
+                    return;
+                }
+
+                document.getElementById('resend-otp').style.pointerEvents = 'none';
+                document.getElementById('resend-otp').textContent = 'Sending...';
+
+                try {
+                    const response = await fetch('/send-otp', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: storedSignupData.email })
+                    });
+                    const result = await response.json();
+                    if (response.ok) {
+                        showMessage(result.message, 'success');
+                    } else {
+                        showMessage(result.message || 'Failed to resend OTP.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Resend OTP error:', error);
+                    showMessage('Network error while resending OTP.', 'error');
+                } finally {
+                    document.getElementById('resend-otp').style.pointerEvents = 'auto';
+                    document.getElementById('resend-otp').textContent = 'Resend';
+                }
+            });
+        });
+
+        // Google Sign-in Callback
+        window.handleCredentialResponse = async (response) => {
+            console.log('Google Sign-In response received:', response);
+            const idToken = response.credential;
+
+            if (!idToken) {
+                showMessage('Google Sign-in failed: No ID token received.', 'error');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/google-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken })
+                });
+
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.message || `Server responded with status ${res.status}`);
+                }
+
+                const data = await res.json();
+
+                if (data.success) {
+                    if (data.needsPhoneUpdate) {
+                        showMessage(data.message || "Please add your phone number to continue.", 'info');
+                        setTimeout(() => {
+                            window.location.href = '/phone-update';
+                        }, 500);
+                    } else {
+                        showMessage(data.message || "Google Sign-In successful!", 'success');
+                        if (data.redirect) {
+                            setTimeout(() => {
+                                window.location.href = data.redirect;
+                            }, 500);
+                        }
+                    }
+                } else {
+                    showMessage(data.message || "Google Sign-in failed.", 'error');
+                }
+            } catch (error) {
+                console.error('Error during Google sign-in:', error);
+                showMessage(error.message || 'Network error during Google Sign-In.', 'error');
+            }
+        };
+    </script>
+</body>
+</html>

@@ -608,6 +608,21 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
+// Serve login page
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'login.html'));
+});
+
+// Serve signup page
+app.get('/signup', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'signup.html'));
+});
+
+// Serve forgot password page
+app.get('/forgot-password', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'forgot-password.html'));
+});
+
 // Serve static files from 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // For serving uploaded images
@@ -1009,7 +1024,6 @@ app.post('/login', async (req, res) => {
         return res.status(500).json({ success: false, message: 'Internal server error during login.' });
     }
 });
-
 // Google Login
 app.post('/api/google-login', async (req, res) => {
     console.log('[GOOGLE LOGIN] Request received with ID token.');
@@ -1037,18 +1051,21 @@ app.post('/api/google-login', async (req, res) => {
             console.warn('[GOOGLE LOGIN] Google account email not verified:', email);
             return res.status(400).json({ success: false, message: 'Google account email not verified.' });
         }
-
-        let user = await User.findOne({ email });
-
+        // MODIFIED: Search for existing user by BOTH googleId and email.
+        let user = await User.findOne({ $or: [{ googleId: googleId }, { email: email }] });
         if (user) {
             console.log('[GOOGLE LOGIN] Existing user found:', user.email);
+            // Ensure both googleId and email are correctly linked to the existing user
             if (!user.googleId) {
                 user.googleId = googleId;
                 await user.save();
                 console.log('[GOOGLE LOGIN] Added Google ID to existing user:', user.email);
             }
+            if (user.email !== email) {
+                console.warn('[GOOGLE LOGIN] Mismatch between Google email and stored email for user:', user.email, ' and ', email);
+            }
+            
             // Ensure role is 'user' if it's not technician/admin (don't downgrade existing roles)
-            // If existing user has an admin role, maintain it.
             if (!isAnAdminRole(user.role) && user.role !== 'technician') {
                 user.role = 'user'; // Default to user if not technician or a specific admin role
                 user.kycStatus = 'approved'; // Google users are implicitly KYC approved for user role
@@ -1071,11 +1088,16 @@ app.post('/api/google-login', async (req, res) => {
                 fullName: user.fullName,
                 email: user.email,
                 role: user.role,
-                kycStatus: user.kycStatus
+                kycStatus: user.kycStatus,
+                phoneNumber: user.phoneNumber
             };
 
-            let redirectUrl = '/user'; // Default redirect for Google login
-            // Redirect based on actual user role from DB
+            if (!user.phoneNumber) {
+                console.log(`[GOOGLE LOGIN] Existing user ${user.email} has no phone number. Prompting for update.`);
+                return res.json({ success: true, message: 'Please provide a phone number to continue.', needsPhoneUpdate: true });
+            }
+
+            let redirectUrl = '/user'; // Default redirect
             switch (user.role) {
                 case 'technician':
                     redirectUrl = '/technician';
@@ -1095,7 +1117,6 @@ app.post('/api/google-login', async (req, res) => {
                 case 'Supportagent':
                     redirectUrl = '/supportagent';
                     break;
-                // 'user' case is default
             }
 
             console.log(`[GOOGLE LOGIN] Logged in existing user ${user.email}. Redirecting to ${redirectUrl}`);
@@ -1121,9 +1142,7 @@ app.post('/api/google-login', async (req, res) => {
                 role: newUser.role,
                 kycStatus: newUser.kycStatus
             };
-
-            console.log(`[GOOGLE LOGIN] Signed up new user ${newUser.email} and logged in. Redirecting to /user`);
-            return res.json({ success: true, message: 'Signed up and logged in with Google successfully!', redirect: '/user' });
+            return res.json({ success: true, message: 'Please add your phone number to complete your profile.', needsPhoneUpdate: true });
         }
 
     } catch (error) {
