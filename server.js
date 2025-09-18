@@ -623,6 +623,11 @@ app.get('/forgot-password', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'forgot-password.html'));
 });
 
+// Serve phone update page
+app.get('/phone-update', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'phone-update.html'));
+});
+
 // Serve static files from 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // For serving uploaded images
@@ -1305,13 +1310,85 @@ app.post('/api/user/profile/upload-photo', authenticateToken, authorizeRoles(['u
     }
 
     console.log('Profile photo updated for user:', userId);
-    
+
     // Respond with a success message and the new user object containing the updated URL
     res.json({ success: true, message: 'Profile photo uploaded successfully!', user: updatedUser });
 
   } catch (error) {
     console.error('Error during photo upload:', error);
     res.status(500).json({ success: false, message: 'Failed to upload photo.' });
+  }
+});
+
+// NEW API Endpoint for updating phone number (used after Google login)
+app.post('/api/user/update-phone', authenticateToken, authorizeRoles(['user', 'technician', 'Superadmin', 'Citymanager', 'Serviceadmin', 'Financeofficer', 'Supportagent']), async (req, res) => {
+  console.log('[UPDATE PHONE API] Request received for user:', req.user._id);
+  try {
+    const { phoneNumber } = req.body;
+    const userId = req.user._id;
+
+    if (!phoneNumber || !/^\d{10}$/.test(phoneNumber.trim())) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid 10-digit phone number.' });
+    }
+
+    const trimmedPhone = phoneNumber.trim();
+
+    // Check for uniqueness
+    const existingUserWithPhone = await User.findOne({ phoneNumber: trimmedPhone, _id: { $ne: userId } });
+    if (existingUserWithPhone) {
+      console.warn('[UPDATE PHONE API] Phone number already taken:', trimmedPhone);
+      return res.status(409).json({ success: false, message: 'This phone number is already registered with another account.' });
+    }
+
+    // Update the user's phone number
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { phoneNumber: trimmedPhone },
+      { new: true, runValidators: true }
+    ).select('-password').lean();
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    // Update session
+    req.session.user.phoneNumber = trimmedPhone;
+
+    console.log('[UPDATE PHONE API] Phone number updated for user:', userId);
+
+    // Determine redirect URL based on role
+    let redirectUrl = '/user'; // Default
+    switch (updatedUser.role) {
+      case 'technician':
+        redirectUrl = '/technician';
+        break;
+      case 'Superadmin':
+        redirectUrl = '/superadmin';
+        break;
+      case 'Citymanager':
+        redirectUrl = '/citymanager';
+        break;
+      case 'Serviceadmin':
+        redirectUrl = '/serviceadmin';
+        break;
+      case 'Financeofficer':
+        redirectUrl = '/financeofficer';
+        break;
+      case 'Supportagent':
+        redirectUrl = '/supportagent';
+        break;
+    }
+
+    res.json({
+      success: true,
+      message: 'Phone number updated successfully! Welcome to TechSeva.',
+      redirect: redirectUrl,
+      user: updatedUser
+    });
+
+  } catch (error) {
+    console.error('[UPDATE PHONE API ERROR]:', error);
+    res.status(500).json({ success: false, message: 'Internal server error during phone update.' });
   }
 });
 

@@ -1070,6 +1070,22 @@
         </div>
     </div>
 
+    <!-- Phone Update Modal -->
+    <div id="phone-update-modal" class="phone-update-modal">
+        <div class="modal-content">
+            <span class="close-phone-update-modal" id="close-phone-update-modal">&times;</span>
+            <h2>Complete Your Profile</h2>
+            <p>Please add your phone number to continue.</p>
+            <form id="phone-update-form">
+                <div class="form-group">
+                    <label for="phone-update-input">Phone Number:</label>
+                    <input type="tel" id="phone-update-input" name="phoneNumber" placeholder="e.g., 9876543210" pattern="[0-9]{10}" required>
+                </div>
+                <button type="submit" class="auth-btn" id="phone-update-btn">Update Phone Number</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Message Box Placeholder -->
     <div id="message-container"></div>
 
@@ -1928,6 +1944,57 @@
                 showMessage('', null);
             });
 
+            // --- Phone Update Modal Event Listeners ---
+            // Close Phone Update Modal
+            closePhoneUpdateModalBtn.addEventListener('click', () => {
+                phoneUpdateModal.style.display = 'none';
+                showMessage('', null);
+            });
+
+            // Phone Update Form Submission
+            phoneUpdateForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                showMessage('', null);
+
+                const phoneNumber = phoneUpdateInput.value.trim();
+
+                if (!phoneNumber || !/^\d{10}$/.test(phoneNumber)) {
+                    showMessage('Please enter a valid 10-digit phone number.', 'error');
+                    return;
+                }
+
+                phoneUpdateBtn.disabled = true;
+                phoneUpdateBtn.textContent = 'Updating...';
+
+                try {
+                    const response = await fetch('/api/user/update-phone', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phoneNumber })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showMessage(data.message || 'Phone number updated successfully!', 'success');
+                        phoneUpdateModal.style.display = 'none';
+                        if (data.redirect) {
+                            setTimeout(() => {
+                                window.location.href = data.redirect;
+                            }, 500);
+                        }
+                    } else {
+                        showMessage(data.message || 'Failed to update phone number.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Phone update error:', error);
+                    showMessage('Network error during phone update. Please try again.', 'error');
+                } finally {
+                    phoneUpdateBtn.disabled = false;
+                    phoneUpdateBtn.textContent = 'Update Phone Number';
+                }
+            });
+
 
             // --- AI Diagnosis Logic ---
             if (getDiagnosisBtn && applianceProblemInput && diagnosisResultDiv && loadingIndicator) {
@@ -2144,17 +2211,18 @@ if (unauthenticatedBookingForm) {
                         // Check for the new 'needsPhoneUpdate' flag
                         if (data.needsPhoneUpdate) {
                             showMessage(data.message || "Please add your phone number to continue.", 'info');
-                            document.getElementById('auth-overlay').style.display = 'none'; // Hide the main auth modal
-                            phoneUpdateModal.style.display = 'flex'; // Show the new phone update modal
+                            setTimeout(() => {
+                                window.location.href = '/phone-update';
+                            }, 500);
                         } else {
                             // Successful login without redirect (e.g., if already on home page)
                             showMessage(data.message || "Google Sign-In successful!", 'success');
                             document.getElementById('auth-overlay').style.display = 'none';
                             if (data.redirect) {
                                  setTimeout(() => {
-                                    window.location.href = data.redirect;
-                                }, 500);
-                            }
+                                     window.location.href = data.redirect;
+                                 }, 500);
+                             }
                         }
                     } else {
                         // Failed login

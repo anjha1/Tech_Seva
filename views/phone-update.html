@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Profile - TechSeva</title>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Auth CSS -->
+    <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <img src="https://placehold.co/90x90/3498DB/FFFFFF/png?text=TS" alt="Service Logo" style="width: 70px; height: 70px; margin-bottom: 10px;">
+            <h1>Complete Your Profile</h1>
+            <p>Please add your phone number to continue</p>
+        </div>
+
+        <!-- Phone Update Form -->
+        <form id="phone-update-form" class="auth-form active">
+            <div class="form-group">
+                <label for="phone-number">Phone Number:</label>
+                <input type="tel" id="phone-number" name="phoneNumber" placeholder="e.g., 9876543210" pattern="[0-9]{10}" required>
+            </div>
+            <button type="submit" class="auth-btn" id="phone-update-btn">Update Phone Number</button>
+            <div class="auth-footer">
+                <p><a href="/" class="forgot-password">Back to Home</a></p>
+            </div>
+        </form>
+    </div>
+
+    <!-- Message Box Placeholder -->
+    <div id="message-container"></div>
+
+    <script>
+        // Function to display messages (success/error)
+        const showMessage = (message, type = 'success') => {
+            const messageContainer = document.getElementById('message-container');
+            if (!messageContainer) return;
+
+            // Remove any existing messages
+            messageContainer.innerHTML = '';
+
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box ${type}`;
+            messageBox.textContent = message;
+            messageContainer.appendChild(messageBox);
+            messageContainer.style.display = 'block';
+
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                setTimeout(() => {
+                    messageBox.remove();
+                    if (!messageContainer.children.length) {
+                        messageContainer.style.display = 'none';
+                    }
+                }, 500);
+            }, 4500);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Phone Update Form Submission
+            const phoneUpdateForm = document.getElementById('phone-update-form');
+            const phoneNumberInput = document.getElementById('phone-number');
+            const phoneUpdateBtn = document.getElementById('phone-update-btn');
+
+            phoneUpdateForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                showMessage('', null);
+
+                const phoneNumber = phoneNumberInput.value.trim();
+
+                if (!phoneNumber || !/^\d{10}$/.test(phoneNumber)) {
+                    showMessage('Please enter a valid 10-digit phone number.', 'error');
+                    return;
+                }
+
+                phoneUpdateBtn.disabled = true;
+                phoneUpdateBtn.textContent = 'Updating...';
+
+                try {
+                    const response = await fetch('/api/user/update-phone', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phoneNumber })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        showMessage(data.message || 'Phone number updated successfully!', 'success');
+                        if (data.redirect) {
+                            setTimeout(() => {
+                                window.location.href = data.redirect;
+                            }, 500);
+                        }
+                    } else {
+                        showMessage(data.message || 'Failed to update phone number.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Phone update error:', error);
+                    showMessage('Network error during phone update. Please try again.', 'error');
+                } finally {
+                    phoneUpdateBtn.disabled = false;
+                    phoneUpdateBtn.textContent = 'Update Phone Number';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
