@@ -458,8 +458,9 @@
             </div>
 
             <div class="form-group">
-                <label for="travel-charges">Travel Charges (₹):</label>
-                <input type="number" id="travel-charges" name="travelCharges" placeholder="0.00" min="0" step="0.01" value="0">
+                <label for="travel-charges">Travel Charges (₹) - Auto-calculated:</label>
+                <input type="number" id="travel-charges" name="travelCharges" placeholder="Calculating..." min="0" step="0.01" value="0" readonly>
+                <small style="color: var(--text-secondary);">Travel charges are automatically predicted based on location and cannot be edited manually.</small>
             </div>
 
             <div class="total-estimate-display">
@@ -616,7 +617,23 @@
                         if (result.success && result.job) {
                             const job = result.job;
                             applianceTypeElement.textContent = job.applianceType || 'N/A';
-                            locationElement.textContent = job.location || 'N/A';
+                            // Helper function to construct full address string
+                            function constructFullAddress(addressObj) {
+                                if (!addressObj) return 'N/A';
+                                if (typeof addressObj === 'string') return addressObj;
+
+                                const parts = [
+                                    addressObj.houseBuilding,
+                                    addressObj.street,
+                                    addressObj.city,
+                                    addressObj.state,
+                                    addressObj.pincode
+                                ].filter(Boolean); // Filter out any empty or null parts
+
+                                return parts.join(', ');
+                            }
+
+                            locationElement.textContent = constructFullAddress(job.location);
                             customerNotesElement.textContent = job.notes || 'No additional notes.';
                             scheduledTimeElement.textContent = job.scheduledDateTime ? new Date(job.scheduledDateTime).toLocaleString() : 'N/A';
 
@@ -638,6 +655,64 @@
                                     uploadedImages.set(`existing-${jobId}-${index}-${Date.now()}`, blob);
                                 });
                                 renderImagePreviews();
+                            }
+
+                            // Automatic Travel Fee Prediction
+                            if (job.location && job.location.latitude && job.location.longitude) {
+                                // Get technician's current location using geolocation
+                                if (navigator.geolocation) {
+                                    navigator.geolocation.getCurrentPosition(
+                                        (position) => {
+                                            const pickup_lat = position.coords.latitude;
+                                            const pickup_lon = position.coords.longitude;
+                                            const dropoff_lat = job.location.latitude;
+                                            const dropoff_lon = job.location.longitude;
+                                            const datetime = new Date().toISOString().slice(0,16); // Use current datetime for prediction, truncated to minutes
+
+                                            travelChargesInput.placeholder = 'Predicting...';
+
+                                            fetch('/api/predict-fare', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ pickup_lat, pickup_lon, dropoff_lat, dropoff_lon, datetime })
+                                            })
+                                            .then(response => response.json())
+                                            .then(fareResult => {
+                                                travelChargesInput.placeholder = 'Auto-calculated';
+                                                if (fareResult.success && fareResult.fare !== undefined) {
+                                                    travelChargesInput.value = fareResult.fare;
+                                                    calculateTotalEstimate();
+                                                    showMessage('Travel fee predicted automatically: ₹' + fareResult.fare, 'info');
+                                                } else {
+                                                    showMessage('Failed to predict travel fee. Using default value.', 'error');
+                                                    travelChargesInput.value = '0.00';
+                                                }
+                                            })
+                                            .catch(error => {
+                                                console.error('Error predicting fare:', error);
+                                                travelChargesInput.placeholder = 'Auto-calculated';
+                                                showMessage('Error predicting travel fee. Using default value.', 'error');
+                                                travelChargesInput.value = '0.00';
+                                            });
+                                        },
+                                        (error) => {
+                                            console.error('Geolocation error:', error);
+                                            showMessage('Unable to get your current location. Please enter travel charges manually.', 'error');
+                                            travelChargesInput.disabled = false;
+                                            travelChargesInput.placeholder = '0.00';
+                                        },
+                                        {
+                                            enableHighAccuracy: true,
+                                            timeout: 10000,
+                                            maximumAge: 300000 // 5 minutes
+                                        }
+                                    );
+                                } else {
+                                    showMessage('Geolocation is not supported by this browser. Please enter travel charges manually.', 'error');
+                                }
+                            } else {
+                                showMessage('Location data incomplete for automatic fare prediction. Travel charges will be set to 0.', 'info');
+                                travelChargesInput.value = '0.00';
                             }
 
                         } else {

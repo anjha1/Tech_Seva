@@ -472,6 +472,37 @@
             </div>
         </section>
 
+    <!-- Fare Prediction Section -->
+    <section id="fare-prediction-section" class="fare-prediction-section">
+        <div class="container">
+            <h2>💰 Travel Fee Prediction</h2>
+            <p>Estimate the travel charges for a technician's visit from their location to your home.</p>
+            <form id="fare-prediction-form">
+                <div class="form-group">
+                    <label for="technician-location">Technician's Location:</label>
+                    <div id="technician-location-mount-point"></div>
+                    <input type="hidden" id="technician-lat" name="technician_lat">
+                    <input type="hidden" id="technician-lon" name="technician_lon">
+                </div>
+                <div class="form-group">
+                    <label for="user-location">Your Location:</label>
+                    <div id="user-location-mount-point"></div>
+                    <input type="hidden" id="user-lat" name="user_lat">
+                    <input type="hidden" id="user-lon" name="user_lon">
+                </div>
+                <div class="form-group">
+                    <label for="visit-datetime">Visit Date & Time:</label>
+                    <input type="datetime-local" id="visit-datetime" name="datetime" required>
+                </div>
+                <button type="submit" id="predict-fare-btn" class="btn btn-primary">Predict Travel Fee</button>
+            </form>
+            <div id="fare-result" class="fare-result" style="display: none;">
+                <!-- Fare prediction will be displayed here -->
+            </div>
+            <p id="fare-loading-indicator" style="display: none;">Calculating fare... Please wait.</p>
+        </div>
+    </section>
+
     <!-- Join as Partner Section -->
     <section class="join-section" id="join">
         <div class="container">
@@ -2089,6 +2120,70 @@ if (unauthenticatedBookingForm) {
 }
 
 
+            // --- Fare Prediction Form Submission ---
+            const farePredictionForm = document.getElementById('fare-prediction-form');
+            const predictFareBtn = document.getElementById('predict-fare-btn');
+            const fareResultDiv = document.getElementById('fare-result');
+            const fareLoadingIndicator = document.getElementById('fare-loading-indicator');
+
+            if (farePredictionForm) {
+                farePredictionForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    showMessage('', null);
+
+                    const technicianLat = technicianLatInput.value;
+                    const technicianLon = technicianLonInput.value;
+                    const userLat = userLatInput.value;
+                    const userLon = userLonInput.value;
+                    const datetime = document.getElementById('visit-datetime').value;
+
+                    if (!technicianLat || !technicianLon || !userLat || !userLon || !datetime) {
+                        showMessage('Please select both locations and enter a date/time.', 'error');
+                        return;
+                    }
+
+                    fareResultDiv.style.display = 'none';
+                    fareResultDiv.textContent = '';
+                    fareLoadingIndicator.style.display = 'block';
+                    predictFareBtn.disabled = true;
+                    predictFareBtn.textContent = 'Predicting...';
+
+                    try {
+                        const response = await fetch('/api/predict-fare', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                pickup_lat: parseFloat(technicianLat),
+                                pickup_lon: parseFloat(technicianLon),
+                                dropoff_lat: parseFloat(userLat),
+                                dropoff_lon: parseFloat(userLon),
+                                datetime: datetime
+                            })
+                        });
+
+                        const result = await response.json();
+                        if (response.ok && result.fare) {
+                            fareResultDiv.textContent = `Estimated Travel Fee: ₹${result.fare.toFixed(2)}`;
+                            fareResultDiv.style.display = 'block';
+                            showMessage('Fare prediction complete!', 'success');
+                        } else {
+                            fareResultDiv.textContent = result.message || 'Could not predict fare. Please try again.';
+                            fareResultDiv.style.display = 'block';
+                            showMessage(result.message || 'Failed to predict fare.', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Fare prediction error:', error);
+                        fareResultDiv.textContent = 'An error occurred during fare prediction. Please try again later.';
+                        fareResultDiv.style.display = 'block';
+                        showMessage('Error connecting to fare prediction service.', 'error');
+                    } finally {
+                        fareLoadingIndicator.style.display = 'none';
+                        predictFareBtn.disabled = false;
+                        predictFareBtn.textContent = 'Predict Travel Fee';
+                    }
+                });
+            }
+
             // --- Scroll to Book Service button logic ---
             if (scrollToBookServiceBtn) {
                 scrollToBookServiceBtn.addEventListener('click', (e) => {
@@ -2125,7 +2220,7 @@ if (unauthenticatedBookingForm) {
             // Define the callback function to receive data from the React component
             const handleLocationSelection = ({ formattedAddress, placeId, latitude, longitude }) => {
                 // Update the hidden form input with the selected address
-                locationHiddenInput.value = formattedAddress; 
+                locationHiddenInput.value = formattedAddress;
                 // We no longer need to update locationDisplayText as it's hidden
                 console.log('Location selected by React:', formattedAddress, 'Place ID:', placeId);
             };
@@ -2146,7 +2241,7 @@ if (unauthenticatedBookingForm) {
                         console.error('Error parsing prefillBookingData from session storage:', e);
                     }
                 }
-                
+
                 window.renderLocationSearchInput(mountPoint, handleLocationSelection, initialLocation);
                 // Also update the hidden input with initial location if provided
                 if (initialLocation) {
@@ -2169,6 +2264,38 @@ if (unauthenticatedBookingForm) {
                         locationHiddenInput.value = initialLocation;
                     }
                 }
+            }
+
+            // --- Fare Prediction Location Components ---
+            const technicianMountPoint = document.getElementById('technician-location-mount-point');
+            const technicianLatInput = document.getElementById('technician-lat');
+            const technicianLonInput = document.getElementById('technician-lon');
+
+            const handleTechnicianLocationSelection = ({ formattedAddress, placeId, latitude, longitude }) => {
+                technicianLatInput.value = latitude;
+                technicianLonInput.value = longitude;
+                console.log('Technician location selected:', formattedAddress, latitude, longitude);
+            };
+
+            const userMountPoint = document.getElementById('user-location-mount-point');
+            const userLatInput = document.getElementById('user-lat');
+            const userLonInput = document.getElementById('user-lon');
+
+            const handleUserLocationSelection = ({ formattedAddress, placeId, latitude, longitude }) => {
+                userLatInput.value = latitude;
+                userLonInput.value = longitude;
+                console.log('User location selected:', formattedAddress, latitude, longitude);
+            };
+
+            if (window.renderLocationSearchInput) {
+                if (technicianMountPoint) {
+                    window.renderLocationSearchInput(technicianMountPoint, handleTechnicianLocationSelection, '');
+                }
+                if (userMountPoint) {
+                    window.renderLocationSearchInput(userMountPoint, handleUserLocationSelection, '');
+                }
+            } else {
+                console.error('window.renderLocationSearchInput not defined. Fare prediction location components cannot render.');
             }
         });
            

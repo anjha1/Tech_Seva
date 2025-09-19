@@ -55,8 +55,6 @@ if (!MONGODB_URI) {
 }
 
 mongoose.connect(MONGODB_URI, {
-    useNewUrlParser: true, // Deprecated, but good to keep for clarity for older versions
-    useUnifiedTopology: true, // Deprecated, but good to keep for clarity for older versions
     serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s for server selection
     socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
 })
@@ -1632,6 +1630,52 @@ app.get('/api/top-technicians', async (req, res) => {
     }
 });
 
+// Fare Prediction Endpoint (Integration with ML Flask App)
+app.post('/api/predict-fare', async (req, res) => {
+    console.log('[PREDICT FARE API] Request received:', req.body);
+    const { pickup_lat, pickup_lon, dropoff_lat, dropoff_lon, datetime } = req.body;
+
+    if (!pickup_lat || !pickup_lon || !dropoff_lat || !dropoff_lon || !datetime) {
+        return res.status(400).json({ success: false, message: 'All location coordinates and datetime are required.' });
+    }
+
+    console.log('[PREDICT FARE API] Pickup coordinates:', pickup_lat, pickup_lon, 'Dropoff coordinates:', dropoff_lat, dropoff_lon, 'Datetime:', datetime);
+
+    try {
+        // Call the ML Flask app running on localhost:5000
+        const mlResponse = await fetch('http://localhost:5000/predict_fare', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                pickup_lat: parseFloat(pickup_lat),
+                pickup_lon: parseFloat(pickup_lon),
+                dropoff_lat: parseFloat(dropoff_lat),
+                dropoff_lon: parseFloat(dropoff_lon),
+                datetime
+            })
+        });
+
+        if (!mlResponse.ok) {
+            console.error('[PREDICT FARE API] ML service error:', mlResponse.status);
+            return res.status(500).json({ success: false, message: 'Error from ML service.' });
+        }
+
+        const mlData = await mlResponse.json();
+        console.log('[PREDICT FARE API] ML Response:', mlData);
+        if (mlData.fare !== undefined) {
+            const predictedFare = parseFloat(mlData.fare);
+            console.log('[PREDICT FARE API] Predicted fare:', predictedFare);
+            res.json({ success: true, fare: predictedFare });
+        } else {
+            console.error('[PREDICT FARE API] Could not parse prediction from ML response.');
+            res.status(500).json({ success: false, message: 'Could not parse prediction.' });
+        }
+    } catch (error) {
+        console.error('[PREDICT FARE API ERROR]:', error);
+        res.status(500).json({ success: false, message: 'Internal server error during fare prediction.' });
+    }
+});
+
 // AI Diagnosis Endpoint (Backend Integration with Gemini API)
 app.post('/api/ai-diagnosis', async (req, res) => {
     console.log('[AI DIAGNOSIS API] Request received. Problem description length:', req.body.problemDescription ? req.body.problemDescription.length : 0);
@@ -2143,7 +2187,7 @@ app.post('/api/technician/update-location', authenticateToken, authorizeRoles(['
     console.log('[UPDATE LOCATION API] Request received for technician:', req.user._id, 'Data:', req.body);
     try {
         const userId = req.user._id;
-        const { workingLocation } = req.body; 
+        const { workingLocation } = req.body;
 
         const technician = await User.findById(userId);
         if (!technician) {
@@ -2151,7 +2195,49 @@ app.post('/api/technician/update-location', authenticateToken, authorizeRoles(['
             return res.status(404).json({ success: false, message: 'Technician not found.' });
         }
 
-        // NEW: Directly use the new structured workingLocation object
+        // Construct full address for geocoding
+        const addressParts = [
+            workingLocation.houseBuilding,
+            workingLocation.street,
+            workingLocation.city,
+            workingLocation.state,
+            workingLocation.pincode,
+            'India'
+        ].filter(part => part && part.trim() !== '');
+        const fullAddress = addressParts.join(', ');
+        console.log('[UPDATE LOCATION API] Constructed address for geocoding:', fullAddress);
+
+        let geocodedLat = null;
+        let geocodedLng = null;
+
+        // Attempt to geocode using Google Maps API for accurate coordinates
+        if (GOOGLE_MAPS_API_KEY && fullAddress) {
+            try {
+                const geocodingUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullAddress)}&key=${GOOGLE_MAPS_API_KEY}`;
+                console.log('[UPDATE LOCATION API] Calling Google Geocoding API...');
+                const response = await fetch(geocodingUrl);
+                const data = await response.json();
+
+                if (data.status === 'OK' && data.results && data.results.length > 0) {
+                    const location = data.results[0].geometry.location;
+                    geocodedLat = location.lat;
+                    geocodedLng = location.lng;
+                    console.log('[UPDATE LOCATION API] Geocoding successful. Lat:', geocodedLat, 'Lng:', geocodedLng);
+                } else {
+                    console.warn('[UPDATE LOCATION API] Geocoding failed. Status:', data.status, 'Error:', data.error_message);
+                }
+            } catch (geocodeError) {
+                console.error('[UPDATE LOCATION API] Error during geocoding:', geocodeError);
+            }
+        } else {
+            console.warn('[UPDATE LOCATION API] Google Maps API key not set or address empty. Skipping geocoding.');
+        }
+
+        // Use geocoded coordinates if available, otherwise use provided ones
+        const finalLat = geocodedLat !== null ? geocodedLat : (workingLocation.latitude ? parseFloat(workingLocation.latitude) : null);
+        const finalLng = geocodedLng !== null ? geocodedLng : (workingLocation.longitude ? parseFloat(workingLocation.longitude) : null);
+
+        // NEW: Directly use the new structured workingLocation object with validated coordinates
         technician.workingLocation = {
             pincode: workingLocation.pincode || '',
             city: workingLocation.city || '',
@@ -2159,12 +2245,12 @@ app.post('/api/technician/update-location', authenticateToken, authorizeRoles(['
             street: workingLocation.street || '',
             houseBuilding: workingLocation.houseBuilding || '',
             radiusKm: workingLocation.radiusKm || 10, // Ensure a default value
-            latitude: workingLocation.latitude ? parseFloat(workingLocation.latitude) : null,
-            longitude: workingLocation.longitude ? parseFloat(workingLocation.longitude) : null
+            latitude: finalLat,
+            longitude: finalLng
         };
-        
+
         await technician.save();
-        console.log('[UPDATE LOCATION API] Location settings updated successfully for technician:', userId);
+        console.log('[UPDATE LOCATION API] Location settings updated successfully for technician:', userId, 'Final coordinates:', finalLat, finalLng);
         res.json({ success: true, message: 'Location settings updated successfully!' });
 
     } catch (error) {
@@ -2295,7 +2381,8 @@ app.get('/api/jobs/:jobId', authenticateToken, authorizeRoles(['user', 'technici
                 customerPhoneNumber: customer ? customer.phoneNumber : 'N/A',
                 technicianName: technician ? technician.fullName : 'N/A',
                 technicianEmail: technician ? technician.email : 'N/A',
-                technicianPhoneNumber: technician ? technician.phoneNumber : 'N/A'
+                technicianPhoneNumber: technician ? technician.phoneNumber : 'N/A',
+                technicianWorkingLocation: technician ? technician.workingLocation : null
             };
             console.log('[GET JOB DETAILS API] Successfully fetched job details for:', jobId);
             res.json({ success: true, job: jobDetails });
@@ -4380,6 +4467,40 @@ app.post('/api/support/tickets/:ticketId/escalate', authenticateToken, authorize
     }
 });
 
+
+// --- Fare Prediction API ---
+app.post('/api/predict-fare', async (req, res) => {
+    console.log('[PREDICT FARE API] Request received:', req.body);
+    try {
+        const { pickup_lat, pickup_lon, dropoff_lat, dropoff_lon, datetime } = req.body;
+
+        if (!pickup_lat || !pickup_lon || !dropoff_lat || !dropoff_lon || !datetime) {
+            return res.status(400).json({ success: false, message: 'All location coordinates and datetime are required.' });
+        }
+
+        // Call the ML Flask app
+        const response = await fetch('http://localhost:5000/predict_fare', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pickup_lat, pickup_lon, dropoff_lat, dropoff_lon, datetime })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('[PREDICT FARE API] ML service error:', errorData);
+            return res.status(500).json({ success: false, message: 'Error from ML service: ' + (errorData.error || 'Unknown error') });
+        }
+
+        const data = await response.json();
+        console.log('[PREDICT FARE API] ML response:', data);
+
+        res.json({ success: true, fare: data.fare });
+
+    } catch (error) {
+        console.error('[PREDICT FARE API ERROR]:', error);
+        res.status(500).json({ success: false, message: 'Internal server error during fare prediction.' });
+    }
+});
 
 // --- General Reports Export Endpoints (Superadmin) ---
 

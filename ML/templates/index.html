@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Charge Predictor</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">Technician Service Charge Predictor</h1>
+        <p class="text-center text-gray-600 mb-6">Technician ke aane-jaane ka kiraya predict karne ke liye niche di gayi jaankari bharein. (Passenger count hamesha 1 rahega)</p>
+        
+        <form action="/predict" method="post" class="space-y-6">
+            <div>
+                <label for="pickup" class="block text-sm font-medium text-gray-700">Technician's Location</label>
+                <input type="text" id="pickup" name="pickup" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                       placeholder="Jaise: Bharthia, Uttar Pradesh">
+            </div>
+
+            <div>
+                <label for="dropoff" class="block text-sm font-medium text-gray-700">User's Location</label>
+                <input type="text" id="dropoff" name="dropoff" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                       placeholder="Jaise: Azamnagar, Darbhanga">
+            </div>
+
+            <div>
+                <label for="datetime" class="block text-sm font-medium text-gray-700">Date and Time</label>
+                <input type="datetime-local" id="datetime" name="datetime" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+
+            <button type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Service Charge Predict Karein
+            </button>
+        </form>
+
+        <!-- Prediction ka result yahaan dikhega -->
+        {% if prediction %}
+        <div class="mt-6 p-4 bg-indigo-50 rounded-md text-center">
+            <p class="text-lg font-semibold text-indigo-800">{{ prediction }}</p>
+        </div>
+        {% endif %}
+
+    </div>
+</body>
+</html>

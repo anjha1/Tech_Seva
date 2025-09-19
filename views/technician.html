@@ -1820,8 +1820,11 @@
 
                 // Display job location correctly by using the helper function
                 const jobLocation = constructFullAddress(job.location);
-                
+
                 const jobIdDisplay = job.isWarrantyClaim ? `${job.originalJobId} <span class="badge warranty">Warranty Claim</span>` : job.jobId;
+
+                // Add note about auto-calculated travel charges
+                const travelChargesNote = job.status === 'Diagnosed' ? '' : '<p><em>Note: Travel charges will be automatically predicted during diagnosis based on your location.</em></p>';
 
 
                 return `
@@ -1832,6 +1835,7 @@
                     <p><strong>Status:</strong> <span id="status-${job.jobId}">${job.status}</span></p>
                     <p><strong>Payment Status:</strong> <span id="payment-status-${job.jobId}">${paymentStatus}</span></p>
                     <p>Last Updated: ${lastUpdatedDisplay}</p>
+                    ${travelChargesNote}
                     ${paymentDetailsHtml}
                     <div class="job-actions" id="actions-${job.jobId}">
                         ${actionsHtml}

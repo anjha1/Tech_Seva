@@ -2453,6 +2453,7 @@
                                 <p><strong>Date & Time:</strong> ${new Date(booking.scheduledDateTime).toLocaleString()}</p>
                                 <p><strong>Status:</strong> <span class="status-text ${booking.status.toLowerCase().replace(/\s/g, '-')}">${booking.status}</span></p>
                                 <p><strong>Payment Status:</strong> ${booking.payment && booking.payment.status ? booking.payment.status : 'N/A'}</p>
+                                ${booking.status === 'Diagnosed' || booking.status === 'Quotation Provided' || booking.status === 'Quotation Approved' || booking.status === 'Completed' || booking.status === 'Paid' ? '' : '<p><em>Note: Travel charges will be automatically predicted during technician diagnosis.</em></p>'}
                                 ${quoteDetailsHtml}
                                 <div class="booking-actions">
                                     ${paymentButton}
